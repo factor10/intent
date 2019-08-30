@@ -3,6 +3,12 @@ package intent
 import java.net.URLClassLoader
 import scala.util.control.NonFatal
 
+/**
+ * Seems to be required in order to use the SBT test-class fingerprinting.
+ * Could not get trait alone to work...
+ */
+class IntentMaker {}
+
 object Main {
 
   def (full: String) beginsWith (head: String): Boolean = full.startsWith(head)

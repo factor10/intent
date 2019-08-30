@@ -6,5 +6,9 @@ lazy val root = project
     name := "dotty-simple",
     version := "0.1.0",
 
-    scalaVersion := dottyVersion
+    scalaVersion := dottyVersion,
+
+    libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
+
+    testFrameworks += new TestFramework("intent.sbt.Framework")
   )
