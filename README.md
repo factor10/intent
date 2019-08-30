@@ -1,9 +1,20 @@
-## sbt project compiled with Dotty
+# Intent
 
-### Usage
+Intent is an opinionated test framework for [Dotty](https://dotty.epfl.ch). It builds on the following principles:
 
-This is a normal sbt project, you can compile code with `sbt compile` and run it
-with `sbt run`, `sbt console` will start a Dotty REPL.
+* Tests must be fast.
+* A single approach to writing tests and assertions.
+* Well-defined test state.
+* Full support for async.
+* Time-based tests and randomness supported from the start.
+* ...
 
-For more information on the sbt-dotty plugin, see the
-[dotty-example-project](https://github.com/lampepfl/dotty-example-project/blob/master/README.md).
+WARNING! Extreme work in progress!
+
+## Dev
+
+* Recent SBT
+* Visual Studio Code
+
+Run `sbt launchIDE` to start hacking.
+
