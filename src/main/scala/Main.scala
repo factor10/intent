@@ -1,3 +1,5 @@
+package intent
+
 import java.net.URLClassLoader
 import scala.util.control.NonFatal
 
