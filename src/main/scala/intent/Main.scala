@@ -2,6 +2,8 @@ package intent
 
 import java.net.URLClassLoader
 import scala.util.control.NonFatal
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.Future
 
 /**
  * Seems to be required in order to use the SBT test-class fingerprinting.
@@ -9,9 +11,11 @@ import scala.util.control.NonFatal
  */
 class IntentMaker {}
 
+case class TestCaseResult(duration: FiniteDuration, expectationResult: ExpectationResult)
+
 trait ITestCase {
   def nameParts: Seq[String]
-  def run(): Unit
+  def run(): Future[TestCaseResult]
 }
 
 trait Intent[TState] extends FormatterGivens with EqGivens with ExpectGivens {
@@ -20,9 +24,10 @@ trait Intent[TState] extends FormatterGivens with EqGivens with ExpectGivens {
   case class TransformAndBlock(transform: Transform, blk: () => Unit)
   case class TestCase(setup: Seq[SetupPart], name: String, impl: TState => Unit) extends ITestCase {
     def nameParts: Seq[String] = setup.map(_.name)
-    def run(): Unit = {
+    def run(): Future[TestCaseResult] = {
       val state = setup.foldLeft(emptyState)((st, part) => part.transform(st))
       impl(state)
+      ???
     }
   }
 
