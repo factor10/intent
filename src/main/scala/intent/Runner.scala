@@ -74,7 +74,7 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task {
     val futureResults = testSuite.allTestCases.map(tc => {
       val beforeTime = System.currentTimeMillis
       def executionTime: Long = System.currentTimeMillis - beforeTime
-      def testName: String = taskDef.fullyQualifiedName + tc.nameParts.mkString("")
+      def testName: String = taskDef.fullyQualifiedName + " / " + tc.nameParts.mkString(" / ")
       def logPassed() = loggers.foreach(logger => logger.info(Console.GREEN + s"[PASSED] ${testName} (${executionTime} ms)"))
       def logFailed() = loggers.foreach(logger => logger.info(Console.RED + s"[FAILED] ${testName} (${executionTime} ms)"))
 
