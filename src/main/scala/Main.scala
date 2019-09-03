@@ -9,46 +9,6 @@ import scala.util.control.NonFatal
  */
 class IntentMaker {}
 
-object Main {
-
-  def (full: String) beginsWith (head: String): Boolean = full.startsWith(head)
-
-  def main(args: Array[String]): Unit = {
-    val classes = Seq(classOf[MyTestFixture])
-    val testCases = classes.flatMap(findTestCases)
-
-    var errorCount = 0
-    testCases.foreach { tc =>
-      val fullName = tc.nameParts.mkString(" > ")
-      println(s"$fullName")
-      try {
-        tc.run()
-        println("PASS")
-      } catch {
-        case ex: AssertionError =>
-          System.err.println("FAIL")
-          System.err.println(ex.getMessage)
-          errorCount += 1
-        case NonFatal(t) =>
-          t.printStackTrace()
-          errorCount += 1
-      }
-    }
-
-    System.exit(errorCount)
-
-
-  }
-
-  private def findTestCases(cl: Class[_]): Seq[ITestCase] = {
-    val instance = cl.newInstance.asInstanceOf[Intent[_]]
-    instance.allTestCases
-  }
-
-  def msg = "I was compiled by dotty :)"
-
-}
-
 trait ITestCase {
   def nameParts: Seq[String]
   def run(): Unit
@@ -103,6 +63,8 @@ trait Intent[TState] {
 
   given as Eq[Int] = IntEq
   given as Formatter[Int] = IntFmt
+  given [T] as Eq[Option[T]] given Eq[T] = new OptionEq[T]
+  given [T] as Formatter[Option[T]] given Formatter[T] = new OptionFmt[T]
 }
 
 object IntFmt extends Formatter[Int] {
@@ -111,6 +73,23 @@ object IntFmt extends Formatter[Int] {
 
 object IntEq extends Eq[Int] {
   def areEqual(a: Int, b: Int): Boolean = a == b
+}
+
+class OptionEq[T] given (innerEq: Eq[T]) extends Eq[Option[T]] {
+  def areEqual(a: Option[T], b: Option[T]): Boolean = {
+    (a, b) match {
+      case (Some(aa), Some(bb)) => innerEq.areEqual(aa, bb)
+      case (None, None) => true
+      case _ => false
+    }
+  }
+}
+
+class OptionFmt[T] given (innerFmt: Formatter[T]) extends Formatter[Option[T]] {
+  def format(value: Option[T]): String = value match {
+    case Some(x) => s"Some(${innerFmt.format(x)})"
+    case None => "None"
+  }
 }
 
 trait Ord[T] {
@@ -136,27 +115,4 @@ class Expect[T](blk: => T) {
       throw new AssertionError(s"Expected $expectedStr but got $actualStr")
     }
   }
-}
-
-class Calculator {
-  def add(a: Int, b: Int): Int = a + b
-}
-
-case class MyState(calc: Calculator)
-
-class MyTestFixture extends Intent[MyState] {
-  "a calculator" via newCalculator - {
-    "can add" in { state =>
-      expect(state.calc.add(1, 2)) toEqual 3
-    }
-  }
-  "a calculator (no state transform)" - {
-    "can add" in { state =>
-      val calc = new Calculator // not in state
-      expect(calc.add(1, 2)) toEqual 4
-    }
-  }
-
-  def newCalculator(s: MyState) = s.copy(calc = new Calculator) 
-  def emptyState = MyState(null)
 }
