@@ -14,7 +14,7 @@ trait ITestCase {
   def run(): Unit
 }
 
-trait Intent[TState] extends FormatterGivens with EqGivens {
+trait Intent[TState] extends FormatterGivens with EqGivens with ExpectGivens {
   type Transform = TState => TState
   case class SetupPart(name: String, transform: Transform)
   case class TransformAndBlock(transform: Transform, blk: () => Unit)

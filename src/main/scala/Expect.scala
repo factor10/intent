@@ -3,8 +3,12 @@ package intent
 class AssertionError(msg: String) extends RuntimeException(msg)
 
 class Expect[T](blk: => T) {
-  def toEqual(expected: T) given (eq: Eq[T], fmt: Formatter[T]): Unit = {
-    val actual = blk
+  def evaluate(): T = blk
+}
+
+trait ExpectGivens {
+  def (expect: Expect[T]) toEqual[T] (expected: T) given (eq: Eq[T], fmt: Formatter[T]): Unit = {
+    val actual = expect.evaluate()
     if (!eq.areEqual(actual, expected)) {
       val actualStr = fmt.format(actual)
       val expectedStr = fmt.format(expected)
