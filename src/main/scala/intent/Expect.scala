@@ -1,6 +1,7 @@
 package intent
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Success, Failure}
 
 trait Expectation {
   def evaluate(): Future[ExpectationResult]
@@ -56,11 +57,41 @@ trait ExpectGivens {
     }
   }
 
-  def (expect: Expect[Future[T]]) toCompleteWith[T] (expected: T) given (eqq: Eq[T], fmt: Formatter[T], ec: ExecutionContext): Expectation = {
+  def (expect: Expect[Future[T]]) toCompleteWith[T] (expected: T) 
+      given (
+        eqq: Eq[T], 
+        fmt: Formatter[T], 
+        errFmt: Formatter[Throwable], 
+        ec: ExecutionContext
+      ): Expectation = {
     new Expectation {
       def evaluate(): Future[ExpectationResult] = {
-        expect.evaluate().flatMap { actual =>
-          new Expect(actual).toEqual(expected).evaluate()
+        expect.evaluate().transform {
+          case Success(actual) =>
+            var comparisonResult = eqq.areEqual(actual, expected)
+            if (expect.isNegated) comparisonResult = !comparisonResult
+
+            val r = if (!comparisonResult) {
+              val actualStr = fmt.format(actual)
+              val expectedStr = fmt.format(expected)
+
+              val desc = if (expect.isNegated)
+                s"Expected Future not to be completed with $expectedStr"
+              else
+                s"Expected Future to be completed with $expectedStr but found $actualStr"
+              TestFailed(desc)
+            } else TestPassed()
+            Success(r)
+            // compare
+          case Failure(_) if expect.isNegated =>
+            // ok, Future was not completed with <expected>
+            Success(TestPassed())
+          case Failure(t) =>
+            val expectedStr = fmt.format(expected)
+            val errorStr = errFmt.format(t)
+            val desc = s"Expected Future to be completed with $expectedStr but it failed with $errorStr"
+            val r = TestFailed(desc)
+            Success(r)
         }
       }
     }
