@@ -3,7 +3,7 @@ package intent
 import java.net.URLClassLoader
 import scala.util.control.NonFatal
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Seems to be required in order to use the SBT test-class fingerprinting.
@@ -65,4 +65,7 @@ trait Intent[TState] extends FormatterGivens with EqGivens with ExpectGivens {
   def expect[T](expr: => T): Expect[T] = new Expect[T](expr)
 
   def emptyState: TState
+
+  // TODO: Kan denna överridas?? Eller behöver vi göra en protected def?
+  given executionContext as ExecutionContext = ExecutionContext.global
 }
