@@ -24,7 +24,7 @@ class AssertionError(msg: String) extends RuntimeException(msg)
 
 class Expect[T](blk: => T, negated: Boolean = false) {
   def evaluate(): T = blk
-
+  def isNegated: Boolean = negated
   def negate(): Expect[T] = new Expect(blk, !negated)
 }
 
@@ -35,13 +35,20 @@ trait ExpectGivens {
   def (expect: Expect[T]) toEqual[T] (expected: T) given (eqq: Eq[T], fmt: Formatter[T]): Expectation = {
     new Expectation {
       def evaluate(): Future[ExpectationResult] = {
-        // TODO: hantera expect.negated
         val actual = expect.evaluate()
-        val r = if (!eqq.areEqual(actual, expected)) {
+
+        var comparisonResult = eqq.areEqual(actual, expected)
+        if (expect.isNegated) comparisonResult = !comparisonResult
+
+        val r = if (!comparisonResult) {
           val actualStr = fmt.format(actual)
           val expectedStr = fmt.format(expected)
-          //throw new AssertionError(s"Expected $expectedStr but got $actualStr")
-          TestFailed(s"Expected $expectedStr but got $actualStr")
+
+          val desc = if (expect.isNegated)
+            s"Expected $actualStr to not equal $expectedStr"
+          else
+            s"Expected $expectedStr but found $actualStr"
+          TestFailed(desc)
         } else TestPassed()
         Future.successful(r)
       }
