@@ -2,6 +2,9 @@ package intent
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Failure}
+import scala.collection.IterableOnce
+import scala.collection.mutable.ListBuffer
+import scala.language.implicitConversions
 
 trait Expectation {
   def evaluate(): Future[ExpectationResult]
@@ -93,6 +96,45 @@ trait ExpectGivens {
             val r = TestFailed(desc)
             Success(r)
         }
+      }
+    }
+  }
+
+  def (expect: Expect[IterableOnce[T]]) toContain[T] (expected: T) 
+      given (
+        eqq: Eq[T],
+        fmt: Formatter[T],
+        ec: ExecutionContext
+      ): Expectation = {
+    new Expectation {
+      def evaluate(): Future[ExpectationResult] = {
+        val actual = expect.evaluate()
+
+        val seen = ListBuffer[String]()
+        var found = false
+        val iterator = actual.iterator
+        while (iterator.hasNext) {
+          val next = iterator.next()
+          seen += fmt.format(next)
+          if (!found && eqq.areEqual(next, expected)) {
+            found = true
+          }
+          // TODO: use some heuristic here. Should we continue to collect item string representations? For how long?
+        }
+
+        val allGood = if (expect.isNegated) !found else found
+
+        val r = if (!allGood) {
+          val actualStr = actual.getClass.getSimpleName + seen.mkString("(", ", ", ")")
+          val expectedStr = fmt.format(expected)
+
+          val desc = if (expect.isNegated)
+            s"Expected $actualStr to not contain $expectedStr"
+          else
+            s"Expected $expectedStr to contain $actualStr"
+          TestFailed(desc)
+        } else TestPassed()
+        Future.successful(r)
       }
     }
   }
