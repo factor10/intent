@@ -14,7 +14,7 @@ trait ITestCase {
   def run(): Unit
 }
 
-trait Intent[TState] extends FormatterGivens {
+trait Intent[TState] extends FormatterGivens with EqGivens {
   type Transform = TState => TState
   case class SetupPart(name: String, transform: Transform)
   case class TransformAndBlock(transform: Transform, blk: () => Unit)
@@ -60,31 +60,6 @@ trait Intent[TState] extends FormatterGivens {
   def expect[T](expr: => T): Expect[T] = new Expect[T](expr)
 
   def emptyState: TState
-
-  given as Eq[Int] = IntEq
-  given [T] as Eq[Option[T]] given Eq[T] = new OptionEq[T]
-}
-
-object IntEq extends Eq[Int] {
-  def areEqual(a: Int, b: Int): Boolean = a == b
-}
-
-class OptionEq[T] given (innerEq: Eq[T]) extends Eq[Option[T]] {
-  def areEqual(a: Option[T], b: Option[T]): Boolean = {
-    (a, b) match {
-      case (Some(aa), Some(bb)) => innerEq.areEqual(aa, bb)
-      case (None, None) => true
-      case _ => false
-    }
-  }
-}
-
-trait Ord[T] {
-  def compare(a: T, b: T): Int
-}
-
-trait Eq[T] {
-  def areEqual(a: T, b: T): Boolean
 }
 
 class AssertionError(msg: String) extends RuntimeException(msg)
