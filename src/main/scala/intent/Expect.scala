@@ -9,6 +9,7 @@ trait Expectation {
 sealed trait ExpectationResult
 case class TestPassed() extends ExpectationResult
 case class TestFailed(output: String) extends ExpectationResult
+case class TestError(ex: Throwable) extends ExpectationResult
 
 class CompoundExpectation(inner: Seq[Expectation]) given (ec: ExecutionContext) extends Expectation {
   def evaluate(): Future[ExpectationResult] = {
