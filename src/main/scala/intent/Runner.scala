@@ -1,4 +1,5 @@
 package intent.sbt
+import intent.{Intent,TestPassed, TestFailed, TestError}
 
 import sbt.testing.{
   Framework => SFramework,
@@ -40,8 +41,65 @@ class SbtRunner(
     ""
   }
 
-  def tasks(list: Array[TaskDef]): Array[Task] = {
-    list.foreach(td => println(s"About to test: ${td.fullyQualifiedName}"))
-    Array[Task]()
+  def tasks(list: Array[TaskDef]): Array[Task] = list.map(SbtTask(_, classLoader))
+}
+
+/**
+ * Top-level task runner, which in our case instantiates and loads a **Test Suite**
+ * and run all the contained tests in there.
+ *
+ * Currently SBT feedback is only the name of the failed suite and not the specific
+ * test.
+ */
+class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task {
+  import scala.concurrent.{Await, Future}
+  import scala.concurrent.duration._
+  import scala.concurrent.ExecutionContext
+  import scala.util.{Success, Failure}
+
+  override def taskDef = td
+
+  // Tagging tests or suites are currently not supported
+  override def tags(): Array[String] = Array.empty
+
+  override def execute(handler: EventHandler, loggers: Array[Logger]): Array[Task] = {
+    implicit val ec = ExecutionContext.global
+    // Hmm, do we need really to block here? Does SBT come with something included to be async
+    Await.result(executeSuite(handler, loggers), Duration.Inf)
   }
+
+  private def executeSuite(handler: EventHandler, loggers: Array[Logger]) given (ec: ExecutionContext): Future[Array[Task]] = {
+    println(s"Executing test suite: ${td.fullyQualifiedName}")
+
+    val testSuiteClass = classLoader.loadClass(td.fullyQualifiedName)
+    val testSuite = testSuiteClass.newInstance.asInstanceOf[Intent[_]]
+    val futureResults = testSuite.allTestCases.map(tc => {
+      val futureTestResult = tc.run()
+      futureTestResult.onComplete {
+        case Success(result) if result.expectationResult.isInstanceOf[TestPassed] =>
+          handler.handle(SuccessfulEvent(0, taskDef.fullyQualifiedName, taskDef.fingerprint))
+        case Success(result) if result.expectationResult.isInstanceOf[TestFailed] =>
+          handler.handle(FailedEvent(0, taskDef.fullyQualifiedName, taskDef.fingerprint))
+        case Success(result) if result.expectationResult.isInstanceOf[TestError] =>
+          println(s"Test is broken: ${result.expectationResult}")
+        case Failure(t) =>
+          println(s"Test unexpectedly failed..${t}")
+      }
+      futureTestResult
+    })
+
+    Future.sequence(futureResults).map(_ => Array.empty)
+  }
+}
+
+case class SuccessfulEvent(duration: Long, fullyQualifiedName: String, fingerprint: Fingerprint) extends Event {
+  override def status = sbt.testing.Status.Success
+  override def selector(): sbt.testing.Selector = sbt.testing.SuiteSelector()
+  override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
+}
+
+case class FailedEvent(duration: Long, fullyQualifiedName: String, fingerprint: Fingerprint) extends Event {
+  override def status = sbt.testing.Status.Failure
+  override def selector(): sbt.testing.Selector = sbt.testing.SuiteSelector()
+  override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
 }
