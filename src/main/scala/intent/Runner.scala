@@ -69,19 +69,28 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task {
   }
 
   private def executeSuite(handler: EventHandler, loggers: Array[Logger]) given (ec: ExecutionContext): Future[Array[Task]] = {
-    println(s"Executing test suite: ${td.fullyQualifiedName}")
-
     val testSuiteClass = classLoader.loadClass(td.fullyQualifiedName)
     val testSuite = testSuiteClass.newInstance.asInstanceOf[Intent[_]]
     val futureResults = testSuite.allTestCases.map(tc => {
+      val beforeTime = System.currentTimeMillis
+      def executionTime: Long = System.currentTimeMillis - beforeTime
+      def testName: String = taskDef.fullyQualifiedName + tc.nameParts.mkString("")
+      def logPassed() = loggers.foreach(logger => logger.info(Console.GREEN + s"[PASSED] ${testName} (${executionTime} ms)"))
+      def logFailed() = loggers.foreach(logger => logger.info(Console.RED + s"[FAILED] ${testName} (${executionTime} ms)"))
+
       val futureTestResult = tc.run()
       futureTestResult.onComplete {
         case Success(result) if result.expectationResult.isInstanceOf[TestPassed] =>
-          handler.handle(SuccessfulEvent(0, taskDef.fullyQualifiedName, taskDef.fingerprint))
+          handler.handle(SuccessfulEvent(executionTime, testName, taskDef.fingerprint))
+          logPassed()
+
         case Success(result) if result.expectationResult.isInstanceOf[TestFailed] =>
-          handler.handle(FailedEvent(0, taskDef.fullyQualifiedName, taskDef.fingerprint))
+          handler.handle(FailedEvent(executionTime, testName, taskDef.fingerprint))
+          logFailed()
+
         case Success(result) if result.expectationResult.isInstanceOf[TestError] =>
           println(s"Test is broken: ${result.expectationResult}")
+
         case Failure(t) =>
           println(s"Test unexpectedly failed..${t}")
       }
