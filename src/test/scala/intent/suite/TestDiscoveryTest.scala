@@ -30,11 +30,11 @@ class TestDiscoveryTest extends TestSuite with Intent[Unit] {
    def emptyState = ()
 }
 
-class EmtpyTestSuite extends TestSuite with Intent[Unit] {
+class EmtpyTestSuite extends Intent[Unit] {
   def emptyState = ()
 }
 
-class SingleLevelTestSuite extends TestSuite with Intent[Unit] {
+class SingleLevelTestSuite extends Intent[Unit] {
   "root suite" - {
     "root test" in { state =>
       expect( 1 + 1 ) toEqual 2
