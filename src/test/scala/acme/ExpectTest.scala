@@ -7,7 +7,7 @@ import scala.concurrent.Future
 
 case class MyOtherState()
 
-class ExpectTest extends IntentMaker with Intent[MyOtherState] {
+class ExpectTest extends TestSuite with Intent[MyOtherState] {
   "an expectation" - {
     "can be negated" in { _ =>
       expect(1 + 2).not.toEqual(4)

@@ -6,10 +6,12 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
- * Seems to be required in order to use the SBT test-class fingerprinting.
- * Could not get trait alone to work...
+ * Each test suite must be derived from this class, else I could not get the sbt fingerprintint
+ * to work.
+ * I tried to combine TestSuite with Intent to `TestSuite[T] extends Intent[T]` but that could not
+ * be resolved either...
  */
-class IntentMaker {}
+class TestSuite {}
 
 case class TestCaseResult(duration: FiniteDuration, expectationResult: ExpectationResult)
 

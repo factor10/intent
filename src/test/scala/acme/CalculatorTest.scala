@@ -9,7 +9,7 @@ class Calculator {
 
 case class MyState(calc: Option[Calculator])
 
-class MyTestFixture extends IntentMaker with Intent[MyState] {
+class MyTestFixture extends TestSuite with Intent[MyState] {
   "a calculator" via newCalculator - {
     "can add" in { state =>
       val actual = state.calc.map(_.add(1, 2))
