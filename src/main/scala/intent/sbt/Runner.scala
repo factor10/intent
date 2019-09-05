@@ -108,7 +108,7 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task {
 }
 
 trait LoggedEvent(color: String, prefix: String, suiteName: String, testNames: Seq[String]) {
-  val fullyQualifiedTestName: String = suiteName + " / " + testNames.mkString("/")
+  val fullyQualifiedTestName: String = suiteName + " >> " + testNames.mkString(" >> ")
 
   def log(loggers: Array[Logger], executionTime: Long): Unit = loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms)"))
 }
@@ -118,7 +118,7 @@ case class SuccessfulEvent(duration: Long, suiteName: String, testNames: Seq[Str
 
   override def fullyQualifiedName = suiteName
   override def status = sbt.testing.Status.Success
-  override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString("."))
+  override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString(" >> "))
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
 }
 
@@ -127,6 +127,6 @@ case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String]
 
   override def fullyQualifiedName = suiteName
   override def status = sbt.testing.Status.Failure
-  override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString("."))
+  override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString(" >> "))
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
 }
