@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * I tried to combine TestSuite with Intent to `TestSuite[T] extends Intent[T]` but that could not
  * be resolved either...
  */
-class TestSuite { self: Intent[Any] => }
+class TestSuite {}
 
 case class TestCaseResult(duration: FiniteDuration, expectationResult: ExpectationResult)
 
