@@ -87,17 +87,21 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task {
           event.log(loggers, executionTime)
 
         case Success(result) if result.expectationResult.isInstanceOf[TestFailed] =>
-          val event = FailedEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint)
+          val event = FailedEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint, result.expectationResult.asInstanceOf[TestFailed].output)
           handler.handle(event)
           event.log(loggers, executionTime)
 
         case Success(result) if result.expectationResult.isInstanceOf[TestError] =>
           println(s"Test is broken: ${result.expectationResult}")
-          // TODO: Generate an event representing this
+          val event = ErrorEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint, result.expectationResult.asInstanceOf[TestError].ex)
+          handler.handle(event)
+          event.log(loggers, executionTime)
 
         case Failure(t) =>
           println(s"Test unexpectedly failed..${t}")
-          // TODO: Generate an event representing this
+          val event = ErrorEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint, t)
+          handler.handle(event)
+          event.log(loggers, executionTime)
       }
 
       futureTestResult
@@ -122,11 +126,29 @@ case class SuccessfulEvent(duration: Long, suiteName: String, testNames: Seq[Str
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
 }
 
-case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint) extends Event
+case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, assertionMessage: String) extends Event
   with LoggedEvent(Console.RED, "FAILED", suiteName, testNames) {
+  val color = Console.RED // Why are not these inherited form LoggedEvent?
+  val prefix = "ERROR"
 
   override def fullyQualifiedName = suiteName
   override def status = sbt.testing.Status.Failure
   override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString(" >> "))
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
+
+  override def log(loggers: Array[Logger], executionTime: Long): Unit =
+    loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${Console.RED}${assertionMessage}"))
+}
+
+case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, err: Throwable) extends Event
+  with LoggedEvent(Console.RED, "ERROR", suiteName, testNames) {
+  val color = Console.RED // Why are not these inherited form LoggedEvent?
+  val prefix = "ERROR"
+
+  override def fullyQualifiedName = suiteName
+  override def status = sbt.testing.Status.Failure
+  override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString(" >> "))
+  override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable(err)
+  override def log(loggers: Array[Logger], executionTime: Long): Unit =
+    loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${Console.RED}${err.getMessage}"))
 }
