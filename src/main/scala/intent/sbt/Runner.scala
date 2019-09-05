@@ -24,7 +24,7 @@ object IntentFingerprint extends SubclassFingerprint {
   def requireNoArgConstructor(): Boolean = true
 
   // All tests needs to inherit from this type
-  def superclassName(): String = "intent.IntentMaker"
+  def superclassName(): String = "intent.TestSuite"
 }
 
 /**
@@ -35,9 +35,10 @@ class SbtRunner(
   val remoteArgs: Array[String],
   classLoader: ClassLoader) extends Runner {
 
+
   def done(): String = {
     // This is called when test is done, and after that the test task myst not be called
-    // Not obvious in the doc how what you're supposed to do here really..
+    // Whatever is returned here is printed in the SBT log just before the summary
     ""
   }
 
@@ -70,30 +71,35 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task {
 
   private def executeSuite(handler: EventHandler, loggers: Array[Logger]) given (ec: ExecutionContext): Future[Array[Task]] = {
     val testSuiteClass = classLoader.loadClass(td.fullyQualifiedName)
+
+    // TODO: Wrap this in a Try and report failure if a test cannot be loaded
     val testSuite = testSuiteClass.newInstance.asInstanceOf[Intent[_]]
     val futureResults = testSuite.allTestCases.map(tc => {
       val beforeTime = System.currentTimeMillis
       def executionTime: Long = System.currentTimeMillis - beforeTime
-      def testName: String = taskDef.fullyQualifiedName + " / " + tc.nameParts.mkString(" / ")
-      def logPassed() = loggers.foreach(logger => logger.info(Console.GREEN + s"[PASSED] ${testName} (${executionTime} ms)"))
-      def logFailed() = loggers.foreach(logger => logger.info(Console.RED + s"[FAILED] ${testName} (${executionTime} ms)"))
 
       val futureTestResult = tc.run()
+
       futureTestResult.onComplete {
         case Success(result) if result.expectationResult.isInstanceOf[TestPassed] =>
-          handler.handle(SuccessfulEvent(executionTime, testName, taskDef.fingerprint))
-          logPassed()
+          val event = SuccessfulEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint)
+          handler.handle(event)
+          event.log(loggers, executionTime)
 
         case Success(result) if result.expectationResult.isInstanceOf[TestFailed] =>
-          handler.handle(FailedEvent(executionTime, testName, taskDef.fingerprint))
-          logFailed()
+          val event = FailedEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint)
+          handler.handle(event)
+          event.log(loggers, executionTime)
 
         case Success(result) if result.expectationResult.isInstanceOf[TestError] =>
           println(s"Test is broken: ${result.expectationResult}")
+          // TODO: Generate an event representing this
 
         case Failure(t) =>
           println(s"Test unexpectedly failed..${t}")
+          // TODO: Generate an event representing this
       }
+
       futureTestResult
     })
 
@@ -101,14 +107,26 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task {
   }
 }
 
-case class SuccessfulEvent(duration: Long, fullyQualifiedName: String, fingerprint: Fingerprint) extends Event {
+trait LoggedEvent(color: String, prefix: String, suiteName: String, testNames: Seq[String]) {
+  val fullyQualifiedTestName: String = suiteName + " / " + testNames.mkString("/")
+
+  def log(loggers: Array[Logger], executionTime: Long): Unit = loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms)"))
+}
+
+case class SuccessfulEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint) extends Event
+  with LoggedEvent(Console.GREEN, "PASSED", suiteName, testNames) {
+
+  override def fullyQualifiedName = suiteName
   override def status = sbt.testing.Status.Success
-  override def selector(): sbt.testing.Selector = sbt.testing.SuiteSelector()
+  override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString("."))
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
 }
 
-case class FailedEvent(duration: Long, fullyQualifiedName: String, fingerprint: Fingerprint) extends Event {
+case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint) extends Event
+  with LoggedEvent(Console.RED, "FAILED", suiteName, testNames) {
+
+  override def fullyQualifiedName = suiteName
   override def status = sbt.testing.Status.Failure
-  override def selector(): sbt.testing.Selector = sbt.testing.SuiteSelector()
+  override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString("."))
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
 }
