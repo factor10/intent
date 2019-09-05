@@ -1,4 +1,5 @@
 import intent.{TestSuite, Intent}
+import intent.testdata._
 
 class TestDiscoveryTest extends TestSuite with Intent[Unit] {
   "Test discovery" - {
@@ -28,40 +29,4 @@ class TestDiscoveryTest extends TestSuite with Intent[Unit] {
   }
 
    def emptyState = ()
-}
-
-class EmtpyTestSuite extends Intent[Unit] {
-  def emptyState = ()
-}
-
-class SingleLevelTestSuite extends Intent[Unit] {
-  "root suite" - {
-    "root test" in { state =>
-      expect( 1 + 1 ) toEqual 2
-    }
-  }
-
-  def emptyState = ()
-}
-
-class NestedTestsSuite extends Intent[Unit] {
-  "root suite" - {
-    "child suite" - {
-      "grand child suite" - {
-        "grand child test" in { state =>
-          expect( 1 + 1 ) toEqual 2
-        }
-      }
-
-      "child test" in { state =>
-        expect( 1 + 1 ) toEqual 2
-      }
-    }
-
-    "root test" in { state =>
-      expect( 1 + 1 ) toEqual 2
-    }
-  }
-
-  def emptyState = ()
 }
