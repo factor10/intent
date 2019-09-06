@@ -139,6 +139,25 @@ trait ExpectGivens {
     }
   }
 
+  /**
+   * (1, 2, 3) toHaveLength 3
+   */
+  def (expect: Expect[IterableOnce[T]]) toHaveLength[T] (expected: Int) given(ec: ExecutionContext): Expectation = {
+    new Expectation {
+      def evaluate(): Future[ExpectationResult] = {
+        val actual = expect.evaluate()
+        val actualLength = actual.iterator.size
+        var r = if (expect.isNegated && actualLength == expected)       TestFailed(s"Expected size *not* to be $expected but was $actualLength")
+                else if (expect.isNegated && actualLength != expected)  TestPassed()
+                else if (actualLength != expected)                      TestFailed(s"Expected size to be $expected but was $actualLength")
+                else                                                    TestPassed()
+
+        Future.successful(r)
+      }
+    }
+  }
+
+
   // TODO:
   // - toContain i lista (massa varianter, IterableOnce-ish)
   // - toContain i Map (immutable + mutable)
