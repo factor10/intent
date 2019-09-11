@@ -12,6 +12,10 @@ object BooleanFmt extends Formatter[Boolean] {
   def format(b: Boolean): String = b.toString
 }
 
+object StringFmt extends Formatter[String] {
+  def format(s: String): String = s
+}
+
 object ThrowableFmt extends Formatter[Throwable] {
   def format(t: Throwable): String = {
     // TODO: stack trace??
@@ -30,5 +34,6 @@ trait FormatterGivens {
   given as Formatter[Int] = IntFmt
   given as Formatter[Throwable] = ThrowableFmt
   given as Formatter[Boolean] = BooleanFmt
+  given as Formatter[String] = StringFmt
   given [T] as Formatter[Option[T]] given Formatter[T] = new OptionFmt[T]
 }

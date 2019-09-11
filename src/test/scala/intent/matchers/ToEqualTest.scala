@@ -22,6 +22,24 @@ class ToEqualTest extends TestSuite with Intent[Unit] {
         expect(false).not.toEqual(true)
       }
     }
+
+    "for String" - {
+      "<empty> should equal <empty>" in { _ =>
+        expect("").toEqual("")
+      }
+
+      "<foo> should equal <foo>" in { _ =>
+        expect("foo").toEqual("foo")
+      }
+
+      "<foo> should *not* equal <bar>" in { _ =>
+        expect("foo").not.toEqual("bar")
+      }
+
+      "<🤓> should equal <🤓>" in { _ =>
+        expect("🤓").toEqual("🤓")
+      }
+    }
   }
 
   def emptyState = ()

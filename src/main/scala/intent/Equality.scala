@@ -12,6 +12,10 @@ object BooleanEq extends Eq[Boolean] {
   def areEqual(a: Boolean, b: Boolean): Boolean = a == b
 }
 
+object StringEq extends Eq[String] {
+  def areEqual(a: String, b: String): Boolean = a == b
+}
+
 
 class OptionEq[T] given (innerEq: Eq[T]) extends Eq[Option[T]] {
   def areEqual(a: Option[T], b: Option[T]): Boolean = {
@@ -26,5 +30,6 @@ class OptionEq[T] given (innerEq: Eq[T]) extends Eq[Option[T]] {
 trait EqGivens {
   given as Eq[Int] = IntEq
   given as Eq[Boolean] = BooleanEq
+  given as Eq[String] = StringEq
   given [T] as Eq[Option[T]] given Eq[T] = new OptionEq[T]
 }
