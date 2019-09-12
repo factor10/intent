@@ -92,10 +92,6 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   private var testCases: Seq[TestCase] = Seq.empty
   private var reverseSetupStack: Seq[SetupPart] = Seq.empty
 
-  def (setupPart: SetupPart) - (block: => Unit): Unit =
-    reverseSetupStack +:= setupPart
-    try block finally reverseSetupStack = reverseSetupStack.tail
-
   def (blockName: String) - (block: => Unit): Unit =
     val setupPart = SetupPart(blockName)
     reverseSetupStack +:= setupPart
