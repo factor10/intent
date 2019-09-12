@@ -6,7 +6,7 @@ import scala.concurrent.Future
 class AsyncTest extends TestSuite with Intent[Unit]:
 
   "an async test" - :
-    "can use whenReady" in :
+    "can use whenComplete" in :
       _ =>
         val f = Future { 21 * 2 }
         whenComplete(f):
