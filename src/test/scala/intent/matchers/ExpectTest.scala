@@ -1,5 +1,5 @@
 
-package acme
+package intent.matchers
 
 import intent._
 
