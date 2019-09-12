@@ -12,4 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 class TestSuite extends core.TestSuite
 
-trait Intent[TState] extends core.IntentStateSyntax[TState] with FormatterGivens with EqGivens with ExpectGivens:
+trait Intent[TState] extends core.IntentStateSyntax[TState] with FormatterGivens with EqGivens with ExpectGivens
+
+// TODO: Rename, this should perhaps be the "default" trait
+trait IntentStateless extends core.IntentStatelessSyntax with FormatterGivens with EqGivens with ExpectGivens
