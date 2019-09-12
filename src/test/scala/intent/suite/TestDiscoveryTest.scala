@@ -7,7 +7,7 @@ class TestDiscoveryTest extends TestSuite with Intent[Unit] {
       val suite = new EmtpyTestSuite()
 
       "should have 0 tests" in { _ =>
-        expect(suite.allTestCases.length ).toEqual(0)
+        expect(suite.allTestCases).toHaveLength(0)
       }
     }
 
@@ -15,7 +15,7 @@ class TestDiscoveryTest extends TestSuite with Intent[Unit] {
       val suite = new SingleLevelTestSuite()
 
       "should have 1 tests" in { _ =>
-        expect(suite.allTestCases.length ).toEqual(1)
+        expect(suite.allTestCases).toHaveLength(1)
       }
     }
 
@@ -23,7 +23,7 @@ class TestDiscoveryTest extends TestSuite with Intent[Unit] {
       val suite = new NestedTestsSuite()
 
       "should have 3 tests" in { _ =>
-        expect(suite.allTestCases.length ).toEqual(3)
+        expect(suite.allTestCases).toHaveLength(3)
       }
     }
   }
