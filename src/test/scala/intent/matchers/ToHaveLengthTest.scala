@@ -1,4 +1,4 @@
-package intent.testdata
+package intent.matchers
 
 import intent.{Intent, TestSuite}
 
