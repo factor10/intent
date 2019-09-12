@@ -25,7 +25,7 @@ trait Intent[TState] extends FormatterGivens with EqGivens with ExpectGivens {
   case class SetupPart(name: String, transform: Transform)
   case class TransformAndBlock(transform: Transform, blk: () => Unit)
   case class TestCase(setup: Seq[SetupPart], name: String, impl: TState => Expectation) extends ITestCase {
-    def nameParts: Seq[String] = setup.map(_.name)
+    def nameParts: Seq[String] = setup.map(_.name) :+ name
     def run(): Future[TestCaseResult] = {
       val state = setup.foldLeft(emptyState)((st, part) => part.transform(st))
       val before = System.nanoTime
