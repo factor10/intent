@@ -3,6 +3,7 @@ package intent.core
 import scala.concurrent.duration._
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.control.NonFatal
+import scala.util.{Try, Success, Failure}
 
 import intent.Expect // TODO: dependency on parent package isn't nice
 
@@ -12,11 +13,12 @@ trait IntentStructure:
 trait TestLanguage:
   def expect[T](expr: => T): Expect[T] = new Expect[T](expr)
 
-  // TODO: What happens if the Future fails?
   def whenComplete[T](expr: => Future[T])(impl: T => Expectation): Expectation =
     new Expectation:
-      def evaluate(): Future[ExpectationResult] = 
-        expr.flatMap(impl(_).evaluate())
+      def evaluate(): Future[ExpectationResult] =
+        expr.transformWith:
+          case Success(r) => impl(r).evaluate()
+          case Failure(t) => Future.successful(TestFailed("The Future passed to 'whenComplete' failed"))
 
   // TODO: Can this be overridden? Or do we need a protected def
   given executionContext as ExecutionContext = ExecutionContext.global
