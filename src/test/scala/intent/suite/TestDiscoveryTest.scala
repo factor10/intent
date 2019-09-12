@@ -1,3 +1,5 @@
+package intent.suite
+
 import intent.{TestSuite, Intent}
 import intent.testdata._
 

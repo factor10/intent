@@ -5,7 +5,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Try,Success,Failure}
 
-import intent.{Intent, ExpectationResult, TestSuite, TestCaseResult, TestPassed, TestFailed, TestError}
+import intent.core.{IntentStructure, ExpectationResult, TestSuite, TestCaseResult, TestPassed, TestFailed, TestError}
 
 /**
  * Fatal error during construction or loading (including test discovery) of a test suite.
@@ -56,7 +56,7 @@ class TestSuiteRunner(classLoader: ClassLoader):
       case Success(instance) => runTestsForSuite(instance).map(res => Right(res))
       case Failure(ex: Throwable) => Future.successful(Left(TestSuiteError(ex)))
 
-  private def runTestsForSuite(suite: Intent[_]) given(ec: ExecutionContext): Future[TestSuiteResult] =
+  private def runTestsForSuite(suite: IntentStructure) given(ec: ExecutionContext): Future[TestSuiteResult] =
     // TODO: We should measure Suite time as well. Might be good to find expensive setup or scheduling problems.
     val futureTestResults = suite.allTestCases.map(_.run())
 
@@ -70,5 +70,5 @@ class TestSuiteRunner(classLoader: ClassLoader):
       }
     }))
 
-  private def instantiateSuite(className: String): Try[Intent[_]] =
-    Try(classLoader.loadClass(className).newInstance.asInstanceOf[Intent[_]])
+  private def instantiateSuite(className: String): Try[IntentStructure] =
+    Try(classLoader.loadClass(className).newInstance.asInstanceOf[IntentStructure])

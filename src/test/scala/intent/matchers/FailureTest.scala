@@ -2,6 +2,7 @@
 package intent.matchers
 
 import intent._
+import intent.core.{Expectation, ExpectationResult, TestFailed, TestPassed, TestError}
 import scala.concurrent.Future
 
 class FailureTest extends TestSuite with Intent[Unit]:

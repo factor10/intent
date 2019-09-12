@@ -1,5 +1,5 @@
 package intent.sbt
-import intent.{Intent,TestPassed, TestFailed, TestError}
+import intent.core.{IntentStructure,TestPassed, TestFailed, TestError}
 
 import sbt.testing.{
   Framework => SFramework,
@@ -23,7 +23,7 @@ object IntentFingerprint extends SubclassFingerprint:
   def requireNoArgConstructor(): Boolean = true
 
   // All tests needs to inherit from this type
-  def superclassName(): String = "intent.TestSuite"
+  def superclassName(): String = "intent.core.TestSuite"
 
 /**
  * A single run of a single test (controlled by SBT)
@@ -68,7 +68,7 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task:
     val testSuiteClass = classLoader.loadClass(td.fullyQualifiedName)
 
     // TODO: Wrap this in a Try and report failure if a test cannot be loaded
-    val testSuite = testSuiteClass.newInstance.asInstanceOf[Intent[_]]
+    val testSuite = testSuiteClass.newInstance.asInstanceOf[IntentStructure]
     val futureResults = testSuite.allTestCases.map(tc => {
       val beforeTime = System.currentTimeMillis
       def executionTime: Long = System.currentTimeMillis - beforeTime

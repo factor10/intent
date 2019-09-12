@@ -6,13 +6,7 @@ import scala.collection.IterableOnce
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 
-trait Expectation:
-  def evaluate(): Future[ExpectationResult]
-
-sealed trait ExpectationResult
-case class TestPassed() extends ExpectationResult
-case class TestFailed(output: String) extends ExpectationResult
-case class TestError(ex: Throwable) extends ExpectationResult
+import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed}
 
 class CompoundExpectation(inner: Seq[Expectation]) given (ec: ExecutionContext) extends Expectation:
   def evaluate(): Future[ExpectationResult] =
@@ -21,8 +15,6 @@ class CompoundExpectation(inner: Seq[Expectation]) given (ec: ExecutionContext) 
       // any failure => failure
       ???
     }
-
-class AssertionError(msg: String) extends RuntimeException(msg)
 
 class Expect[T](blk: => T, negated: Boolean = false):
   def evaluate(): T = blk
