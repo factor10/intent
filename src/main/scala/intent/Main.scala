@@ -68,6 +68,13 @@ trait Intent[TState] extends FormatterGivens with EqGivens with ExpectGivens:
 
   def expect[T](expr: => T): Expect[T] = new Expect[T](expr)
 
+  // TODO: What happens if the Future fails?
+  def whenComplete[T](expr: => Future[T])(impl: T => Expectation): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] = 
+        expr.flatMap(impl(_).evaluate())
+
+
   def emptyState: TState
 
   // TODO: Can this be overridden? Or do we need a protected def
