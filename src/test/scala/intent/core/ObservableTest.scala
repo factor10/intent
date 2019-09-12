@@ -130,7 +130,6 @@ class ASubscriber(val id: Int, wellbehaved: Boolean = true) extends Subscriber[I
   var received: Seq[Int] = List()
 
   override def onNext(event: Int): Unit =
-    wellbehaved match {
+    wellbehaved match
       case true => received :+= event
       case false => throw RuntimeException("Misbehaving subscriber")
-    }
