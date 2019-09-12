@@ -18,5 +18,8 @@ trait TestSupport extends FormatterGivens with EqGivens with ExpectGivens
 
 trait Intent[TState] extends core.IntentStateSyntax[TState] with TestSupport
 
+// TODO: naming
+trait AsyncIntent[TState] extends core.IntentAsyncStateSyntax[TState] with TestSupport
+
 // TODO: Rename, this should perhaps be the "default" trait
 trait IntentStateless extends core.IntentStatelessSyntax with TestSupport

@@ -18,3 +18,19 @@ class AsyncTest extends TestSuite with IntentStateless with Meta:
         whenComplete(f):
           result => expect(result).toEqual(42)
       }, "The Future passed to 'whenComplete' failed")
+
+class AsyncStateTest extends TestSuite with AsyncIntent[String] with Meta:
+
+  "a test with async state" - :
+
+    "when we map on the state" via mapString - :
+      "sees the appropriate state" in :
+        state => expect(state).toEqual("Hello world")
+
+    "when we async-map on the state" via mapStringAsync - :
+      "sees the appropriate state" in :
+        state => expect(state).toEqual("Hello async world")
+
+  def mapString(s: String): String = s + " world"
+  def mapStringAsync(s: String, dummy: Int): Future[String] = Future { s + " async world" }
+  def emptyState = Future { "Hello" }
