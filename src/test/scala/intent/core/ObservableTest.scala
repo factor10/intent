@@ -3,16 +3,15 @@ package intent.core
 import intent.core.{Observable, WarmObservable, Subscriber}
 import intent.{Intent, TestSuite}
 
-class ObservableTestSuite extends TestSuite with Intent[PublisherAndSubscribers] {
-  "Observable" - {
-    "when there is no subscriber" - {
+class ObservableTestSuite extends TestSuite with Intent[PublisherAndSubscribers]:
+  "Observable" - :
+    "when there is no subscriber" - :
       "it should still be possible to publish event" in { ps =>
         ps.publish()
         expect(true) toEqual(true)  // TODO: Not to throw (i.e. reached this far)
       }
-    }
 
-    "when there is a single subscriber" via withSingleConsumer - {
+    "when there is a single subscriber" via withSingleConsumer - :
       "published event should be received by subscriber" in { ps =>
         ps.publish()
         expect(ps.received()).toEqual("0:0")
@@ -22,9 +21,8 @@ class ObservableTestSuite extends TestSuite with Intent[PublisherAndSubscribers]
         (0 until 3).foreach(_ => ps.publish())
         expect(ps.received()).toEqual("0:0_0:1_0:2")
       }
-    }
 
-    "when there is a multiple subscriber" via withThreeConsumers - {
+    "when there is a multiple subscriber" via withThreeConsumers - :
       "published event should be received by subscriber" in { ps =>
         ps.publish()
         expect(ps.received()).toEqual("0:0_1:0_2:0")
@@ -34,9 +32,8 @@ class ObservableTestSuite extends TestSuite with Intent[PublisherAndSubscribers]
         (0 until 3).foreach(_ => ps.publish())
         expect(ps.received()).toEqual("0:0_1:0_2:0_0:1_1:1_2:1_0:2_1:2_2:2")
       }
-    }
 
-    "when attaching a late subscriber" via withLateJoiner - {
+    "when attaching a late subscriber" via withLateJoiner - :
       "it should only receive events from when subscribing" in { ps =>
         ps.publish()        // 0
         ps.publish()        // 1
@@ -44,9 +41,8 @@ class ObservableTestSuite extends TestSuite with Intent[PublisherAndSubscribers]
         ps.publish()        // 2
         expect(ps.subscribers.last.received.head).toEqual(2) // TODO: Add matcher on lists (or on matrix)
       }
-    }
 
-    "with a misbehaving subscriber" via withMisbehavingSubscriber - {
+    "with a misbehaving subscriber" via withMisbehavingSubscriber - :
       "errors should be caught by observable" in { ps =>
         ps.publish()        // 0
         ps.publish()        // 1
@@ -66,8 +62,6 @@ class ObservableTestSuite extends TestSuite with Intent[PublisherAndSubscribers]
         ps.publish()        // 1
         expect(ps.subscribers.last.received.length).toEqual(2) // Misbehaving is first
       }
-    }
-  }
 
   def emptyState = PublisherAndSubscribers()
   def withSingleConsumer(initial: PublisherAndSubscribers) = PublisherAndSubscribers(1)
@@ -77,12 +71,11 @@ class ObservableTestSuite extends TestSuite with Intent[PublisherAndSubscribers]
     PublisherAndSubscribers(0)
       .addMisbehavingSubscriber()
       .addSubscriber()
-}
 
 /**
  * Wraps a combination of a single publisher and a variable number of consumers
  */
-case class PublisherAndSubscribers(initialSubscribers: Int = 0) {
+case class PublisherAndSubscribers(initialSubscribers: Int = 0):
   /**
    * Record used to keep track on received events for each subscriber.
    */
@@ -103,11 +96,10 @@ case class PublisherAndSubscribers(initialSubscribers: Int = 0) {
   def addMisbehavingSubscriber(): PublisherAndSubscribers =
     addSubscriber(ASubscriber(subscribers.length, wellbehaved = false))
 
-  private def addSubscriber(sub: ASubscriber): PublisherAndSubscribers = {
+  private def addSubscriber(sub: ASubscriber): PublisherAndSubscribers =
     subscribers :+= sub
     publisher.subscribe(sub)
     this
-  }
 
   //
   // Return all received events as a string chaining each subscriber with the received value
@@ -120,24 +112,21 @@ case class PublisherAndSubscribers(initialSubscribers: Int = 0) {
 
   def received(): String =
     receivedEvents().map(e => s"${e.subscriberId}:${e.event}").mkString("_")
-}
 
 /**
  * The producer of events that can be subscribed to.
  */
-class SomethingObservable() extends WarmObservable[Int] {
+class SomethingObservable() extends WarmObservable[Int]:
   private var current = 0
 
-  def publishNextValue(): Unit = {
+  def publishNextValue(): Unit =
     publish(current)
     current += 1
-  }
-}
 
 /**
  * A subscriber only keeps a list of received values
  */
-class ASubscriber(val id: Int, wellbehaved: Boolean = true) extends Subscriber[Int] {
+class ASubscriber(val id: Int, wellbehaved: Boolean = true) extends Subscriber[Int]:
   var received: Seq[Int] = List()
 
   override def onNext(event: Int): Unit =
@@ -145,4 +134,3 @@ class ASubscriber(val id: Int, wellbehaved: Boolean = true) extends Subscriber[I
       case true => received :+= event
       case false => throw RuntimeException("Misbehaving subscriber")
     }
-}

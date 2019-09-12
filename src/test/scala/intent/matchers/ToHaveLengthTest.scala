@@ -2,8 +2,8 @@ package intent.testdata
 
 import intent.{Intent, TestSuite}
 
-class ToHaveLengthTest extends TestSuite with Intent[Unit] {
-  "toHaveLength" - {
+class ToHaveLengthTest extends TestSuite with Intent[Unit]:
+  "toHaveLength" - :
     "empty list should have length 0" in { _ =>
       expect(Seq()).toHaveLength(0)
     }
@@ -19,7 +19,5 @@ class ToHaveLengthTest extends TestSuite with Intent[Unit] {
     "Seq() should *not* have length 1" in { _ =>
       expect(Seq()).not.toHaveLength(1)
     }
-  }
 
   def emptyState = ()
-}

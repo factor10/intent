@@ -7,8 +7,8 @@ import scala.concurrent.Future
 
 case class MyOtherState()
 
-class ExpectTest extends TestSuite with Intent[MyOtherState] {
-  "an expectation" - {
+class ExpectTest extends TestSuite with Intent[MyOtherState]:
+  "an expectation" - :
     "can be negated" in { _ =>
       expect(1 + 2).not.toEqual(4)
     }
@@ -24,7 +24,5 @@ class ExpectTest extends TestSuite with Intent[MyOtherState] {
       val l = List(1, 2, 3)
       expect(l).not.toContain(4)
     }
-  }
 
   def emptyState = MyOtherState()
-}

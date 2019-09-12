@@ -6,59 +6,52 @@ import scala.collection.IterableOnce
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 
-trait Expectation {
+trait Expectation:
   def evaluate(): Future[ExpectationResult]
-}
 
 sealed trait ExpectationResult
 case class TestPassed() extends ExpectationResult
 case class TestFailed(output: String) extends ExpectationResult
 case class TestError(ex: Throwable) extends ExpectationResult
 
-class CompoundExpectation(inner: Seq[Expectation]) given (ec: ExecutionContext) extends Expectation {
-  def evaluate(): Future[ExpectationResult] = {
+class CompoundExpectation(inner: Seq[Expectation]) given (ec: ExecutionContext) extends Expectation:
+  def evaluate(): Future[ExpectationResult] =
     val innerFutures = inner.map(_.evaluate())
     Future.sequence(innerFutures).map { results =>
       // any failure => failure
       ???
     }
-  }
-}
 
 class AssertionError(msg: String) extends RuntimeException(msg)
 
-class Expect[T](blk: => T, negated: Boolean = false) {
+class Expect[T](blk: => T, negated: Boolean = false):
   def evaluate(): T = blk
   def isNegated: Boolean = negated
   def negate(): Expect[T] = new Expect(blk, !negated)
-}
 
 trait ExpectGivens {
 
   def (expect: Expect[T]) not[T]: Expect[T] = expect.negate()
 
-  def (expect: Expect[T]) toEqual[T] (expected: T) given (eqq: Eq[T], fmt: Formatter[T]): Expectation = {
-    new Expectation {
-      def evaluate(): Future[ExpectationResult] = {
+  def (expect: Expect[T]) toEqual[T] (expected: T) given (eqq: Eq[T], fmt: Formatter[T]): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] =
         val actual = expect.evaluate()
 
         var comparisonResult = eqq.areEqual(actual, expected)
-        if (expect.isNegated) comparisonResult = !comparisonResult
+        if expect.isNegated then comparisonResult = !comparisonResult
 
-        val r = if (!comparisonResult) {
+        val r = if !comparisonResult then
           val actualStr = fmt.format(actual)
           val expectedStr = fmt.format(expected)
 
-          val desc = if (expect.isNegated)
+          val desc = if expect.isNegated then
             s"Expected $actualStr to not equal $expectedStr"
           else
             s"Expected $expectedStr but found $actualStr"
           TestFailed(desc)
-        } else TestPassed()
+        else TestPassed()
         Future.successful(r)
-      }
-    }
-  }
 
   def (expect: Expect[Future[T]]) toCompleteWith[T] (expected: T) 
       given (
@@ -66,19 +59,19 @@ trait ExpectGivens {
         fmt: Formatter[T], 
         errFmt: Formatter[Throwable], 
         ec: ExecutionContext
-      ): Expectation = {
-    new Expectation {
-      def evaluate(): Future[ExpectationResult] = {
-        expect.evaluate().transform {
+      ): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] =
+        expect.evaluate().transform:
           case Success(actual) =>
             var comparisonResult = eqq.areEqual(actual, expected)
-            if (expect.isNegated) comparisonResult = !comparisonResult
+            if expect.isNegated then comparisonResult = !comparisonResult
 
-            val r = if (!comparisonResult) {
+            val r = if !comparisonResult then {
               val actualStr = fmt.format(actual)
               val expectedStr = fmt.format(expected)
 
-              val desc = if (expect.isNegated)
+              val desc = if expect.isNegated then
                 s"Expected Future not to be completed with $expectedStr"
               else
                 s"Expected Future to be completed with $expectedStr but found $actualStr"
@@ -95,67 +88,55 @@ trait ExpectGivens {
             val desc = s"Expected Future to be completed with $expectedStr but it failed with $errorStr"
             val r = TestFailed(desc)
             Success(r)
-        }
-      }
-    }
-  }
 
   def (expect: Expect[IterableOnce[T]]) toContain[T] (expected: T) 
       given (
         eqq: Eq[T],
         fmt: Formatter[T],
         ec: ExecutionContext
-      ): Expectation = {
-    new Expectation {
-      def evaluate(): Future[ExpectationResult] = {
+      ): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] =
         val actual = expect.evaluate()
 
         val seen = ListBuffer[String]()
         var found = false
         val iterator = actual.iterator
-        while (iterator.hasNext) {
+        while iterator.hasNext do
           val next = iterator.next()
           seen += fmt.format(next)
-          if (!found && eqq.areEqual(next, expected)) {
+          if !found && eqq.areEqual(next, expected) then
             found = true
-          }
           // TODO: use some heuristic here. Should we continue to collect item string representations? For how long?
-        }
 
-        val allGood = if (expect.isNegated) !found else found
+        val allGood = if expect.isNegated then !found else found
 
-        val r = if (!allGood) {
+        val r = if !allGood then
           val actualStr = actual.getClass.getSimpleName + seen.mkString("(", ", ", ")")
           val expectedStr = fmt.format(expected)
 
-          val desc = if (expect.isNegated)
+          val desc = if expect.isNegated then
             s"Expected $actualStr to not contain $expectedStr"
           else
             s"Expected $expectedStr to contain $actualStr"
           TestFailed(desc)
-        } else TestPassed()
+        else TestPassed()
         Future.successful(r)
-      }
-    }
-  }
 
   /**
    * (1, 2, 3) toHaveLength 3
    */
-  def (expect: Expect[IterableOnce[T]]) toHaveLength[T] (expected: Int) given(ec: ExecutionContext): Expectation = {
-    new Expectation {
-      def evaluate(): Future[ExpectationResult] = {
+  def (expect: Expect[IterableOnce[T]]) toHaveLength[T] (expected: Int) given(ec: ExecutionContext): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] =
         val actual = expect.evaluate()
         val actualLength = actual.iterator.size
-        var r = if (expect.isNegated && actualLength == expected)       TestFailed(s"Expected size *not* to be $expected but was $actualLength")
-                else if (expect.isNegated && actualLength != expected)  TestPassed()
-                else if (actualLength != expected)                      TestFailed(s"Expected size to be $expected but was $actualLength")
+        var r = if expect.isNegated && actualLength == expected then       TestFailed(s"Expected size *not* to be $expected but was $actualLength")
+                else if expect.isNegated && actualLength != expected then  TestPassed()
+                else if actualLength != expected then                      TestFailed(s"Expected size to be $expected but was $actualLength")
                 else                                                    TestPassed()
 
         Future.successful(r)
-      }
-    }
-  }
 
 
   // TODO:
