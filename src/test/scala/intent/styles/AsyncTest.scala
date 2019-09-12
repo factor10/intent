@@ -1,4 +1,4 @@
-package intent.async
+package intent.styles
 
 import intent._
 import scala.concurrent.Future
