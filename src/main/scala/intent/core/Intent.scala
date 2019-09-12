@@ -92,10 +92,6 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   private var testCases: Seq[TestCase] = Seq.empty
   private var reverseSetupStack: Seq[SetupPart] = Seq.empty
 
-  // needed because extension methods are appliced right to left??
-  def (blockName: String) via (block: Block): Unit =
-    SetupPart(blockName) - block.blk()
-
   def (setupPart: SetupPart) - (block: => Unit): Unit =
     reverseSetupStack +:= setupPart
     try block finally reverseSetupStack = reverseSetupStack.tail
