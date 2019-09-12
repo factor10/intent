@@ -100,3 +100,7 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   def (testName: String) in (testImpl: => Expectation): Unit =
     val parts = reverseSetupStack.reverse
     testCases :+= TestCase(parts, testName, () => testImpl)
+
+  def (blockName: String) apply (block: => Unit): Unit =
+    blockName - block
+
