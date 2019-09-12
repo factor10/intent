@@ -37,13 +37,13 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
         val expectation = impl(state)
         expectation.evaluate().map { result =>
           val elapsed = (System.nanoTime - before).nanos
-          TestCaseResult(elapsed, result)
+          TestCaseResult(elapsed, nameParts, result)
         }
       catch
         case NonFatal(t) =>
           val elapsed = (System.nanoTime - before).nanos
           val result = TestError(t)
-          Future.successful(TestCaseResult(elapsed, result))
+          Future.successful(TestCaseResult(elapsed, nameParts, result))
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
   private var testCases: Seq[TestCase] = Seq.empty
@@ -83,13 +83,13 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
         val expectation = impl()
         expectation.evaluate().map { result =>
           val elapsed = (System.nanoTime - before).nanos
-          TestCaseResult(elapsed, result)
+          TestCaseResult(elapsed, nameParts, result)
         }
       catch
         case NonFatal(t) =>
           val elapsed = (System.nanoTime - before).nanos
           val result = TestError(t)
-          Future.successful(TestCaseResult(elapsed, result))
+          Future.successful(TestCaseResult(elapsed, nameParts, result))
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
   private var testCases: Seq[TestCase] = Seq.empty
@@ -130,13 +130,13 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
             val expectation = impl(state)
             expectation.evaluate().map { result =>
               val elapsed = (System.nanoTime - before).nanos
-              TestCaseResult(elapsed, result)
+              TestCaseResult(elapsed, nameParts, result)
             }
           catch
             case NonFatal(t) =>
               val elapsed = (System.nanoTime - before).nanos
               val result = TestError(t)
-              Future.successful(TestCaseResult(elapsed, result))
+              Future.successful(TestCaseResult(elapsed, nameParts, result))
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
   private var testCases: Seq[TestCase] = Seq.empty

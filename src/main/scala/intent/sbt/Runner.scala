@@ -1,14 +1,15 @@
 package intent.sbt
-import intent.core.{IntentStructure,TestPassed, TestFailed, TestError}
 
+import intent.core.{IntentStructure, TestPassed, TestFailed, TestError, Subscriber, TestCaseResult}
+import intent.runner.TestSuiteRunner
+import scala.concurrent.duration._
 import sbt.testing.{
   Framework => SFramework,
-  _}
+  _ }
 
 class Framework extends SFramework:
   def name(): String = "intent"
   def fingerprints(): Array[Fingerprint] = Array(IntentFingerprint)
-
   def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): Runner =
     new SbtRunner(args, remoteArgs, testClassLoader)
 
@@ -65,44 +66,17 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task:
     Await.result(executeSuite(handler, loggers), Duration.Inf)
 
   private def executeSuite(handler: EventHandler, loggers: Array[Logger]) given (ec: ExecutionContext): Future[Array[Task]] =
-    val testSuiteClass = classLoader.loadClass(td.fullyQualifiedName)
+    val runner = new TestSuiteRunner(classLoader)
+    val eventSubscriber = new Subscriber[TestCaseResult]:
+      override def onNext(event: TestCaseResult): Unit =
+        val sbtEvent = event.expectationResult match
+          case success: TestPassed => SuccessfulEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint)
+          case failure: TestFailed => FailedEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, failure.output)
+          case error: TestError => ErrorEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, error.ex)
+        handler.handle(sbtEvent)
+        sbtEvent.log(loggers, event.duration.toMillis)
 
-    // TODO: Wrap this in a Try and report failure if a test cannot be loaded
-    val testSuite = testSuiteClass.newInstance.asInstanceOf[IntentStructure]
-    val futureResults = testSuite.allTestCases.map(tc => {
-      val beforeTime = System.currentTimeMillis
-      def executionTime: Long = System.currentTimeMillis - beforeTime
-
-      val futureTestResult = tc.run()
-
-      futureTestResult.onComplete {
-        case Success(result) if result.expectationResult.isInstanceOf[TestPassed] =>
-          val event = SuccessfulEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint)
-          handler.handle(event)
-          event.log(loggers, executionTime)
-
-        case Success(result) if result.expectationResult.isInstanceOf[TestFailed] =>
-          val event = FailedEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint, result.expectationResult.asInstanceOf[TestFailed].output)
-          handler.handle(event)
-          event.log(loggers, executionTime)
-
-        case Success(result) if result.expectationResult.isInstanceOf[TestError] =>
-          println(s"Test is broken: ${result.expectationResult}")
-          val event = ErrorEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint, result.expectationResult.asInstanceOf[TestError].ex)
-          handler.handle(event)
-          event.log(loggers, executionTime)
-
-        case Failure(t) =>
-          println(s"Test unexpectedly failed..${t}")
-          val event = ErrorEvent(executionTime, taskDef.fullyQualifiedName, tc.nameParts, taskDef.fingerprint, t)
-          handler.handle(event)
-          event.log(loggers, executionTime)
-      }
-
-      futureTestResult
-    })
-
-    Future.sequence(futureResults).map(_ => Array.empty)
+    runner.runSuite(td.fullyQualifiedName, Some(eventSubscriber)).map(_ => Array.empty)
 
 trait LoggedEvent(color: String, prefix: String, suiteName: String, testNames: Seq[String]):
   val fullyQualifiedTestName: String = suiteName + " >> " + testNames.mkString(" >> ")

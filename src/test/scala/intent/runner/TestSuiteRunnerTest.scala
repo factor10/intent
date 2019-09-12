@@ -1,7 +1,7 @@
 package intent.runner
 
 import intent.{TestSuite, Intent, Eq, Formatter}
-import intent.core.{ExpectationResult, TestError}
+import intent.core.{ExpectationResult, TestError, Subscriber, TestCaseResult}
 import intent.runner.{TestSuiteRunner, TestSuiteError, TestSuiteResult}
 import intent.testdata._
 
@@ -49,6 +49,12 @@ class TestSuiteRunnerTest extends TestSuite with Intent[TestSuiteTestCase]:
           case Right(result) => expect(result.errors).toEqual(1)
       }
 
+      "with a registered event subscriber" - :
+        "should publish 3 events" in { state =>
+          val _ = Await.result(state.runWithEventSubscriber(), 5 seconds)
+          expect(state.receivedEvents()).toHaveLength(3)
+        }
+
     "when test suite cannot be instantiated" via invalidTestSuiteClass - :
       "a TestSuiteError should be received" in { state =>
         // TOOD: Something better than `toCompleteWith` is needed when working with Futures.
@@ -67,10 +73,15 @@ class TestSuiteRunnerTest extends TestSuite with Intent[TestSuiteTestCase]:
 /**
  * Wraps a runner for a specific test suite
  */
-case class TestSuiteTestCase(suiteClassName: String) given (ec: ExecutionContext):
+case class TestSuiteTestCase(suiteClassName: String) given (ec: ExecutionContext) extends Subscriber[TestCaseResult]:
   val runner = new TestSuiteRunner(cl)
+  var events = List[TestCaseResult]()
 
   def runAll(): Future[Either[TestSuiteError, TestSuiteResult]] = runner.runSuite(suiteClassName)
+  def runWithEventSubscriber(): Future[Either[TestSuiteError, TestSuiteResult]] = runner.runSuite(suiteClassName, Some(this))
+  def receivedEvents(): Seq[TestCaseResult] = events
+
+  override def onNext(event: TestCaseResult): Unit = events :+= event
 
   private def cl = getClass.getClassLoader
 

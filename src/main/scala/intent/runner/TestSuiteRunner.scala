@@ -5,7 +5,8 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Try,Success,Failure}
 
-import intent.core.{IntentStructure, ExpectationResult, TestSuite, TestCaseResult, TestPassed, TestFailed, TestError}
+import intent.core.{IntentStructure, ExpectationResult, TestSuite, TestCaseResult,
+  TestPassed, TestFailed, TestError, Subscriber, WarmObservable}
 
 /**
  * Fatal error during construction or loading (including test discovery) of a test suite.
@@ -41,7 +42,7 @@ case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0,
  *
  * @param classLoader The class loader used to load and instantiate the test suite
  */
-class TestSuiteRunner(classLoader: ClassLoader):
+class TestSuiteRunner(classLoader: ClassLoader) extends WarmObservable[TestCaseResult]:
   /**
    * Instantiate and run the given test suite.
    *
@@ -51,23 +52,32 @@ class TestSuiteRunner(classLoader: ClassLoader):
    * Until the full suite is executed a subscriber can be given to receive events during the test-run. A custom
    * subscriber is also recommended if more details than the successful result is needed.
    */
-  def runSuite(className: String) given(ec: ExecutionContext): Future[Either[TestSuiteError, TestSuiteResult]] =
+  def runSuite(className: String, eventSubscriber: Option[Subscriber[TestCaseResult]] = None) given(ec: ExecutionContext): Future[Either[TestSuiteError, TestSuiteResult]] =
     instantiateSuite(className) match
-      case Success(instance) => runTestsForSuite(instance).map(res => Right(res))
+      case Success(instance) => runTestsForSuite(instance, eventSubscriber).map(res => Right(res))
       case Failure(ex: Throwable) => Future.successful(Left(TestSuiteError(ex)))
 
-  private def runTestsForSuite(suite: IntentStructure) given(ec: ExecutionContext): Future[TestSuiteResult] =
+  private def runTestsForSuite(suite: IntentStructure, eventSubscriber: Option[Subscriber[TestCaseResult]]) given(ec: ExecutionContext): Future[TestSuiteResult] =
     // TODO: We should measure Suite time as well. Might be good to find expensive setup or scheduling problems.
-    val futureTestResults = suite.allTestCases.map(_.run())
+    val futureTestResults = suite.allTestCases.map(tc =>
+      eventSubscriber match {
+        case Some(subscriber) =>
+          val futureResult = tc.run()
+          futureResult.onComplete {
+            case Success(result) => subscriber.onNext(result)
+            case Failure(x) => // TODO: Should we wrap the error in the result or should we add `onError()`?
+          }
+          futureResult
+        case None => tc.run()
+      })
 
     // Aggregate result now that all tests are run
     Future.sequence(futureTestResults).map(all => all.foldLeft(TestSuiteResult())((acc: TestSuiteResult, res: TestCaseResult)  => {
-      res.expectationResult match {
+      res.expectationResult match
         case success: TestPassed => acc.incSuccess()
         case failure: TestFailed => acc.incFailure()
         case error: TestError => acc.incError()
         case null => throw new IllegalStateException("Unsupported test result: null")
-      }
     }))
 
   private def instantiateSuite(className: String): Try[IntentStructure] =
