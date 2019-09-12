@@ -49,7 +49,7 @@ trait Intent[TState] extends FormatterGivens with EqGivens with ExpectGivens {
   private var testCases: Seq[TestCase] = Seq.empty
   private var reverseSetupStack: Seq[SetupPart] = Seq.empty
 
-  // behövs för att extension-metoder appliceras höger till vänster??
+  // needed because extension methods are appliced right to left??
   def (blockName: String) via (transformAndBlock: TransformAndBlock): Unit = {
     SetupPart(blockName, transformAndBlock.transform) - transformAndBlock.blk()
   }
@@ -65,7 +65,7 @@ trait Intent[TState] extends FormatterGivens with EqGivens with ExpectGivens {
     try block finally reverseSetupStack = reverseSetupStack.tail
   }
 
-  // hack för att "XX via YY - BLK" evalueras som "XX via (YY - BLK)"
+  // hack because "XX via YY - BLK" is evaluated as "XX via (YY - BLK)"
   def (transform: Transform) - (block: => Unit): TransformAndBlock = {
     TransformAndBlock(transform, () => block)
   }
@@ -79,6 +79,6 @@ trait Intent[TState] extends FormatterGivens with EqGivens with ExpectGivens {
 
   def emptyState: TState
 
-  // TODO: Kan denna överridas?? Eller behöver vi göra en protected def?
+  // TODO: Can this be overridden? Or do we need a protected def
   given executionContext as ExecutionContext = ExecutionContext.global
 }
