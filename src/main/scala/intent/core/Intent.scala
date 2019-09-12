@@ -9,7 +9,19 @@ import intent.Expect // TODO: dependency on parent package isn't nice
 trait IntentStructure:
   private[intent] def allTestCases: Seq[ITestCase]
 
-trait IntentStateSyntax[TState] extends IntentStructure:
+trait TestLanguage:
+  def expect[T](expr: => T): Expect[T] = new Expect[T](expr)
+
+  // TODO: What happens if the Future fails?
+  def whenComplete[T](expr: => Future[T])(impl: T => Expectation): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] = 
+        expr.flatMap(impl(_).evaluate())
+
+  // TODO: Can this be overridden? Or do we need a protected def
+  given executionContext as ExecutionContext = ExecutionContext.global
+
+trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
   type Transform = TState => TState
   case class SetupPart(name: String, transform: Transform)
   case class TransformAndBlock(transform: Transform, blk: () => Unit)
@@ -55,20 +67,9 @@ trait IntentStateSyntax[TState] extends IntentStructure:
     val parts = reverseSetupStack.reverse
     testCases :+= TestCase(parts, testName, testImpl)
 
-  def expect[T](expr: => T): Expect[T] = new Expect[T](expr)
-
-  // TODO: What happens if the Future fails?
-  def whenComplete[T](expr: => Future[T])(impl: T => Expectation): Expectation =
-    new Expectation:
-      def evaluate(): Future[ExpectationResult] = 
-        expr.flatMap(impl(_).evaluate())
-
   def emptyState: TState
 
-  // TODO: Can this be overridden? Or do we need a protected def
-  given executionContext as ExecutionContext = ExecutionContext.global
-
-trait IntentStatelessSyntax extends IntentStructure:
+trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   case class SetupPart(name: String)
   case class Block(blk: () => Unit)
   case class TestCase(setup: Seq[SetupPart], name: String, impl: () => Expectation) extends ITestCase:
@@ -107,14 +108,3 @@ trait IntentStatelessSyntax extends IntentStructure:
   def (testName: String) in (testImpl: => Expectation): Unit =
     val parts = reverseSetupStack.reverse
     testCases :+= TestCase(parts, testName, () => testImpl)
-
-  def expect[T](expr: => T): Expect[T] = new Expect[T](expr)
-
-  // TODO: What happens if the Future fails?
-  def whenComplete[T](expr: => Future[T])(impl: T => Expectation): Expectation =
-    new Expectation:
-      def evaluate(): Future[ExpectationResult] = 
-        expr.flatMap(impl(_).evaluate())
-
-  // TODO: Can this be overridden? Or do we need a protected def
-  given executionContext as ExecutionContext = ExecutionContext.global
