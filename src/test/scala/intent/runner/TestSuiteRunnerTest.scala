@@ -11,12 +11,46 @@ import scala.concurrent.Await
 class TestSuiteRunnerTest extends TestSuite with Intent[TestSuiteTestCase] {
   "TestSuiteRunner" - {
 
-    "when running an empty suite" - {
-      "it state that zero tests were run" in { state =>
+    "running an empty suite" - {
+      "report that zero tests were run" in { state =>
         val possible = Await.result(state.runAll(), 5 seconds)
         possible match {
           case Left(_) => expect(false).toEqual(true)
           case Right(result) => expect(result.total).toEqual(0)  // TODO: Match on case class or individual fields?
+        }
+      }
+    }
+
+    "running the OneOfEachResultTestSuite" via oneOfEachResult - {
+      "report that totally 3 test was run" in { state =>
+        val possible = Await.result(state.runAll(), 5 seconds)
+        possible match {
+          case Left(_) => expect(false).toEqual(true)
+          case Right(result) => expect(result.total).toEqual(3)
+        }
+      }
+
+      "report that 1 test was successful" in { state =>
+        val possible = Await.result(state.runAll(), 5 seconds)
+        possible match {
+          case Left(_) => expect(false).toEqual(true)
+          case Right(result) => expect(result.successful).toEqual(1)
+        }
+      }
+
+      "report that 1 test was failed" in { state =>
+        val possible = Await.result(state.runAll(), 5 seconds)
+        possible match {
+          case Left(_) => expect(false).toEqual(true)
+          case Right(result) => expect(result.failed).toEqual(1)
+        }
+      }
+
+      "report that 1 test had errors" in { state =>
+        val possible = Await.result(state.runAll(), 5 seconds)
+        possible match {
+          case Left(_) => expect(false).toEqual(true)
+          case Right(result) => expect(result.errors).toEqual(1)
         }
       }
     }
@@ -33,20 +67,11 @@ class TestSuiteRunnerTest extends TestSuite with Intent[TestSuiteTestCase] {
         }
       }
     }
-
-    "when running an empty suite" - {
-      "it state that zero tests were run" in { state =>
-        val possible = Await.result(state.runAll(), 5 seconds)
-        possible match {
-          case Left(_) => expect(false).toEqual(true)
-          case Right(result) => expect(result.total).toEqual(0)
-        }
-      }
-    }
   }
 
   def emptyState = TestSuiteTestCase("intent.testdata.EmtpyTestSuite")
   def invalidTestSuiteClass(initial: TestSuiteTestCase) = TestSuiteTestCase("foo.Bar")
+  def oneOfEachResult(initial: TestSuiteTestCase) = TestSuiteTestCase("intent.runner.OneOfEachResultTestSuite")
 }
 
 /**
@@ -58,4 +83,11 @@ case class TestSuiteTestCase(suiteClassName: String) given (ec: ExecutionContext
   def runAll(): Future[Either[TestSuiteError, TestSuiteResult]] = runner.runSuite(suiteClassName)
 
   private def cl = getClass.getClassLoader
+}
+
+class OneOfEachResultTestSuite extends Intent[Unit] {
+    "successful" in (state => expect(true).toEqual(true))
+    "failed" in (state => expect(true).toEqual(false))
+    "error" in (state => throw new RuntimeException("test should fail"))
+  def emptyState = ()
 }
