@@ -66,7 +66,7 @@ class TestSuiteRunner(classLoader: ClassLoader):
         case success: TestPassed => acc.incSuccess()
         case failure: TestFailed => acc.incFailure()
         case error: TestError => acc.incError()
-        case unknown => throw new IllegalStateException("Unsupported test result: " + unknown)
+        case null => throw new IllegalStateException("Unsupported test result: null")
       }
     }))
 
