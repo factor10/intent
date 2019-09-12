@@ -30,8 +30,8 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
   case class TestCase(setup: Seq[SetupPart], name: String, impl: TState => Expectation) extends ITestCase:
     def nameParts: Seq[String] = setup.map(_.name) :+ name
     def run(): Future[TestCaseResult] =
-      val state = setup.foldLeft(emptyState)((st, part) => part.transform(st))
       val before = System.nanoTime
+      val state = setup.foldLeft(emptyState)((st, part) => part.transform(st))
       try
         val expectation = impl(state)
         expectation.evaluate().map { result =>
