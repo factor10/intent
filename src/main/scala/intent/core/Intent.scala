@@ -44,10 +44,10 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
         val result = TestError(t)
         TestCaseResult(elapsed, nameParts, result)
 
-      // TODO: Create IntentException, use instead of RuntimeException
-
+      // TODO: Create IntentException, use instead of standard exceptions
       if contexts.size == 0 then
-        throw new RuntimeException("Zero contexts is not allowed")
+        return Future.successful(errorResult(new IllegalStateException("Zero contexts is not allowed")))
+
       contexts.foldLeft[Option[TState]](None)((st, ctx) => ctx.transform(st)) match
         case Some(state) =>
           try
@@ -142,7 +142,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
         TestCaseResult(elapsed, nameParts, result)
 
       if contexts.size == 0 then
-        throw new RuntimeException("Zero contexts is not allowed")
+        return Future.successful(errorResult(new IllegalStateException("Zero contexts is not allowed")))
 
       val futureState = contexts.foldLeft(Future.successful[Option[TState]](None))((st, part) => part.transform(st))
       futureState.flatMap:
