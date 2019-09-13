@@ -95,17 +95,14 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   private var testCases: Seq[TestCase] = Seq.empty
   private var reverseSetupStack: Seq[SetupPart] = Seq.empty
 
-  def (blockName: String) - (block: => Unit): Unit =
-    val setupPart = SetupPart(blockName)
-    reverseSetupStack +:= setupPart
-    try block finally reverseSetupStack = reverseSetupStack.tail
-
   def (testName: String) in (testImpl: => Expectation): Unit =
     val parts = reverseSetupStack.reverse
     testCases :+= TestCase(parts, testName, () => testImpl)
 
   def (blockName: String) apply (block: => Unit): Unit =
-    blockName - block
+    val setupPart = SetupPart(blockName)
+    reverseSetupStack +:= setupPart
+    try block finally reverseSetupStack = reverseSetupStack.tail
 
 // TODO: Remove duplication wrt IntentStateSyntax
 // TODO: It would be nice if we could just do 'extends IntentStateSyntax[Future[TState]]',
