@@ -10,7 +10,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * I tried to combine TestSuite with Intent to `TestSuite[T] extends Intent[T]` but that could not
  * be resolved either...
  */
-class TestSuite extends core.TestSuite
+abstract class TestSuite extends core.TestSuite
 
 // TODO: Rename this trait, TestSupport is not a good name.
 // TODO: Also, maybe it should live in intent.core...

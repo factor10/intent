@@ -3,7 +3,7 @@ package intent.core
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
-class TestSuite {}
+abstract class TestSuite {}
 
 trait Expectation:
   private[intent] def evaluate(): Future[ExpectationResult]
