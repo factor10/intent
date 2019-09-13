@@ -31,7 +31,7 @@ class AsyncStateTest extends TestSuite with AsyncState[MyAsyncState] with Meta:
       "and sees the appropriate state" in :
         state => expect(state.s).toEqual("Hello world")
 
-    "can async-map on the state" using ((s, _) => s.asyncMap(" async world")) to :
+    "can async-map on the state" usingAsync (_.asyncMap(" async world")) to :
       "sees the appropriate state" in :
         state => expect(state.s).toEqual("Hello async world")
   

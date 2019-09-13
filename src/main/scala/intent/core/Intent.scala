@@ -4,6 +4,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.control.NonFatal
 import scala.util.{Try, Success, Failure}
+import scala.reflect.ClassTag
 
 import intent.Expect // TODO: dependency on parent package isn't nice
 
@@ -114,8 +115,7 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
 // TODO: but futureState.flatMap in run below is special here.
 trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
   type Map = TState => TState
-  // TODO: Get rid of Int. Without it, Map and FlatMap have the same type after erasure.
-  type FlatMap = (TState, Int) => Future[TState]
+  type FlatMap = TState => Future[TState]
 
   trait Context:
     def name: String
@@ -127,9 +127,8 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
   case class ContextFlatMap(name: String, tx: FlatMap) extends Context:
     def transform(f: Future[Option[TState]]) =
       f.flatMap:
-        case Some(state) =>
-          tx(state, 0).map(Some.apply)
-        case None => throw IllegalStateException("Unexpected state None") 
+        case Some(state) => tx(state).map(Some.apply)
+        case None        => throw IllegalStateException("Unexpected state None") 
 
   case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation) extends ITestCase:
     def nameParts: Seq[String] = contexts.map(_.name) :+ name
@@ -165,7 +164,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
 
   def (context: String) using (init: => Future[TState]): Context = ContextInit(context, () => init)
   def (context: String) using (tx: Map): Context = ContextMap(context, tx)
-  def (context: String) using (tx: FlatMap): Context = ContextFlatMap(context, tx)
+  def (context: String) usingAsync (fmc: FlatMap): Context = ContextFlatMap(context, fmc)
 
   def (ctx: Context) to (block: => Unit): Unit =
     reverseContextStack +:= ctx
