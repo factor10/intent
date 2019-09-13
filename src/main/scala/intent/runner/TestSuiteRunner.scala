@@ -84,4 +84,6 @@ class TestSuiteRunner(classLoader: ClassLoader) extends WarmObservable[TestCaseR
     }))
 
   private def instantiateSuite(className: String): Try[IntentStructure] =
-    Try(classLoader.loadClass(className).newInstance.asInstanceOf[IntentStructure])
+    Try(classLoader.loadClass(className)
+      .getDeclaredConstructor()
+      .newInstance().asInstanceOf[IntentStructure])
