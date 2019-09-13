@@ -1,13 +1,7 @@
 package intent.testdata
 
-import intent.State
+import intent.Stateless
 
-
-class SingleLevelTestSuite extends State[Unit] {
-  "root suite" - :
-    "root test" in { state =>
-      expect( 1 + 1 ) toEqual 2
-    }
-
-  def emptyState = ()
-}
+class SingleLevelTestSuite extends Stateless:
+  "root suite" :
+    "root test" in expect( 1 + 1 ).toEqual(2)
