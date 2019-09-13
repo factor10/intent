@@ -25,7 +25,7 @@ case class MyAsyncState(s: String) given (ExecutionContext):
 
 class AsyncStateTest extends TestSuite with AsyncState[MyAsyncState] with Meta:
 
-  "a test with async state" using Future{MyAsyncState("Hello")} to :
+  "a test with async state" usingAsync Future{MyAsyncState("Hello")} to :
 
     "can map on the state" using (_.map(" world")) to:
       "and sees the appropriate state" in :
@@ -35,4 +35,8 @@ class AsyncStateTest extends TestSuite with AsyncState[MyAsyncState] with Meta:
       "sees the appropriate state" in :
         state => expect(state.s).toEqual("Hello async world")
   
-  // TODO: Non-async as starting point
+  "a test with initially sync state" using MyAsyncState("Hello") to :
+
+    "can async-map on the state" usingAsync (_.asyncMap(" async world")) to :
+      "sees the appropriate state" in :
+        state => expect(state.s).toEqual("Hello async world")

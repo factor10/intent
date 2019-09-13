@@ -162,7 +162,8 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
   private var testCases: Seq[TestCase] = Seq.empty
   private var reverseContextStack: Seq[Context] = Seq.empty
 
-  def (context: String) using (init: => Future[TState]): Context = ContextInit(context, () => init)
+  def (context: String) using (init: => TState): Context = ContextInit(context, () => Future.successful(init))
+  def (context: String) usingAsync (init: => Future[TState]): Context = ContextInit(context, () => init)
   def (context: String) using (tx: Map): Context = ContextMap(context, tx)
   def (context: String) usingAsync (fmc: FlatMap): Context = ContextFlatMap(context, fmc)
 
