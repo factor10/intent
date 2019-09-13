@@ -25,52 +25,57 @@ trait TestLanguage:
 
 trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
   type Transform = TState => TState
-  case class SetupPart(name: String, transform: Transform)
-  case class TransformAndBlock(transform: Transform, blk: () => Unit)
-  case class TestCase(setup: Seq[SetupPart], name: String, impl: TState => Expectation) extends ITestCase:
-    def nameParts: Seq[String] = setup.map(_.name) :+ name
+
+  trait Context:
+    def name: String
+    def transform(opt: Option[TState]): Option[TState]
+  case class ContextInit(name: String, init: () => TState) extends Context:
+    def transform(opt: Option[TState]) = Some(init())
+  case class ContextTx(name: String, tx: Transform) extends Context:
+    def transform(opt: Option[TState]) = opt.map(tx)
+
+  case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation) extends ITestCase:
+    def nameParts: Seq[String] = contexts.map(_.name) :+ name
     // TODO: Handle setup failure, i.e. that this Future fails
     def run(): Future[TestCaseResult] =
       val before = System.nanoTime
-      val state = setup.foldLeft(emptyState)((st, part) => part.transform(st))
-      try
-        val expectation = impl(state)
-        expectation.evaluate().map { result =>
-          val elapsed = (System.nanoTime - before).nanos
-          TestCaseResult(elapsed, nameParts, result)
-        }
-      catch
-        case NonFatal(t) =>
-          val elapsed = (System.nanoTime - before).nanos
-          val result = TestError(t)
-          Future.successful(TestCaseResult(elapsed, nameParts, result))
+      def errorResult(t: Throwable): TestCaseResult =
+        val elapsed = (System.nanoTime - before).nanos
+        val result = TestError(t)
+        TestCaseResult(elapsed, nameParts, result)
+
+      // TODO: Create IntentException, use instead of RuntimeException
+
+      if contexts.size == 0 then
+        throw new RuntimeException("Zero contexts is not allowed")
+      contexts.foldLeft[Option[TState]](None)((st, ctx) => ctx.transform(st)) match
+        case Some(state) =>
+          try
+            val expectation = impl(state)
+            expectation.evaluate().map { result =>
+              val elapsed = (System.nanoTime - before).nanos
+              TestCaseResult(elapsed, nameParts, result)
+            }
+          catch
+            case NonFatal(t) =>
+              Future.successful(errorResult(t))
+        case None =>
+          Future.successful(errorResult(new RuntimeException("State folding didn't produce a state")))
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
   private var testCases: Seq[TestCase] = Seq.empty
-  private var reverseSetupStack: Seq[SetupPart] = Seq.empty
+  private var reverseContextStack: Seq[Context] = Seq.empty
 
-  // needed because extension methods are appliced right to left??
-  def (blockName: String) via (transformAndBlock: TransformAndBlock): Unit =
-    SetupPart(blockName, transformAndBlock.transform) - transformAndBlock.blk()
+  def (context: String) using (init: => TState): Context = ContextInit(context, () => init)
+  def (context: String) using (tx: Transform): Context = ContextTx(context, tx)
 
-  def (setupPart: SetupPart) - (block: => Unit): Unit =
-    reverseSetupStack +:= setupPart
-    try block finally reverseSetupStack = reverseSetupStack.tail
-
-  def (blockName: String) - (block: => Unit): Unit =
-    val setupPart = SetupPart(blockName, s => s)
-    reverseSetupStack +:= setupPart
-    try block finally reverseSetupStack = reverseSetupStack.tail
-
-  // hack because "XX via YY - BLK" is evaluated as "XX via (YY - BLK)"
-  def (transform: Transform) - (block: => Unit): TransformAndBlock =
-    TransformAndBlock(transform, () => block)
+  def (ctx: Context) to (block: => Unit): Unit =
+    reverseContextStack +:= ctx
+    try block finally reverseContextStack = reverseContextStack.tail
 
   def (testName: String) in (testImpl: TState => Expectation): Unit =
-    val parts = reverseSetupStack.reverse
-    testCases :+= TestCase(parts, testName, testImpl)
-
-  def emptyState: TState
+    val contexts = reverseContextStack.reverse
+    testCases :+= TestCase(contexts, testName, testImpl)
 
 trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   case class SetupPart(name: String)

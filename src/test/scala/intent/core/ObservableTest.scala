@@ -4,78 +4,78 @@ import intent.core.{Observable, WarmObservable, Subscriber}
 import intent.{TestSuite, State}
 
 class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
-  "Observable" - :
-    "when there is no subscriber" - :
-      "it should still be possible to publish event" in { ps =>
-        ps.publish()
-        expect(true) toEqual(true)  // TODO: Not to throw (i.e. reached this far)
-      }
+  "Observable" using PublisherAndSubscribers() to :
+    "when there is no subscriber" using (_.copy()) to : // TODO: can we use identity here?
+      "it should still be possible to publish event" in:
+        ps =>
+          ps.publish()
+          expect(true) toEqual(true)  // TODO: Not to throw (i.e. reached this far)
 
-    "when there is a single subscriber" via withSingleConsumer - :
-      "published event should be received by subscriber" in { ps =>
-        ps.publish()
-        expect(ps.received()).toEqual("0:0")
-      }
+    "when there is a single subscriber" using (_.withSingleConsumer) to :
+      "published event should be received by subscriber" in: 
+        ps =>
+          ps.publish()
+          expect(ps.received()).toEqual("0:0")
 
-      "events should be received in order" in { ps =>
-        (0 until 3).foreach(_ => ps.publish())
-        expect(ps.received()).toEqual("0:0_0:1_0:2")
-      }
+      "events should be received in order" in:
+        ps =>
+          (0 until 3).foreach(_ => ps.publish())
+          expect(ps.received()).toEqual("0:0_0:1_0:2")
 
-    "when there is a multiple subscriber" via withThreeConsumers - :
-      "published event should be received by subscriber" in { ps =>
-        ps.publish()
-        expect(ps.received()).toEqual("0:0_1:0_2:0")
-      }
+    "when there is a multiple subscriber" using (_.withThreeConsumers) to :
+      "published event should be received by subscriber" in:
+        ps =>
+          ps.publish()
+          expect(ps.received()).toEqual("0:0_1:0_2:0")
 
-      "events should be received in order" in { ps =>
-        (0 until 3).foreach(_ => ps.publish())
-        expect(ps.received()).toEqual("0:0_1:0_2:0_0:1_1:1_2:1_0:2_1:2_2:2")
-      }
+      "events should be received in order" in: 
+        ps =>
+          (0 until 3).foreach(_ => ps.publish())
+          expect(ps.received()).toEqual("0:0_1:0_2:0_0:1_1:1_2:1_0:2_1:2_2:2")
 
-    "when attaching a late subscriber" via withLateJoiner - :
-      "it should only receive events from when subscribing" in { ps =>
-        ps.publish()        // 0
-        ps.publish()        // 1
-        ps.addSubscriber()
-        ps.publish()        // 2
-        expect(ps.subscribers.last.received.head).toEqual(2) // TODO: Add matcher on lists (or on matrix)
-      }
+    "when attaching a late subscriber" using (_.withLateJoiner) to :
+      "it should only receive events from when subscribing" in:
+        ps =>
+          ps.publish()        // 0
+          ps.publish()        // 1
+          ps.addSubscriber()
+          ps.publish()        // 2
+          expect(ps.subscribers.last.received.head).toEqual(2) // TODO: Add matcher on lists (or on matrix)
 
-    "with a misbehaving subscriber" via withMisbehavingSubscriber - :
-      "errors should be caught by observable" in { ps =>
-        ps.publish()        // 0
-        ps.publish()        // 1
-        expect(true) toEqual(true)  // TODO: Not to throw (i.e. reached this far)
-      }
+    "with a misbehaving subscriber" using (_.withMisbehavingSubscriber) to :
+      "errors should be caught by observable" in:
+        ps =>
+          ps.publish()        // 0
+          ps.publish()        // 1
+          expect(true) toEqual(true)  // TODO: Not to throw (i.e. reached this far)
 
-      "misbehaving subscriber should not store the received events" in { ps =>
-        // Error is thrown early for misbehaving in this test. The assertion is only to make
-        // sure that the throwing works.
-        ps.publish()        // 0
-        ps.publish()        // 1
-        expect(ps.subscribers.head.received.length).toEqual(0) // Misbehaving is first
-      }
+      "misbehaving subscriber should not store the received events" in:
+        ps =>
+          // Error is thrown early for misbehaving in this test. The assertion is only to make
+          // sure that the throwing works.
+          ps.publish()        // 0
+          ps.publish()        // 1
+          expect(ps.subscribers.head.received.length).toEqual(0) // Misbehaving is first
 
-      "wellbehaved subscriber should continue to receive events"  in { ps =>
-        ps.publish()        // 0
-        ps.publish()        // 1
-        expect(ps.subscribers.last.received.length).toEqual(2) // Misbehaving is first
-      }
-
-  def emptyState = PublisherAndSubscribers()
-  def withSingleConsumer(initial: PublisherAndSubscribers) = PublisherAndSubscribers(1)
-  def withThreeConsumers(initial: PublisherAndSubscribers) = PublisherAndSubscribers(3)
-  def withLateJoiner(initial: PublisherAndSubscribers) = PublisherAndSubscribers(1)
-  def withMisbehavingSubscriber(initial: PublisherAndSubscribers) =
-    PublisherAndSubscribers(0)
-      .addMisbehavingSubscriber()
-      .addSubscriber()
+      "wellbehaved subscriber should continue to receive events" in:
+        ps =>
+          ps.publish()        // 0
+          ps.publish()        // 1
+          expect(ps.subscribers.last.received.length).toEqual(2) // Misbehaving is first
 
 /**
  * Wraps a combination of a single publisher and a variable number of consumers
  */
 case class PublisherAndSubscribers(initialSubscribers: Int = 0):
+
+  def withSingleConsumer = PublisherAndSubscribers(1)
+  def withThreeConsumers = PublisherAndSubscribers(3)
+  def withLateJoiner = PublisherAndSubscribers(1)
+  def withMisbehavingSubscriber =
+    copy()
+      .addMisbehavingSubscriber()
+      .addSubscriber()
+
   /**
    * Record used to keep track on received events for each subscriber.
    */
