@@ -4,7 +4,7 @@ import intent._
 import helpers.Meta
 import scala.concurrent.Future
 
-class AsyncTest extends TestSuite with IntentStateless with Meta:
+class AsyncTest extends TestSuite with Stateless with Meta:
 
   "an async test" :
     "can use whenComplete" in :
@@ -19,7 +19,7 @@ class AsyncTest extends TestSuite with IntentStateless with Meta:
           result => expect(result).toEqual(42)
       }, "The Future passed to 'whenComplete' failed")
 
-class AsyncStateTest extends TestSuite with AsyncIntent[String] with Meta:
+class AsyncStateTest extends TestSuite with AsyncState[String] with Meta:
 
   "a test with async state" - :
 

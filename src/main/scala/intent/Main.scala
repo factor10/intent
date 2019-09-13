@@ -16,10 +16,8 @@ class TestSuite extends core.TestSuite
 // TODO: Also, maybe it should live in intent.core...
 trait TestSupport extends FormatterGivens with EqGivens with ExpectGivens
 
-trait Intent[TState] extends core.IntentStateSyntax[TState] with TestSupport
+trait State[TState] extends core.IntentStateSyntax[TState] with TestSupport
 
-// TODO: naming
-trait AsyncIntent[TState] extends core.IntentAsyncStateSyntax[TState] with TestSupport
+trait AsyncState[TState] extends core.IntentAsyncStateSyntax[TState] with TestSupport
 
-// TODO: Rename, this should perhaps be the "default" trait
-trait IntentStateless extends core.IntentStatelessSyntax with TestSupport
+trait Stateless extends core.IntentStatelessSyntax with TestSupport

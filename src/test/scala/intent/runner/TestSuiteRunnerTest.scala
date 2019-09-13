@@ -1,6 +1,6 @@
 package intent.runner
 
-import intent.{TestSuite, Intent, Eq, Formatter}
+import intent.{TestSuite, State, Eq, Formatter}
 import intent.core.{ExpectationResult, TestError, Subscriber, TestCaseResult}
 import intent.runner.{TestSuiteRunner, TestSuiteError, TestSuiteResult}
 import intent.testdata._
@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.concurrent.Await
 
-class TestSuiteRunnerTest extends TestSuite with Intent[TestSuiteTestCase]:
+class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
   "TestSuiteRunner" - :
 
     "running an empty suite" - :
@@ -88,7 +88,7 @@ case class TestSuiteTestCase(suiteClassName: String) given (ec: ExecutionContext
 
   private def cl = getClass.getClassLoader
 
-class OneOfEachResultTestSuite extends Intent[Unit] :
+class OneOfEachResultTestSuite extends State[Unit] :
   "successful" in (state => expect(true).toEqual(true))
   "failed" in (state => expect(true).toEqual(false))
   "error" in (state => throw new RuntimeException("test should fail"))

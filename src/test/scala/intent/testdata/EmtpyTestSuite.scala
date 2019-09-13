@@ -1,6 +1,6 @@
 package intent.testdata
 
-import intent.Intent
+import intent.State
 
-class EmtpyTestSuite extends Intent[Unit]:
+class EmtpyTestSuite extends State[Unit]:
   def emptyState = ()

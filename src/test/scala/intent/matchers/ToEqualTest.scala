@@ -1,8 +1,8 @@
 package intent.matchers
 
-import intent.{IntentStateless, TestSuite}
+import intent.{Stateless, TestSuite}
 
-class ToEqualTest extends TestSuite with IntentStateless:
+class ToEqualTest extends TestSuite with Stateless:
   "toEqual" - :
     // TODO: Some sort of table driven tests would be a nice addition
     "for Boolean" - :

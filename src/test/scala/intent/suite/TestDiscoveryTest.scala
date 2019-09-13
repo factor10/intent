@@ -1,9 +1,9 @@
 package intent.suite
 
-import intent.{TestSuite, Intent}
+import intent.{TestSuite, State}
 import intent.testdata._
 
-class TestDiscoveryTest extends TestSuite with Intent[Unit]:
+class TestDiscoveryTest extends TestSuite with State[Unit]:
   "Test discovery" - :
     "empty test suite" - :
       val suite = new EmtpyTestSuite()

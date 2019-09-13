@@ -1,8 +1,8 @@
 package intent.testdata
 
-import intent.Intent
+import intent.State
 
-class NestedTestsSuite extends Intent[Unit] {
+class NestedTestsSuite extends State[Unit] {
   "root suite" - :
     "child suite" - :
       "grand child suite" - :

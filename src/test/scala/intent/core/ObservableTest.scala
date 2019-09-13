@@ -1,9 +1,9 @@
 package intent.core
 
 import intent.core.{Observable, WarmObservable, Subscriber}
-import intent.{Intent, TestSuite}
+import intent.{TestSuite, State}
 
-class ObservableTestSuite extends TestSuite with Intent[PublisherAndSubscribers]:
+class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
   "Observable" - :
     "when there is no subscriber" - :
       "it should still be possible to publish event" in { ps =>

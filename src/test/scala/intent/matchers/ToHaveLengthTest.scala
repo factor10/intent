@@ -1,8 +1,8 @@
 package intent.matchers
 
-import intent.{Intent, TestSuite}
+import intent.{State, TestSuite}
 
-class ToHaveLengthTest extends TestSuite with Intent[Unit]:
+class ToHaveLengthTest extends TestSuite with State[Unit]:
   "toHaveLength" - :
     "empty list should have length 0" in { _ =>
       expect(Seq()).toHaveLength(0)

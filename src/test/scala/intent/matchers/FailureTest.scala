@@ -5,7 +5,7 @@ import intent._
 import intent.helpers.Meta
 import scala.concurrent.Future
 
-class FailureTest extends TestSuite with IntentStateless with Meta:
+class FailureTest extends TestSuite with Stateless with Meta:
   "a toEqual failure" - :
     "is described properly" in :
       runExpectation(expect(1).toEqual(2), "Expected 2 but found 1")
