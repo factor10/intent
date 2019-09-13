@@ -74,6 +74,7 @@ class TestSuiteRunnerTest extends TestSuite with Intent[TestSuiteTestCase]:
  * Wraps a runner for a specific test suite
  */
 case class TestSuiteTestCase(suiteClassName: String) given (ec: ExecutionContext) extends Subscriber[TestCaseResult]:
+  private object lock
   val runner = new TestSuiteRunner(cl)
   var events = List[TestCaseResult]()
 
@@ -81,7 +82,9 @@ case class TestSuiteTestCase(suiteClassName: String) given (ec: ExecutionContext
   def runWithEventSubscriber(): Future[Either[TestSuiteError, TestSuiteResult]] = runner.runSuite(suiteClassName, Some(this))
   def receivedEvents(): Seq[TestCaseResult] = events
 
-  override def onNext(event: TestCaseResult): Unit = events :+= event
+  override def onNext(event: TestCaseResult): Unit =
+    lock.synchronized:
+      events :+= event
 
   private def cl = getClass.getClassLoader
 

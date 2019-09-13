@@ -2,7 +2,7 @@ package intent.runner
 
 import scala.collection.immutable.Stream
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Try,Success,Failure}
 
 import intent.core.{IntentStructure, ExpectationResult, TestSuite, TestCaseResult,
@@ -62,12 +62,15 @@ class TestSuiteRunner(classLoader: ClassLoader) extends WarmObservable[TestCaseR
     val futureTestResults = suite.allTestCases.map(tc =>
       eventSubscriber match {
         case Some(subscriber) =>
-          val futureResult = tc.run()
-          futureResult.onComplete {
-            case Success(result) => subscriber.onNext(result)
-            case Failure(x) => // TODO: Should we wrap the error in the result or should we add `onError()`?
-          }
-          futureResult
+          val promise = Promise[TestCaseResult]()
+          tc.run().onComplete:
+            case Success(result) =>
+              subscriber.onNext(result)
+              promise.success(result)
+            case Failure(ex) =>
+              // TODO: Should we wrap the error in the result or should we add `onError()`?
+              promise.failure(ex)
+          promise.future
         case None => tc.run()
       })
 
