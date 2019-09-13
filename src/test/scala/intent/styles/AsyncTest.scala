@@ -2,7 +2,7 @@ package intent.styles
 
 import intent._
 import helpers.Meta
-import scala.concurrent.Future
+import scala.concurrent.{Future, ExecutionContext}
 
 class AsyncTest extends TestSuite with Stateless with Meta:
 
@@ -19,18 +19,20 @@ class AsyncTest extends TestSuite with Stateless with Meta:
           result => expect(result).toEqual(42)
       }, "The Future passed to 'whenComplete' failed")
 
-class AsyncStateTest extends TestSuite with AsyncState[String] with Meta:
+case class MyAsyncState(s: String) given (ExecutionContext):
+  def map(s2: String) = copy(s = s + s2)
+  def asyncMap(s2: String) = Future { copy(s = s + s2) }
 
-  "a test with async state" - :
+class AsyncStateTest extends TestSuite with AsyncState[MyAsyncState] with Meta:
 
-    "when we map on the state" via mapString - :
+  "a test with async state" using Future{MyAsyncState("Hello")} to :
+
+    "can map on the state" using (_.map(" world")) to:
+      "and sees the appropriate state" in :
+        state => expect(state.s).toEqual("Hello world")
+
+    "can async-map on the state" using ((s, _) => s.asyncMap(" async world")) to :
       "sees the appropriate state" in :
-        state => expect(state).toEqual("Hello world")
-
-    "when we async-map on the state" via mapStringAsync - :
-      "sees the appropriate state" in :
-        state => expect(state).toEqual("Hello async world")
-
-  def mapString(s: String): String = s + " world"
-  def mapStringAsync(s: String, dummy: Int): Future[String] = Future { s + " async world" }
-  def emptyState = Future { "Hello" }
+        state => expect(state.s).toEqual("Hello async world")
+  
+  // TODO: Non-async as starting point
