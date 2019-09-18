@@ -2,7 +2,8 @@ Intent is built using Scala 3 (called Dotty) and is an early adopter of both new
 experimental features. So assume that you will need a recent version of Dotty to use
 Intent.
 
-We'll try to state minimum requried Dotty version in `README.md` (and it can be found in  `build.sbt`)
+We'll try to state minimum requried Dotty version in `README.md` (and it can be found
+in  `build.sbt`)
 
 
 ## Our first test
