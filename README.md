@@ -27,7 +27,7 @@ how to use Intent to write tests, see [Getting started](docs/getting-started.md)
 
 ## Development environment
 
-Itent is an early adopter of Dotty changes, which results
+Intent is an early adopter of Dotty features, which means:
 * You need a recent Dotty (>= `0.18.1-RC1`) since Intent use the new Scala 3 syntax
  and significant whitespace.
 
@@ -38,7 +38,7 @@ Itent is an early adopter of Dotty changes, which results
 
 Intent is self-hosted and runs all tests using this version of Intent. This is
 great and it feels really good running your tests with your _"system under test"_.
-However there are a few gotcha related to the same:
+However there are a few gotchas related to the same:
 
 * When adding logging, rememebr that the logs will most likely be printed multiple
   times. Both for the runner invoked by SBT and the runner invoked by your test.
