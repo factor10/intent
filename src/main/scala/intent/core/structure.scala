@@ -10,8 +10,23 @@ trait Expectation:
 
 sealed trait ExpectationResult
 case class TestPassed() extends ExpectationResult
-case class TestFailed(output: String) extends ExpectationResult
-case class TestError(ex: Throwable) extends ExpectationResult
+
+/**
+  * TestFailure is used for errors happening once we have started to execute a test case.
+  * This includes assertion errors/failures.
+  *
+  * @param output the failure output
+  * @param ex optional exception, e.g. if some test state setup failed
+  */
+case class TestFailed(output: String, ex: Option[Throwable]) extends ExpectationResult
+
+/**
+  * TestError is used for errors happening before we can start executing a test case.
+  *
+  * @param context information about the error
+  * @param ex the optional exception behind the error
+  */
+case class TestError(context: String, ex: Option[Throwable]) extends ExpectationResult
 
 case class TestCaseResult(duration: FiniteDuration, qualifiedName: Seq[String], expectationResult: ExpectationResult)
 

@@ -1,7 +1,7 @@
 package intent.runner
 
 import intent.{TestSuite, State, Stateless}
-import intent.core.{ExpectationResult, TestError, Subscriber, TestCaseResult}
+import intent.core.{ExpectationResult, TestError, TestFailed, Subscriber, TestCaseResult}
 import intent.runner.{TestSuiteRunner, TestSuiteError, TestSuiteResult}
 import intent.testdata._
 
@@ -11,6 +11,29 @@ import scala.concurrent.Await
 
 class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
   "TestSuiteRunner" using TestSuiteTestCase() to :
+
+    "running a suite that fails in setup" using (_.setupFailureTestSuite) to :
+      "reports that 1 test was run" in :
+        state =>
+          whenComplete(state.runAll()) :
+            case Left(_) => fail("unexpected Left")
+            case Right(result) => expect(result.total).toEqual(1)
+
+      "reports that 1 test failed" in:
+        state =>
+          whenComplete(state.runAll()) :
+            case Left(_) => fail("unexpected Left")
+            case Right(result) => expect(result.failed).toEqual(1)
+
+      "has a failure event with the exception" in:
+        state =>
+          whenComplete(state.runWithEventSubscriber()) :
+            case Left(_) => fail("unexpected Left")
+            case Right(_) =>
+              val maybeEx = state.receivedEvents().collectFirst { case TestCaseResult(_, _, TestFailed(_, Some(ex))) => ex }
+              maybeEx match
+                case Some(ex) => expect(ex.getMessage).toEqual("intentional failure")
+                case None => fail("unexpected None")
 
     "running an empty suite" using (_.emptyTestSuite) to :
       "report that zero tests were run" in:
@@ -74,6 +97,7 @@ case class TestSuiteTestCase(suiteClassName: String = null) given (ec: Execution
   def emptyTestSuite = TestSuiteTestCase("intent.testdata.EmtpyTestSuite")
   def invalidTestSuiteClass = TestSuiteTestCase("foo.Bar")
   def oneOfEachResult = TestSuiteTestCase("intent.runner.OneOfEachResultTestSuite")
+  def setupFailureTestSuite = TestSuiteTestCase("intent.runner.StatefulFailingTestSuite")
 
   private object lock
   val runner = new TestSuiteRunner(cl)
@@ -98,3 +122,12 @@ class OneOfEachResultTestSuite extends Stateless :
   "failed" in fail("test should fail")
   "error" in:
     throw new RuntimeException("test should fail")
+
+case class StatefulFailingTestState():
+    def fail: StatefulFailingTestState =
+      throw new RuntimeException("intentional failure")
+class StatefulFailingTestSuite extends State[StatefulFailingTestState]:
+  "root" using (StatefulFailingTestState()) to :
+    "uh oh" using (_.fail) to :
+      "won't get here" in :
+        _ => expect(1).toEqual(2)

@@ -7,6 +7,7 @@ import scala.util.{Try, Success, Failure}
 import scala.reflect.ClassTag
 
 import intent.macros.Position
+import intent.core.PositionDescription
 
 trait TestSupport extends FormatterGivens with EqGivens with ExpectGivens
 
@@ -23,12 +24,12 @@ trait TestLanguage:
         expr.transformWith:
           case Success(r) => impl(r).evaluate()
           case Failure(t) => Future.successful(
-            TestFailed(pos.contextualize("The Future passed to 'whenComplete' failed")))
+            TestFailed(pos.contextualize("The Future passed to 'whenComplete' failed"), Some(t)))
 
   def fail(reason: String) given (pos: Position) =
     import PositionDescription._
     new Expectation:
-      def evaluate() = Future.successful(TestFailed(pos.contextualize(reason)))
+      def evaluate() = Future.successful(TestFailed(pos.contextualize(reason), None))
 
   def success() given (pos: Position) =
     import PositionDescription._
@@ -44,27 +45,52 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
   trait Context:
     def name: String
     def transform(opt: Option[TState]): Option[TState]
-  case class ContextInit(name: String, init: () => TState) extends Context:
+    def position: Position
+  case class ContextInit(name: String, init: () => TState, position: Position) extends Context:
     def transform(opt: Option[TState]) = Some(init())
-  case class ContextTx(name: String, tx: Transform) extends Context:
+  case class ContextTx(name: String, tx: Transform, position: Position) extends Context:
     def transform(opt: Option[TState]) = opt.map(tx)
 
-  case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation) extends ITestCase:
+  case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase:
     def nameParts: Seq[String] = contexts.map(_.name) :+ name
-    // TODO: Handle setup failure, i.e. that this Future fails
     def run(): Future[TestCaseResult] =
+      import PositionDescription._
+
       val before = System.nanoTime
-      def errorResult(t: Throwable): TestCaseResult =
+      def result(msg: String, ex: Option[Throwable], pos: Position, er: (String, Option[Throwable]) => ExpectationResult): TestCaseResult =
         val elapsed = (System.nanoTime - before).nanos
-        val result = TestError(t)
+        val result = er(pos.contextualize(msg), ex)
         TestCaseResult(elapsed, nameParts, result)
 
-      // TODO: Create IntentException, use instead of standard exceptions
-      if contexts.size == 0 then
-        return Future.successful(errorResult(new IllegalStateException("Zero contexts is not allowed")))
+      def error(msg: String, ex: Option[Throwable], pos: Position): TestCaseResult =
+        result(msg, ex, pos, TestError.apply)
+        
+      def failure(msg: String, ex: Option[Throwable], pos: Position): TestCaseResult =
+        result(msg, ex, pos, TestFailed.apply)
 
-      contexts.foldLeft[Option[TState]](None)((st, ctx) => ctx.transform(st)) match
-        case Some(state) =>
+      // TODO: Create IntentException, use instead of standard exceptions
+      // TODO: DETTA ska vara TestError !!!
+      if contexts.size == 0 then
+        return Future.successful(error("Top-level test cases are not allowed in a state-based test suite", None, tcPosition))
+
+      // Execute the contexts. If a transformation results in None, something is seriously wrong
+      // so treat as error. If an exception is thrown, treat as test failure (since we have started
+      // to execute the test - state setup is part of the test).
+      val postSetup = contexts.foldLeft[Either[TestCaseResult, Option[TState]]](Right(None))((acc, ctx) => acc.flatMap {
+        stateOpt =>
+          try
+            ctx.transform(stateOpt) match
+              case s@Some(_) => Right(s)
+              case None =>
+                Left(error("Unexpected: state folding didn't produce a state", None, ctx.position))
+          catch
+            case NonFatal(t) =>
+              Left(failure(s"""The state setup for context \"${ctx.name}\" failed""", Some(t), ctx.position))
+      })
+
+      postSetup match
+        case Left(r) => Future.successful(r)
+        case Right(Some(state)) =>
           try
             val expectation = impl(state)
             expectation.evaluate().map { result =>
@@ -73,24 +99,24 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
             }
           catch
             case NonFatal(t) =>
-              Future.successful(errorResult(t))
-        case None =>
-          Future.successful(errorResult(new RuntimeException("State folding didn't produce a state")))
+              Future.successful(failure("Test error", Some(t), tcPosition))
+    
+        case _ => ??? // should not happen since we handle None above
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
   private var testCases: Seq[TestCase] = Seq.empty
   private var reverseContextStack: Seq[Context] = Seq.empty
 
-  def (context: String) using (init: => TState): Context = ContextInit(context, () => init)
-  def (context: String) using (tx: Transform): Context = ContextTx(context, tx)
+  def (context: String) using (init: => TState) given (pos: Position) : Context = ContextInit(context, () => init, pos)
+  def (context: String) using (tx: Transform) given (pos: Position) : Context = ContextTx(context, tx, pos)
 
   def (ctx: Context) to (block: => Unit): Unit =
     reverseContextStack +:= ctx
     try block finally reverseContextStack = reverseContextStack.tail
 
-  def (testName: String) in (testImpl: TState => Expectation): Unit =
+  def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
     val contexts = reverseContextStack.reverse
-    testCases :+= TestCase(contexts, testName, testImpl)
+    testCases :+= TestCase(contexts, testName, testImpl, pos)
 
 trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   case class SetupPart(name: String)
@@ -108,7 +134,7 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
       catch
         case NonFatal(t) =>
           val elapsed = (System.nanoTime - before).nanos
-          val result = TestError(t)
+          val result = TestError("TODO", Some(t)) // TODO: TestFailed här, men hur testar vi det???
           Future.successful(TestCaseResult(elapsed, nameParts, result))
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
@@ -151,7 +177,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
       val before = System.nanoTime
       def errorResult(t: Throwable): TestCaseResult =
         val elapsed = (System.nanoTime - before).nanos
-        val result = TestError(t)
+        val result = TestError("TODO", Some(t)) // TODO: TestFailed
         TestCaseResult(elapsed, nameParts, result)
 
       if contexts.size == 0 then
