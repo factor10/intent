@@ -5,6 +5,7 @@ import scala.util.{Success, Failure}
 import scala.collection.IterableOnce
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
+import scala.util.matching.Regex
 
 import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed}
 
@@ -41,6 +42,27 @@ trait ExpectGivens {
             s"Expected $actualStr to not equal $expectedStr"
           else
             s"Expected $expectedStr but found $actualStr"
+          TestFailed(desc)
+        else TestPassed()
+        Future.successful(r)
+
+  // toMatch is partial
+  def (expect: Expect[String]) toMatch[T] (re: Regex) given (fmt: Formatter[String]): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] =
+        val actual = expect.evaluate()
+
+        var comparisonResult = re.findFirstIn(actual).isDefined
+        if expect.isNegated then comparisonResult = !comparisonResult
+
+        val r = if !comparisonResult then
+          val actualStr = fmt.format(actual)
+          val expectedStr = re.toString
+
+          val desc = if expect.isNegated then
+            s"Expected '$actualStr' not to match '$expectedStr'"
+          else
+            s"Expected '$actualStr' to match '$expectedStr'"
           TestFailed(desc)
         else TestPassed()
         Future.successful(r)
