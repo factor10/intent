@@ -11,7 +11,7 @@ class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
           ps.publish()
           expect(true) toEqual(true)  // TODO: Not to throw (i.e. reached this far)
 
-    "when there is a single subscriber" using (_.withSingleConsumer) to :
+    "when there is a single subscriber" using (_.singleConsumer) to :
       "published event should be received by subscriber" in:
         ps =>
           ps.publish()
@@ -22,7 +22,7 @@ class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
           (0 until 3).foreach(_ => ps.publish())
           expect(ps.received()).toEqual("0:0_0:1_0:2")
 
-    "when there is a multiple subscriber" using (_.withThreeConsumers) to :
+    "when there is a multiple subscriber" using (_.threeConsumers) to :
       "published event should be received by subscriber" in:
         ps =>
           ps.publish()
@@ -33,7 +33,7 @@ class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
           (0 until 3).foreach(_ => ps.publish())
           expect(ps.received()).toEqual("0:0_1:0_2:0_0:1_1:1_2:1_0:2_1:2_2:2")
 
-    "when attaching a late subscriber" using (_.withLateJoiner) to :
+    "when attaching a late subscriber" using (_.lateJoiner) to :
       "it should only receive events from when subscribing" in:
         ps =>
           ps.publish()        // 0
@@ -42,7 +42,7 @@ class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
           ps.publish()        // 2
           expect(ps.subscribers.last.received.head).toEqual(2) // TODO: Add matcher on lists (or on matrix)
 
-    "with a misbehaving subscriber" using (_.withMisbehavingSubscriber) to :
+    "with a misbehaving subscriber" using (_.misbehavingSubscriber) to :
       "errors should be caught by observable" in:
         ps =>
           ps.publish()        // 0
@@ -68,10 +68,10 @@ class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
  */
 case class PublisherAndSubscribers(initialSubscribers: Int = 0):
 
-  def withSingleConsumer = PublisherAndSubscribers(1)
-  def withThreeConsumers = PublisherAndSubscribers(3)
-  def withLateJoiner = PublisherAndSubscribers(1)
-  def withMisbehavingSubscriber =
+  def singleConsumer = PublisherAndSubscribers(1)
+  def threeConsumers = PublisherAndSubscribers(3)
+  def lateJoiner = PublisherAndSubscribers(1)
+  def misbehavingSubscriber =
     copy()
       .addMisbehavingSubscriber()
       .addSubscriber()
