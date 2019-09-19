@@ -94,7 +94,7 @@ case class SuccessfulEvent(duration: Long, suiteName: String, testNames: Seq[Str
 case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, assertionMessage: String) extends Event
   with LoggedEvent(Console.RED, "FAILED", suiteName, testNames):
   val color = Console.RED // Why are not these inherited form LoggedEvent?
-  val prefix = "ERROR"
+  val prefix = "FAILED"
 
   override def fullyQualifiedName = suiteName
   override def status = sbt.testing.Status.Failure
