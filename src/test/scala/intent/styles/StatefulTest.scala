@@ -2,9 +2,8 @@ package intent.styles
 
 import intent._
 
-case class StatefulState(stuff: Seq[String] = Seq.empty) {
+case class StatefulState(stuff: Seq[String] = Seq.empty):
   def addOne(): StatefulState = copy(stuff = stuff :+ "one more")
-}
 
 class StatefulTest extends TestSuite with State[StatefulState] :
   "root context" using StatefulState() to :

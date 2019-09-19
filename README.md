@@ -1,20 +1,65 @@
 # Intent
 
-Intent is an opinionated test framework for [Dotty](https://dotty.epfl.ch). It builds on the following principles:
+Intent is an opinionated test framework for [Dotty](https://dotty.epfl.ch). It builds on
+the following principles:
 
-* Tests must be fast.
-* A single approach to writing tests and assertions.
-* Well-defined test state.
-* Full support for async.
-* Time-based tests and randomness supported from the start.
-* ...
+* Low cermony test code
+* Uniform test declaration
+* Futures and async testing
+* Arranging test state
+* Fast to run tests
 
-WARNING! Extreme work in progress!
+Here is an example on how the tests look:
 
-## Dev
+```scala
+import intent.{Stateless, TestSuite}
 
-* Recent SBT
-* Visual Studio Code
+class ToEqualTest extends TestSuite with Stateless:
+  "toEqual" :
+    "for Boolean" :
+      "true should equal true" in expect(true).toEqual(true)
+      "true should *not* equal false" in expect(true).not.toEqual(false)
+```
 
-Run `sbt launchIDE` to start hacking.
+This readme is focused on building and testing Intent, for documentation on
+how to use Intent to write tests, see [Getting started](docs/getting-started.md)
 
+
+## Development environment
+
+Intent is an early adopter of Dotty features, which means:
+
+* You need a recent Dotty (>= `0.18.1-RC1`) since Intent use the new Scala 3 syntax
+ and significant whitespace.
+
+* Visual Studio Code seems to be the best supported editor (although not perfect)
+
+
+## Testing
+
+Intent is self-hosted and runs all tests using this version of Intent. This is
+great and it feels really good running your tests with your _"system under test"_.
+However there are a few gotchas related to the same:
+
+* When adding logging, remember that the logs will most likely be printed multiple
+  times. Both for the runner invoked by SBT and the runner invoked by your test.
+
+* Tests that are not supposed to be discovered by SBT should not extend `TestSuite`.
+  Instead they should be programatically loaded by the running test (e.g. the tests
+  under `intent.testdata`).
+
+
+## Releasing
+
+TBD
+
+
+## Contributing
+
+Until we are satisified with design of Intent and how tests are structured, we are
+not accepting any contributions.
+
+
+## License
+
+Intent is Open Source and released under Apache 2.0. See `LICENSE` for details.
