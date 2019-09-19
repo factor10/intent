@@ -12,7 +12,7 @@ class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
           expect(true) toEqual(true)  // TODO: Not to throw (i.e. reached this far)
 
     "when there is a single subscriber" using (_.withSingleConsumer) to :
-      "published event should be received by subscriber" in: 
+      "published event should be received by subscriber" in:
         ps =>
           ps.publish()
           expect(ps.received()).toEqual("0:0")
@@ -28,7 +28,7 @@ class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
           ps.publish()
           expect(ps.received()).toEqual("0:0_1:0_2:0")
 
-      "events should be received in order" in: 
+      "events should be received in order" in:
         ps =>
           (0 until 3).foreach(_ => ps.publish())
           expect(ps.received()).toEqual("0:0_1:0_2:0_0:1_1:1_2:1_0:2_1:2_2:2")

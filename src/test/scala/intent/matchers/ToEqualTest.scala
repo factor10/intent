@@ -4,7 +4,7 @@ import intent.{Stateless, TestSuite}
 
 class ToEqualTest extends TestSuite with Stateless:
   "toEqual" :
-    // TODO: Some sort of table driven tests would be a nice addition
+
     "for Boolean" :
       "true should equal true" in expect(true).toEqual(true)
 
