@@ -126,13 +126,17 @@ trait ExpectGivens {
         val allGood = if expect.isNegated then !found else found
 
         val r = if !allGood then
-          val actualStr = actual.getClass.getSimpleName + seen.mkString("(", ", ", ")")
+          val listTypeName = actual.getClass match
+            case c if classOf[List[_]].isAssignableFrom(c) => "List"
+            case c                                         => c.getSimpleName
+
+          val actualStr = listTypeName + seen.mkString("(", ", ", ")")
           val expectedStr = fmt.format(expected)
 
           val desc = if expect.isNegated then
             s"Expected $actualStr not to contain $expectedStr"
           else
-            s"Expected $expectedStr to contain $actualStr"
+            s"Expected $actualStr to contain $expectedStr"
           TestFailed(desc)
         else TestPassed()
         Future.successful(r)
