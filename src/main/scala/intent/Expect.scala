@@ -8,7 +8,8 @@ import scala.language.implicitConversions
 import scala.util.matching.Regex
 import scala.reflect.ClassTag
 
-import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed}
+import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed, PositionDescription}
+import intent.macros.Position
 
 class CompoundExpectation(inner: Seq[Expectation]) given (ec: ExecutionContext) extends Expectation:
   def evaluate(): Future[ExpectationResult] =
@@ -18,10 +19,15 @@ class CompoundExpectation(inner: Seq[Expectation]) given (ec: ExecutionContext) 
       ???
     }
 
-class Expect[T](blk: => T, negated: Boolean = false):
+class Expect[T](blk: => T, position: Position, negated: Boolean = false):
+  import PositionDescription._
+
   def evaluate(): T = blk
   def isNegated: Boolean = negated
-  def negate(): Expect[T] = new Expect(blk, !negated)
+  def negate(): Expect[T] = new Expect(blk, position, !negated)
+
+  def fail(desc: String): ExpectationResult = TestFailed(position.contextualize(desc))
+  def pass: ExpectationResult               = TestPassed()
 
 trait ExpectGivens {
 
@@ -43,8 +49,8 @@ trait ExpectGivens {
             s"Expected $actualStr not to equal $expectedStr"
           else
             s"Expected $expectedStr but found $actualStr"
-          TestFailed(desc)
-        else TestPassed()
+          expect.fail(desc)
+        else expect.pass
         Future.successful(r)
 
   // toMatch is partial
@@ -64,8 +70,8 @@ trait ExpectGivens {
             s"Expected $actualStr not to match /$expectedStr/"
           else
             s"Expected $actualStr to match /$expectedStr/"
-          TestFailed(desc)
-        else TestPassed()
+          expect.fail(desc)
+        else expect.pass
         Future.successful(r)
 
   def (expect: Expect[String]) toMatch[T] (re: String) given (fmt: Formatter[String]): Expectation =
@@ -93,23 +99,22 @@ trait ExpectGivens {
                 s"Expected Future not to be completed with $expectedStr"
               else
                 s"Expected Future to be completed with $expectedStr but found $actualStr"
-              TestFailed(desc)
-            } else TestPassed()
+              expect.fail(desc)
+            } else expect.pass
             Success(r)
-            // compare
           case Failure(_) if expect.isNegated =>
             // ok, Future was not completed with <expected>
-            Success(TestPassed())
+            Success(expect.pass)
           case Failure(t) =>
             val expectedStr = fmt.format(expected)
             val errorStr = errFmt.format(t)
             val desc = s"Expected Future to be completed with $expectedStr but it failed with $errorStr"
-            val r = TestFailed(desc)
+            val r = expect.fail(desc)
             Success(r)
 
   private def evalToContain[T](actual: IterableOnce[T],
                                expected: T,
-                               isNegated: Boolean,
+                               expect: Expect[_],
                                listTypeName: String)
       given (
         eqq: Eq[T],
@@ -125,18 +130,18 @@ trait ExpectGivens {
         found = true
       // TODO: use some heuristic here. Should we continue to collect item string representations? For how long?
 
-    val allGood = if isNegated then !found else found
+    val allGood = if expect.isNegated then !found else found
 
     val r = if !allGood then
       val actualStr = listTypeName + seen.mkString("(", ", ", ")")
       val expectedStr = fmt.format(expected)
 
-      val desc = if isNegated then
+      val desc = if expect.isNegated then
         s"Expected $actualStr not to contain $expectedStr"
       else
         s"Expected $actualStr to contain $expectedStr"
-      TestFailed(desc)
-    else TestPassed()
+      expect.fail(desc)
+    else expect.pass
     Future.successful(r)
 
   // We use ClassTag here to avoid "double definition error" wrt Expect[IterableOnce[T]]
@@ -148,7 +153,7 @@ trait ExpectGivens {
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
         val actual = expect.evaluate()
-        evalToContain(actual, expected, expect.isNegated, "Array")
+        evalToContain(actual, expected, expect, "Array")
 
   def (expect: Expect[IterableOnce[T]]) toContain[T] (expected: T) 
       given (
@@ -161,7 +166,7 @@ trait ExpectGivens {
         val listTypeName = actual.getClass match
           case c if classOf[List[_]].isAssignableFrom(c) => "List"
           case c                                         => c.getSimpleName
-        evalToContain(actual, expected, expect.isNegated, listTypeName)
+        evalToContain(actual, expected, expect, listTypeName)
 
   /**
    * (1, 2, 3) toHaveLength 3
@@ -171,10 +176,10 @@ trait ExpectGivens {
       def evaluate(): Future[ExpectationResult] =
         val actual = expect.evaluate()
         val actualLength = actual.iterator.size
-        var r = if expect.isNegated && actualLength == expected then       TestFailed(s"Expected size *not* to be $expected but was $actualLength")
-                else if expect.isNegated && actualLength != expected then  TestPassed()
-                else if actualLength != expected then                      TestFailed(s"Expected size to be $expected but was $actualLength")
-                else                                                    TestPassed()
+        var r = if expect.isNegated && actualLength == expected then       expect.fail(s"Expected size *not* to be $expected but was $actualLength")
+                else if expect.isNegated && actualLength != expected then  expect.pass
+                else if actualLength != expected then                      expect.fail(s"Expected size to be $expected but was $actualLength")
+                else                                                       expect.pass
 
         Future.successful(r)
 

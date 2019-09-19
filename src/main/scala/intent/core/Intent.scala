@@ -6,20 +6,23 @@ import scala.util.control.NonFatal
 import scala.util.{Try, Success, Failure}
 import scala.reflect.ClassTag
 
+import intent.macros.Position
 import intent.Expect // TODO: dependency on parent package isn't nice
 
 trait IntentStructure:
   private[intent] def allTestCases: Seq[ITestCase]
 
 trait TestLanguage:
-  def expect[T](expr: => T): Expect[T] = new Expect[T](expr)
+  def expect[T](expr: => T) given (pos: Position): Expect[T] = new Expect[T](expr, pos)
 
-  def whenComplete[T](expr: => Future[T])(impl: T => Expectation): Expectation =
+  def whenComplete[T](expr: => Future[T])(impl: T => Expectation) given (pos: Position): Expectation =
+    import PositionDescription._
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
         expr.transformWith:
           case Success(r) => impl(r).evaluate()
-          case Failure(t) => Future.successful(TestFailed("The Future passed to 'whenComplete' failed"))
+          case Failure(t) => Future.successful(
+            TestFailed(pos.contextualize("The Future passed to 'whenComplete' failed")))
 
   // TODO: Can this be overridden? Or do we need a protected def
   given executionContext as ExecutionContext = ExecutionContext.global
