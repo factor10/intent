@@ -39,7 +39,7 @@ trait ExpectGivens {
           val expectedStr = fmt.format(expected)
 
           val desc = if expect.isNegated then
-            s"Expected $actualStr to not equal $expectedStr"
+            s"Expected $actualStr not to equal $expectedStr"
           else
             s"Expected $expectedStr but found $actualStr"
           TestFailed(desc)
@@ -130,7 +130,7 @@ trait ExpectGivens {
           val expectedStr = fmt.format(expected)
 
           val desc = if expect.isNegated then
-            s"Expected $actualStr to not contain $expectedStr"
+            s"Expected $actualStr not to contain $expectedStr"
           else
             s"Expected $expectedStr to contain $actualStr"
           TestFailed(desc)
