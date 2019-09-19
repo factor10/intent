@@ -7,7 +7,6 @@ import scala.util.{Try, Success, Failure}
 import scala.reflect.ClassTag
 
 import intent.macros.Position
-import intent.Expect // TODO: dependency on parent package isn't nice
 
 trait IntentStructure:
   private[intent] def allTestCases: Seq[ITestCase]

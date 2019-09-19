@@ -1,6 +1,6 @@
 package intent.runner
 
-import intent.{TestSuite, State, Stateless, Eq, Formatter}
+import intent.{TestSuite, State, Stateless}
 import intent.core.{ExpectationResult, TestError, Subscriber, TestCaseResult}
 import intent.runner.{TestSuiteRunner, TestSuiteError, TestSuiteResult}
 import intent.testdata._

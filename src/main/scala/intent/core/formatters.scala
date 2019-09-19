@@ -1,4 +1,4 @@
-package intent
+package intent.core
 
 trait Formatter[T]:
   def format(value: T): String

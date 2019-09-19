@@ -1,4 +1,4 @@
-package intent
+package intent.core
 
 trait Eq[T]:
   def areEqual(a: T, b: T): Boolean
@@ -11,7 +11,6 @@ object BooleanEq extends Eq[Boolean]:
 
 object StringEq extends Eq[String]:
   def areEqual(a: String, b: String): Boolean = a == b
-
 
 class OptionEq[T] given (innerEq: Eq[T]) extends Eq[Option[T]]:
   def areEqual(a: Option[T], b: Option[T]): Boolean =

@@ -1,4 +1,4 @@
-package intent
+package intent.core
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Failure}
