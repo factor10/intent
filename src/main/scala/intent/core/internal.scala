@@ -173,7 +173,6 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
 
   case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase:
     def nameParts: Seq[String] = contexts.map(_.name) :+ name
-    // TODO: Handle setup failure, i.e. that this Future fails
     def run(): Future[TestCaseResult] =
       import PositionDescription._
 
