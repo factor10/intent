@@ -68,8 +68,6 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
       def failure(msg: String, ex: Option[Throwable], pos: Position): TestCaseResult =
         result(msg, ex, pos, TestFailed.apply)
 
-      // TODO: Create IntentException, use instead of standard exceptions
-      // TODO: DETTA ska vara TestError !!!
       if contexts.size == 0 then
         return Future.successful(error("Top-level test cases are not allowed in a state-based test suite", None, tcPosition))
 

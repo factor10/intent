@@ -12,6 +12,17 @@ import scala.concurrent.Await
 class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
   "TestSuiteRunner" using TestSuiteTestCase() to :
 
+    "running a stateful suite without context" using (_.noContextTestSuite) to :
+      "has an error event" in:
+        state =>
+          whenComplete(state.runWithEventSubscriber()) :
+            case Left(_) => fail("unexpected Left")
+            case Right(_) =>
+              val maybeMsg = state.receivedEvents().collectFirst { case TestCaseResult(_, _, TestError(msg, _)) => msg }
+              maybeMsg match
+                case Some(msg) => expect(msg).toMatch("^Top-level test cases".r)
+                case None => fail("unexpected None")
+
     "running a suite that fails in setup" using (_.setupFailureTestSuite) to :
       "reports that 1 test was run" in :
         state =>
@@ -98,6 +109,7 @@ case class TestSuiteTestCase(suiteClassName: String = null) given (ec: Execution
   def invalidTestSuiteClass = TestSuiteTestCase("foo.Bar")
   def oneOfEachResult = TestSuiteTestCase("intent.runner.OneOfEachResultTestSuite")
   def setupFailureTestSuite = TestSuiteTestCase("intent.runner.StatefulFailingTestSuite")
+  def noContextTestSuite = TestSuiteTestCase("intent.runner.StatefulNoContextTestSuite")
 
   private object lock
   val runner = new TestSuiteRunner(cl)
@@ -131,3 +143,8 @@ class StatefulFailingTestSuite extends State[StatefulFailingTestState]:
     "uh oh" using (_.fail) to :
       "won't get here" in :
         _ => expect(1).toEqual(2)
+
+class StatefulNoContextTestSuite extends State[StatefulFailingTestState]:
+  "won't get here" in :
+    _ => expect(1).toEqual(2)
+      
