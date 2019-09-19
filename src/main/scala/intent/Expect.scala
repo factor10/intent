@@ -68,6 +68,9 @@ trait ExpectGivens {
         else TestPassed()
         Future.successful(r)
 
+  def (expect: Expect[String]) toMatch[T] (re: String) given (fmt: Formatter[String]): Expectation =
+    expect.toMatch(re.r)
+
   def (expect: Expect[Future[T]]) toCompleteWith[T] (expected: T) 
       given (
         eqq: Eq[T], 

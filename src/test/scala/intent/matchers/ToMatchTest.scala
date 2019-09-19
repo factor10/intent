@@ -8,3 +8,5 @@ class ToMatchTest extends TestSuite with Stateless:
       "should find match" in expect("foobar").toMatch("^foo".r)
 
       "should find non-match" in expect("foobar").not.toMatch("foo$".r)
+
+      "should find match when regex is string" in expect("foobar").toMatch("^foo")
