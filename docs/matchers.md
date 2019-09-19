@@ -58,7 +58,7 @@ expect(true).not.toEqual(false)
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToEqualTest.scala)
 
 
-## .toHaveLength
+### .toHaveLength
 
 Match a `Seq` to have the expected length
 
@@ -79,7 +79,7 @@ expect(Seq(1, 2, 3)).toContain(2)
 
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToContainTest.scala)
 
-# .toCompleteWith
+### .toCompleteWith
 
 Match the result of a `Future` to equal the exepected value.
 
@@ -87,4 +87,4 @@ Match the result of a `Future` to equal the exepected value.
 expect(Future.successful("foo")).toCompleteWith("foo")
 ```
 
-[Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToHaveLengthTest.scala)
+[Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToCompleteWithTest.scala)
