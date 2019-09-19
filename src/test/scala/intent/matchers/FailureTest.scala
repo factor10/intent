@@ -29,3 +29,6 @@ class FailureTest extends TestSuite with Stateless with Meta:
 
     "is described properly in the negative" in :
       runExpectation(expect(Seq(1, 2)).not.toContain(1), "Expected List(1, 2) not to contain 1")
+
+    "is described properly for Array" in :
+      runExpectation(expect(Array(1, 2)).toContain(3), "Expected Array(1, 2) to contain 3")

@@ -6,6 +6,7 @@ import scala.collection.IterableOnce
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 import scala.util.matching.Regex
+import scala.reflect.ClassTag
 
 import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed}
 
@@ -103,43 +104,61 @@ trait ExpectGivens {
             val r = TestFailed(desc)
             Success(r)
 
-  def (expect: Expect[IterableOnce[T]]) toContain[T] (expected: T) 
+  private def evalToContain[T](actual: IterableOnce[T],
+                               expected: T,
+                               isNegated: Boolean,
+                               listTypeName: String)
       given (
         eqq: Eq[T],
-        fmt: Formatter[T],
-        ec: ExecutionContext
+        fmt: Formatter[T]
+      ): Future[ExpectationResult] =
+    val seen = ListBuffer[String]()
+    var found = false
+    val iterator = actual.iterator
+    while iterator.hasNext do
+      val next = iterator.next()
+      seen += fmt.format(next)
+      if !found && eqq.areEqual(next, expected) then
+        found = true
+      // TODO: use some heuristic here. Should we continue to collect item string representations? For how long?
+
+    val allGood = if isNegated then !found else found
+
+    val r = if !allGood then
+      val actualStr = listTypeName + seen.mkString("(", ", ", ")")
+      val expectedStr = fmt.format(expected)
+
+      val desc = if isNegated then
+        s"Expected $actualStr not to contain $expectedStr"
+      else
+        s"Expected $actualStr to contain $expectedStr"
+      TestFailed(desc)
+    else TestPassed()
+    Future.successful(r)
+
+  // We use ClassTag here to avoid "double definition error" wrt Expect[IterableOnce[T]]
+  def (expect: Expect[Array[T]]) toContain[T : ClassTag] (expected: T) 
+      given (
+        eqq: Eq[T],
+        fmt: Formatter[T]
       ): Expectation =
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
         val actual = expect.evaluate()
+        evalToContain(actual, expected, expect.isNegated, "Array")
 
-        val seen = ListBuffer[String]()
-        var found = false
-        val iterator = actual.iterator
-        while iterator.hasNext do
-          val next = iterator.next()
-          seen += fmt.format(next)
-          if !found && eqq.areEqual(next, expected) then
-            found = true
-          // TODO: use some heuristic here. Should we continue to collect item string representations? For how long?
-
-        val allGood = if expect.isNegated then !found else found
-
-        val r = if !allGood then
-          val listTypeName = actual.getClass match
-            case c if classOf[List[_]].isAssignableFrom(c) => "List"
-            case c                                         => c.getSimpleName
-
-          val actualStr = listTypeName + seen.mkString("(", ", ", ")")
-          val expectedStr = fmt.format(expected)
-
-          val desc = if expect.isNegated then
-            s"Expected $actualStr not to contain $expectedStr"
-          else
-            s"Expected $actualStr to contain $expectedStr"
-          TestFailed(desc)
-        else TestPassed()
-        Future.successful(r)
+  def (expect: Expect[IterableOnce[T]]) toContain[T] (expected: T) 
+      given (
+        eqq: Eq[T],
+        fmt: Formatter[T]
+      ): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] =
+        val actual = expect.evaluate()
+        val listTypeName = actual.getClass match
+          case c if classOf[List[_]].isAssignableFrom(c) => "List"
+          case c                                         => c.getSimpleName
+        evalToContain(actual, expected, expect.isNegated, listTypeName)
 
   /**
    * (1, 2, 3) toHaveLength 3
