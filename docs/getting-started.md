@@ -49,7 +49,7 @@ The test results are printed to STDOUT via the SBT log:
 [info] [PASSED] intent.matchers.ToHaveLengthTest >> toHaveLength >> Seq() should *not* have length 1 (0 ms)
 ```
 
-_Currently there are no reports._
+_Currently there are no reports other than the SBT output._
 
 
 ## Stateful test
@@ -93,7 +93,7 @@ separate a `class` and an `object`.
 There are a few conventions or recommendations on how to use state:
 
 * Put the state implementation below the test.
-* Prefer to call methods on the state object over doing it in the test body
+* Prefer to call methods on the state object over doing it in the test itself
 * Keep state focused and create a new suite + state class when needed (cost is low)
 
 

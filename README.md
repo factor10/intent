@@ -28,6 +28,7 @@ how to use Intent to write tests, see [Getting started](docs/getting-started.md)
 ## Development environment
 
 Intent is an early adopter of Dotty features, which means:
+
 * You need a recent Dotty (>= `0.18.1-RC1`) since Intent use the new Scala 3 syntax
  and significant whitespace.
 
