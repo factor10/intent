@@ -1,7 +1,7 @@
 package intent.runner
 
 import intent.{TestSuite, State, Stateless, AsyncState}
-import intent.core.{ExpectationResult, TestError, TestFailed, Subscriber, TestCaseResult}
+import intent.core.{Expectation, ExpectationResult, TestError, TestFailed, Subscriber, TestCaseResult}
 import intent.runner.{TestSuiteRunner, TestSuiteError, TestSuiteResult}
 import intent.testdata._
 
@@ -14,14 +14,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
 
     "running a stateful suite without context" using (_.noContextTestSuite) to :
       "has an error event" in:
-        state =>
-          whenComplete(state.runWithEventSubscriber()) :
-            case Left(_) => fail("unexpected Left")
-            case Right(_) =>
-              val maybeMsg = state.receivedEvents().collectFirst { case TestCaseResult(_, _, TestError(msg, _)) => msg }
-              maybeMsg match
-                case Some(msg) => expect(msg).toMatch("^Top-level test cases".r)
-                case None => fail("unexpected None")
+        expectErrorMatching("^Top-level test cases".r)
 
     "running a suite that fails in setup" using (_.setupFailureTestSuite) to :
       "reports that 1 test was run" in :
@@ -69,15 +62,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
       
     "running an async stateful suite without context" using (_.noContextAsyncTestSuite) to :
       "has an error event" in:
-        state =>
-          whenComplete(state.runWithEventSubscriber()) :
-            case Left(_) => fail("unexpected Left")
-            case Right(_) =>
-              val maybeMsg = state.receivedEvents().collectFirst { case TestCaseResult(_, _, TestError(msg, _)) => msg }
-              maybeMsg match
-                case Some(msg) => expect(msg).toMatch("^Top-level test cases".r)
-                case None => fail("unexpected None")
-        
+        expectErrorMatching("^Top-level test cases".r)
 
     "running an empty suite" using (_.emptyTestSuite) to :
       "report that zero tests were run" in:
@@ -132,6 +117,17 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
           possible match
             case Left(e) => expect(s"${e.ex.getClass}: ${e.ex.getMessage}").toEqual("class java.lang.ClassNotFoundException: foo.Bar")
             case Right(_) => expect(false).toEqual(true)
+
+  def expectErrorMatching(re: scala.util.matching.Regex): TestSuiteTestCase => Expectation =
+    state =>
+      whenComplete(state.runWithEventSubscriber()) :
+        case Left(_) => fail("unexpected Left")
+        case Right(_) =>
+          val maybeMsg = state.receivedEvents().collectFirst { case TestCaseResult(_, _, TestError(msg, _)) => msg }
+          maybeMsg match
+            case Some(msg) => expect(msg).toMatch("^Top-level test cases".r)
+            case None => fail("unexpected None")
+
 
 /**
  * Wraps a runner for a specific test suite
