@@ -10,7 +10,7 @@ object BooleanFmt extends Formatter[Boolean]:
   def format(b: Boolean): String = b.toString
 
 object StringFmt extends Formatter[String]:
-  def format(s: String): String = s
+  def format(str: String): String = s""""$str""""
 
 object ThrowableFmt extends Formatter[Throwable]:
   def format(t: Throwable): String =

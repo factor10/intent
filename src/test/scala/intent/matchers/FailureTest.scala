@@ -18,7 +18,7 @@ class FailureTest extends TestSuite with Stateless with Meta:
 
   "a toMatch failure" :
     "is described properly" in :
-      runExpectation(expect("foobar").toMatch("^bar".r), "Expected 'foobar' to match '^bar'")
+      runExpectation(expect("foobar").toMatch("^bar".r), "Expected \"foobar\" to match /^bar/")
 
     "is described properly in the negative" in :
-      runExpectation(expect("foobar").not.toMatch("^foo".r), "Expected 'foobar' not to match '^foo'")
+      runExpectation(expect("foobar").not.toMatch("^foo".r), "Expected \"foobar\" not to match /^foo/")

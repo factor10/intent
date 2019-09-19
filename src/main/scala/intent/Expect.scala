@@ -60,9 +60,9 @@ trait ExpectGivens {
           val expectedStr = re.toString
 
           val desc = if expect.isNegated then
-            s"Expected '$actualStr' not to match '$expectedStr'"
+            s"Expected $actualStr not to match /$expectedStr/"
           else
-            s"Expected '$actualStr' to match '$expectedStr'"
+            s"Expected $actualStr to match /$expectedStr/"
           TestFailed(desc)
         else TestPassed()
         Future.successful(r)
