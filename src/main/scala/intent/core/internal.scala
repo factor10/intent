@@ -99,7 +99,7 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
             }
           catch
             case NonFatal(t) =>
-              Future.successful(failure("Test error", Some(t), tcPosition))
+              Future.successful(failure("Test failure", Some(t), tcPosition))
     
         case _ => ??? // should not happen since we handle None above
 
@@ -134,7 +134,7 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
       catch
         case NonFatal(t) =>
           val elapsed = (System.nanoTime - before).nanos
-          val result = TestError("TODO", Some(t)) // TODO: TestFailed här, men hur testar vi det???
+          val result = TestFailed("Test failure", Some(t))
           Future.successful(TestCaseResult(elapsed, nameParts, result))
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases

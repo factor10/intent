@@ -102,19 +102,19 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
             case Left(_) => fail("Unexpected Left")
             case Right(result) => expect(result.successful).toEqual(1)
 
-      "report that 1 test was failed" in:
+      "report that 2 test failed" in:
         state =>
           val possible = Await.result(state.runAll(), 5 seconds)
           possible match
             case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.failed).toEqual(1)
+            case Right(result) => expect(result.failed).toEqual(2)
 
-      "report that 1 test had errors" in:
+      "report that no test had errors" in:
         state =>
           val possible = Await.result(state.runAll(), 5 seconds)
           possible match
             case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.errors).toEqual(1)
+            case Right(result) => expect(result.errors).toEqual(0)
 
       "with a registered event subscriber" using (_.copy()) to : // TODO: can we use identity here?
         "should publish 3 events" in:
