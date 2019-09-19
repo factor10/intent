@@ -66,7 +66,7 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
 
       def error(msg: String, ex: Option[Throwable], pos: Position): TestCaseResult =
         result(msg, ex, pos, TestError.apply)
-        
+
       def failure(msg: String, ex: Option[Throwable], pos: Position): TestCaseResult =
         result(msg, ex, pos, TestFailed.apply)
 
@@ -100,7 +100,7 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
           catch
             case NonFatal(t) =>
               Future.successful(failure("Test failure", Some(t), tcPosition))
-    
+
         case _ => ??? // should not happen since we handle None above
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
@@ -169,7 +169,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
     def transform(f: Future[Option[TState]]) =
       f.flatMap:
         case Some(state) => tx(state).map(Some.apply)
-        case None        => throw ShouldNotHappenException("Unexpected state None after Future transform") 
+        case None        => throw ShouldNotHappenException("Unexpected state None after Future transform")
 
   case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase:
     def nameParts: Seq[String] = contexts.map(_.name) :+ name
@@ -184,7 +184,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
 
       def error(msg: String, ex: Option[Throwable], pos: Position): TestCaseResult =
         result(msg, ex, pos, TestError.apply)
-        
+
       def failure(msg: String, ex: Option[Throwable], pos: Position): TestCaseResult =
         result(msg, ex, pos, TestFailed.apply)
 
@@ -199,7 +199,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
               case Success(newStateOpt) => Success(Right(newStateOpt))
               case Failure(t: ShouldNotHappenException) =>
                 Success(Left(error(s"""${t.getMessage} for context \"${ctx.name}\"""", None, ctx.position)))
-              case Failure(t) => 
+              case Failure(t) =>
                 Success(Left(failure(s"""The state setup for context \"${ctx.name}\" failed""", Some(t), ctx.position)))
           catch
             case NonFatal(t) =>
@@ -219,7 +219,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
           catch
             case NonFatal(t) =>
               Future.successful(failure("Test error", Some(t), tcPosition))
-    
+
         case _ => ??? // should not happen since we handle None above
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
