@@ -19,3 +19,5 @@ class ExpectTest extends TestSuite with Stateless:
     "can check a List" in:
       val l = List(1, 2, 3)
       expect(l).not.toContain(4)
+
+    "can pass using successful" in success()

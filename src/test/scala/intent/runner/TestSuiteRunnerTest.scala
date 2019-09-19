@@ -17,7 +17,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
         state =>
           val possible = Await.result(state.runAll(), 5 seconds)
           possible match
-            case Left(_) => expect(false).toEqual(true)
+            case Left(_) => fail("Unexpected Left")
             case Right(result) => expect(result.total).toEqual(0)  // TODO: Match on case class or individual fields?
 
     "running the OneOfEachResultTestSuite" using (_.oneOfEachResult) to :
@@ -25,28 +25,28 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
         state =>
           val possible = Await.result(state.runAll(), 5 seconds)
           possible match
-            case Left(_) => expect(false).toEqual(true)
+            case Left(_) => fail("Unexpected Left")
             case Right(result) => expect(result.total).toEqual(3)
 
       "report that 1 test was successful" in:
         state =>
           val possible = Await.result(state.runAll(), 5 seconds)
           possible match
-            case Left(_) => expect(false).toEqual(true)
+            case Left(_) => fail("Unexpected Left")
             case Right(result) => expect(result.successful).toEqual(1)
 
       "report that 1 test was failed" in:
         state =>
           val possible = Await.result(state.runAll(), 5 seconds)
           possible match
-            case Left(_) => expect(false).toEqual(true)
+            case Left(_) => fail("Unexpected Left")
             case Right(result) => expect(result.failed).toEqual(1)
 
       "report that 1 test had errors" in:
         state =>
           val possible = Await.result(state.runAll(), 5 seconds)
           possible match
-            case Left(_) => expect(false).toEqual(true)
+            case Left(_) => fail("Unexpected Left")
             case Right(result) => expect(result.errors).toEqual(1)
 
       "with a registered event subscriber" using (_.copy()) to : // TODO: can we use identity here?
@@ -94,7 +94,7 @@ case class TestSuiteTestCase(suiteClassName: String = null) given (ec: Execution
   private def cl = getClass.getClassLoader
 
 class OneOfEachResultTestSuite extends Stateless :
-  "successful" in expect(true).toEqual(true)
-  "failed" in expect(true).toEqual(false)
+  "successful" in success()
+  "failed" in fail("test should fail")
   "error" in:
     throw new RuntimeException("test should fail")

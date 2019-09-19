@@ -9,7 +9,7 @@ class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
       "it should still be possible to publish event" in:
         ps =>
           ps.publish()
-          expect(true) toEqual(true)  // TODO: Not to throw (i.e. reached this far)
+          success()
 
     "when there is a single subscriber" using (_.singleConsumer) to :
       "published event should be received by subscriber" in:
@@ -47,7 +47,7 @@ class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
         ps =>
           ps.publish()        // 0
           ps.publish()        // 1
-          expect(true) toEqual(true)  // TODO: Not to throw (i.e. reached this far)
+          success()
 
       "misbehaving subscriber should not store the received events" in:
         ps =>

@@ -25,6 +25,16 @@ trait TestLanguage:
           case Failure(t) => Future.successful(
             TestFailed(pos.contextualize("The Future passed to 'whenComplete' failed")))
 
+  def fail(reason: String) given (pos: Position) =
+    import PositionDescription._
+    new Expectation:
+      def evaluate() = Future.successful(TestFailed(pos.contextualize(reason)))
+
+  def success() given (pos: Position) =
+    import PositionDescription._
+    new Expectation:
+      def evaluate() = Future.successful(TestPassed())
+
   // TODO: Can this be overridden? Or do we need a protected def
   given executionContext as ExecutionContext = ExecutionContext.global
 

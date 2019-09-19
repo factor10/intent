@@ -88,3 +88,11 @@ expect(Future.successful("foo")).toCompleteWith("foo")
 ```
 
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToCompleteWithTest.scala)
+
+
+## Manually fail or succeed a test
+
+Two convenience methods exists where you can manually provide the the test expectation:
+
+* `fail("Reason for failure...")` to fail a test
+* `success()` to pass a test

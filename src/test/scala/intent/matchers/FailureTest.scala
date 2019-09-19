@@ -32,3 +32,6 @@ class FailureTest extends TestSuite with Stateless with Meta:
 
     "is described properly for Array" in :
       runExpectation(expect(Array(1, 2)).toContain(3), "Expected Array(1, 2) to contain 3")
+
+  "using fail()" :
+    "should fail with the given description" in runExpectation(fail("Manually failed"), "Manually failed")
