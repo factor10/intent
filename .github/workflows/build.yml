@@ -1,6 +1,13 @@
 name: CI
 
-on: [push, pull_request]
+# Build on pushes to master or PR that targets master
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
 
 jobs:
   build:
