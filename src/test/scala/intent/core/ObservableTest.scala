@@ -1,6 +1,6 @@
 package intent.core
 
-import intent.core.{Observable, WarmObservable, Subscriber}
+import intent.core.{Observable, HotObservable, Subscriber}
 import intent.{TestSuite, State}
 
 class ObservableTestSuite extends TestSuite with State[PublisherAndSubscribers]:
@@ -116,7 +116,7 @@ case class PublisherAndSubscribers(initialSubscribers: Int = 0):
 /**
  * The producer of events that can be subscribed to.
  */
-class SomethingObservable() extends WarmObservable[Int]:
+class SomethingObservable() extends HotObservable[Int]:
   private var current = 0
 
   def publishNextValue(): Unit =

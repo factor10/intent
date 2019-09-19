@@ -16,11 +16,11 @@ trait Subscriber[T]:
   def onNext(event: T): Unit
 
 /**
- * A warm observable does not persist any messages (other than during transmit to all
+ * A hot observable does not persist any messages (other than during transmit to all
  * subscribers). Thus a subscriber will only receive events from the point where registered
  * with the published.
  */
-trait WarmObservable[T] extends Observable[T]:
+trait HotObservable[T] extends Observable[T]:
   private var subscribers: Seq[Subscriber[T]] = List[Subscriber[T]]()
 
   def subscribe(subscriber: Subscriber[T]): Unit = subscribers :+= subscriber
