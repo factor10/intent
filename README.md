@@ -1,5 +1,7 @@
 # Intent
 
+[![Actions Status](https://github.com/factor10/intent/workflows/CI/badge.svg)](https://github.com/factor10/intent/actions)
+
 Intent is an opinionated test framework for [Dotty](https://dotty.epfl.ch). It builds on
 the following principles:
 
