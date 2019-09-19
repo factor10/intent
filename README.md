@@ -22,7 +22,7 @@ class ToEqualTest extends TestSuite with Stateless:
 ```
 
 This readme is focused on building and testing Intent, for documentation on
-how to use Intent to write tests, see [Getting started](docs/getting-started.md)
+how to use Intent to write tests, see [User documentation](docs/index.md).
 
 
 ## Development environment
