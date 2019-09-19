@@ -1,7 +1,6 @@
 package intent.helpers
 
-import intent.core.{ExpectationResult, Expectation, TestError, TestFailed, TestPassed, TestLanguage}
-import intent.TestSupport
+import intent.core.{ExpectationResult, Expectation, TestError, TestFailed, TestPassed, TestLanguage, TestSupport}
 import scala.concurrent.{Future, ExecutionContext}
 import java.util.regex.Pattern
 

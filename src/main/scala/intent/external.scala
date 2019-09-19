@@ -9,12 +9,8 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 abstract class TestSuite extends core.TestSuite
 
-// TODO: Rename this trait, TestSupport is not a good name.
-// TODO: Also, maybe it should live in intent.core...
-trait TestSupport extends core.FormatterGivens with core.EqGivens with core.ExpectGivens
+trait State[TState] extends core.IntentStateSyntax[TState] with core.TestSupport
 
-trait State[TState] extends core.IntentStateSyntax[TState] with TestSupport
+trait AsyncState[TState] extends core.IntentAsyncStateSyntax[TState] with core.TestSupport
 
-trait AsyncState[TState] extends core.IntentAsyncStateSyntax[TState] with TestSupport
-
-trait Stateless extends core.IntentStatelessSyntax with TestSupport
+trait Stateless extends core.IntentStatelessSyntax with core.TestSupport

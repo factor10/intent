@@ -8,6 +8,8 @@ import scala.reflect.ClassTag
 
 import intent.macros.Position
 
+trait TestSupport extends FormatterGivens with EqGivens with ExpectGivens
+
 trait IntentStructure:
   private[intent] def allTestCases: Seq[ITestCase]
 
