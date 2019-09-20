@@ -15,3 +15,23 @@ SBT prints a summary once all discovered tests are run
 ```
 [info] Passed: Total 65, Failed 0, Errors 0, Passed 65, Ignored 1
 ```
+
+
+## Ignoring tests
+
+If you want to ignore a test you can substitute the `in` keyword with `ignore`.
+
+```scala
+"ignored test" ignore:
+  fail("This should never fail, only be ignored!")
+```
+
+Ignored tests will still be logged by SBT, but classified as `IGNORED` and printed
+in yellow.
+
+```
+[info] [IGNORED] intent.sbt.IgnoredTest >> ignored test (0 ms)
+```
+
+> Note: A ignored test will not be evaluated, but the signature must be valid so
+> it needs to return an expectation.
