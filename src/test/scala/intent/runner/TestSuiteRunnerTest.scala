@@ -20,13 +20,13 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
             case Left(_) => fail("Unexpected Left")
             case Right(result) => expect(result.total).toEqual(0)  // TODO: Match on case class or individual fields?
 
-    "running the OneOfEachResultTestSuite" using (_.oneOfEachResult) to :
-      "report that totally 3 test was run" in:
+    "running the OneOfEachResultTestSuite (stateless)" using (_.oneOfEachResult) to :
+      "report that totally 4 test was run" in:
         state =>
           val possible = Await.result(state.runAll(), 5 seconds)
           possible match
             case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.total).toEqual(3)
+            case Right(result) => expect(result.total).toEqual(4)
 
       "report that 1 test was successful" in:
         state =>
@@ -49,11 +49,26 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
             case Left(_) => fail("Unexpected Left")
             case Right(result) => expect(result.errors).toEqual(1)
 
+      "report that 1 test was ignored" in:
+        state =>
+          val possible = Await.result(state.runAll(), 5 seconds)
+          possible match
+            case Left(_) => fail("Unexpected Left")
+            case Right(result) => expect(result.ignored).toEqual(1)
+
       "with a registered event subscriber" using (_.copy()) to : // TODO: can we use identity here?
-        "should publish 3 events" in:
+        "should publish € events" in:
           state =>
             val _ = Await.result(state.runWithEventSubscriber(), 5 seconds)
-            expect(state.receivedEvents()).toHaveLength(3)
+            expect(state.receivedEvents()).toHaveLength(4)
+
+    "running the OneOfEachResulStatefulTestSuite (stateful)" using (_.oneOfEachResultState) to:
+      "report that 1 test was ignored" in:
+        state =>
+          val possible = Await.result(state.runAll(), 5 seconds)
+          possible match
+            case Left(_) => fail("Unexpected Left")
+            case Right(result) => expect(result.ignored).toEqual(1)
 
     "when test suite cannot be instantiated" using (_.invalidTestSuiteClass) to :
       "a TestSuiteError should be received" in:
@@ -74,6 +89,7 @@ case class TestSuiteTestCase(suiteClassName: String = null) given (ec: Execution
   def emptyTestSuite = TestSuiteTestCase("intent.testdata.EmtpyTestSuite")
   def invalidTestSuiteClass = TestSuiteTestCase("foo.Bar")
   def oneOfEachResult = TestSuiteTestCase("intent.runner.OneOfEachResultTestSuite")
+  def oneOfEachResultState = TestSuiteTestCase("intent.runner.OneOfEachResulStatefulTestSuite")
 
   private object lock
   val runner = new TestSuiteRunner(cl)
@@ -82,9 +98,11 @@ case class TestSuiteTestCase(suiteClassName: String = null) given (ec: Execution
   def runAll(): Future[Either[TestSuiteError, TestSuiteResult]] =
     assert(suiteClassName != null, "Suite class name must be set")
     runner.runSuite(suiteClassName)
+
   def runWithEventSubscriber(): Future[Either[TestSuiteError, TestSuiteResult]] =
     assert(suiteClassName != null, "Suite class name must be set")
     runner.runSuite(suiteClassName, Some(this))
+
   def receivedEvents(): Seq[TestCaseResult] = events
 
   override def onNext(event: TestCaseResult): Unit =
@@ -96,5 +114,12 @@ case class TestSuiteTestCase(suiteClassName: String = null) given (ec: Execution
 class OneOfEachResultTestSuite extends Stateless :
   "successful" in success()
   "failed" in fail("test should fail")
+  "ignored" ignore success()
+
   "error" in:
     throw new RuntimeException("test should fail")
+
+class OneOfEachResulStatefulTestSuite extends State[Unit] :
+    "level" using (()) to:
+      "ignored" ignore:
+        _ => fail("Unexpected, test should be ignored")

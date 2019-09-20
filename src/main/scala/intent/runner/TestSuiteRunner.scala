@@ -6,7 +6,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Try,Success,Failure}
 
 import intent.core.{IntentStructure, ExpectationResult, TestSuite, TestCaseResult,
-  TestPassed, TestFailed, TestError, Subscriber, HotObservable}
+  TestPassed, TestFailed, TestError, TestIgnored, Subscriber, HotObservable}
 
 /**
  * Fatal error during construction or loading (including test discovery) of a test suite.
@@ -20,8 +20,9 @@ case class TestSuiteError(ex: Throwable) extends Throwable
  * @param successful The number of successful tests
  * @param failed The number of failed tests (when assertion failed)
  * @param errors The number of tests that caused error (exception, not failed assertion)
+ * @param ignored The number of tests that are ignored (not run)
  */
-case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0, errors: Int = 0):
+case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0, errors: Int = 0, ignored: Int = 0):
   def incSuccess(): TestSuiteResult = this.copy(
       total = total + 1,
       successful = successful + 1)
@@ -33,6 +34,10 @@ case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0,
   def incError(): TestSuiteResult = this.copy(
       total = total + 1,
       errors = errors + 1)
+
+  def incIgnore(): TestSuiteResult = this.copy(
+    total = total + 1,
+    ignored = ignored +1)
 
 /**
  * A test suite runner.
@@ -80,6 +85,7 @@ class TestSuiteRunner(classLoader: ClassLoader) extends HotObservable[TestCaseRe
         case success: TestPassed => acc.incSuccess()
         case failure: TestFailed => acc.incFailure()
         case error: TestError => acc.incError()
+        case ignored: TestIgnored => acc.incIgnore()
         case null => throw new IllegalStateException("Unsupported test result: null")
     }))
 

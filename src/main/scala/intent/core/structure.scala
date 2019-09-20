@@ -12,6 +12,7 @@ sealed trait ExpectationResult
 case class TestPassed() extends ExpectationResult
 case class TestFailed(output: String) extends ExpectationResult
 case class TestError(ex: Throwable) extends ExpectationResult
+case class TestIgnored() extends ExpectationResult
 
 case class TestCaseResult(duration: FiniteDuration, qualifiedName: Seq[String], expectationResult: ExpectationResult)
 
