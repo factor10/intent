@@ -12,4 +12,5 @@ Intent is designed to give you clear and concise tests by focusing on:
 # Table of contents
 
 1. [Getting started](getting-started.md)
-2. [Matchers](matchers.md)
+2. [Running tests](running-tests.md)
+3. [Matchers](matchers.md)

@@ -95,6 +95,3 @@ There are a few conventions or recommendations on how to use state:
 * Put the state implementation below the test.
 * Prefer to call methods on the state object over doing it in the test itself
 * Keep state focused and create a new suite + state class when needed (cost is low)
-
-
-Next up, [Matchers](matchers.md).
