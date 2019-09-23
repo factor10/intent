@@ -1,6 +1,6 @@
 package intent.sbt
 
-import intent.core.{IntentStructure, TestPassed, TestFailed, TestError, Subscriber, TestCaseResult}
+import intent.core.{IntentStructure, TestPassed, TestFailed, TestError, TestIgnored, Subscriber, TestCaseResult}
 import intent.runner.TestSuiteRunner
 import scala.concurrent.duration._
 import java.io.{PrintWriter, StringWriter}
@@ -79,6 +79,7 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task:
           case success: TestPassed => SuccessfulEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint)
           case failure: TestFailed => FailedEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, failure.output, failure.ex)
           case error: TestError => ErrorEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, error.context, error.ex)
+          case ignored: TestIgnored => IgnoredEvent(taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint)
         handler.handle(sbtEvent)
         sbtEvent.log(loggers, event.duration.toMillis)
 
@@ -128,3 +129,12 @@ case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String],
     val error = err.map(e => "\n\n" + printErrorWithPrefix(e, s"\t${color}")).getOrElse("")
     loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${color}${errContext}${error}"))
 }
+
+case class IgnoredEvent(suiteName: String, testNames: Seq[String], fingerprint: Fingerprint) extends Event
+  with LoggedEvent(Console.YELLOW, "IGNORED", suiteName, testNames):
+
+  override def duration = 0L
+  override def fullyQualifiedName = suiteName
+  override def status = sbt.testing.Status.Ignored
+  override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString(" >> "))
+  override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()

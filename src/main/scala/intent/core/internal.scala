@@ -16,6 +16,10 @@ trait TestSupport extends FormatterGivens with EqGivens with ExpectGivens
 trait IntentStructure:
   private[intent] def allTestCases: Seq[ITestCase]
 
+case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase:
+  def run(): Future[TestCaseResult] =
+    Future.successful(TestCaseResult(Duration.Zero, nameParts, TestIgnored()))
+
 trait TestLanguage:
   def expect[T](expr: => T) given (pos: Position): Expect[T] = new Expect[T](expr, pos)
 
@@ -104,7 +108,7 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
         case _ => ??? // should not happen since we handle None above
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
-  private var testCases: Seq[TestCase] = Seq.empty
+  private var testCases: Seq[ITestCase] = Seq.empty
   private var reverseContextStack: Seq[Context] = Seq.empty
 
   def (context: String) using (init: => TState) given (pos: Position) : Context = ContextInit(context, () => init, pos)
@@ -117,6 +121,10 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
     val contexts = reverseContextStack.reverse
     testCases :+= TestCase(contexts, testName, testImpl, pos)
+
+  def (testName: String) ignore (testImpl: TState => Expectation): Unit =
+    val contexts = reverseContextStack.reverse
+    testCases :+= IgnoredTestCase(contexts.map(_.name) :+ testName)
 
 trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   case class SetupPart(name: String)
@@ -138,7 +146,7 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
           Future.successful(TestCaseResult(elapsed, nameParts, result))
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
-  private var testCases: Seq[TestCase] = Seq.empty
+  private var testCases: Seq[ITestCase] = Seq.empty
   private var reverseSetupStack: Seq[SetupPart] = Seq.empty
 
   def (testName: String) in (testImpl: => Expectation): Unit =
@@ -149,6 +157,10 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
     val setupPart = SetupPart(blockName)
     reverseSetupStack +:= setupPart
     try block finally reverseSetupStack = reverseSetupStack.tail
+
+  def (testName: String) ignore (testImpl: => Expectation): Unit =
+    val parts = reverseSetupStack.reverse
+    testCases :+= IgnoredTestCase(parts.map(_.name) :+ testName)
 
 // TODO: Remove duplication wrt IntentStateSyntax
 // TODO: It would be nice if we could just do 'extends IntentStateSyntax[Future[TState]]',
@@ -223,7 +235,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
         case _ => ??? // should not happen since we handle None above
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
-  private var testCases: Seq[TestCase] = Seq.empty
+  private var testCases: Seq[ITestCase] = Seq.empty
   private var reverseContextStack: Seq[Context] = Seq.empty
 
   def (context: String) using (init: => TState) given (pos: Position): Context = ContextInit(context, () => Future.successful(init), pos)
@@ -238,3 +250,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
     val contexts = reverseContextStack.reverse
     testCases :+= TestCase(contexts, testName, testImpl, pos)
+
+  def (testName: String) ignore (testImpl: TState => Expectation): Unit =
+      val contexts = reverseContextStack.reverse
+      testCases :+= IgnoredTestCase(contexts.map(_.name) :+ testName)

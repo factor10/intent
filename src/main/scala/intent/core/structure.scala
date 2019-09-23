@@ -28,6 +28,11 @@ case class TestFailed(output: String, ex: Option[Throwable]) extends Expectation
   */
 case class TestError(context: String, ex: Option[Throwable]) extends ExpectationResult
 
+/**
+ * TestIgnored is used to manually mark a test to not be evaluated.
+ */
+case class TestIgnored() extends ExpectationResult
+
 case class TestCaseResult(duration: FiniteDuration, qualifiedName: Seq[String], expectationResult: ExpectationResult)
 
 trait ITestCase:
