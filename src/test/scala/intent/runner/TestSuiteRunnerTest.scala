@@ -123,9 +123,6 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
     "when test suite cannot be instantiated" using (_.invalidTestSuiteClass) to :
       "a TestSuiteError should be received" in:
         state =>
-          // TOOD: Something better than `toCompleteWith` is needed when working with Futures.
-          //       Maybe something similar to ScalaTest eventually / whenReady?
-
           whenComplete(state.runAll()):
             possible => possible match
               case Left(e) => expect(s"${e.ex.getClass}: ${e.ex.getMessage}").toEqual("class java.lang.ClassNotFoundException: foo.Bar")
