@@ -11,9 +11,9 @@ trait Meta:
       new Expectation :
         def evaluate(): Future[ExpectationResult] =
           e.evaluate().flatMap:
-            case TestFailed(s) =>
+            case TestFailed(s, _) =>
               val expQ = Pattern.quote(expected)
               val fnQ = Pattern.quote(expectedFileName)
               expect(s).toMatch(s"^$expQ.*\\(.*$fnQ".r).evaluate()
-            case TestPassed()  => Future.successful(TestFailed("Expected a test failure")) // TODO: Describe the expect call when the macro stuff is in
+            case TestPassed()  => Future.successful(TestFailed("Expected a test failure", None))
             case t: TestError  => Future.successful(t)

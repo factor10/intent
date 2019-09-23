@@ -19,9 +19,8 @@ class OptionEq[T] given (innerEq: Eq[T]) extends Eq[Option[T]]:
       case (None, None) => true
       case _ => false
 
-trait EqGivens {
+trait EqGivens:
   given as Eq[Int] = IntEq
   given as Eq[Boolean] = BooleanEq
   given as Eq[String] = StringEq
   given [T] as Eq[Option[T]] given Eq[T] = new OptionEq[T]
-}
