@@ -36,3 +36,7 @@ class ToEqualTest extends TestSuite with Stateless:
       "Some should test inner equality" in expect(Some(42)).not.toEqual(Some(43))
       "Some should not equal None" in expect(Some(42)).not.toEqual(None)
       "None should equal None" in expect[Option[String]](None).toEqual(None)
+      "should consider custom equality" in :
+        given as intent.core.Eq[Int] :
+          def areEqual(a: Int, b: Int) = Math.abs(a - b) == 1
+        expect(Some(42)).toEqual(Some(43))
