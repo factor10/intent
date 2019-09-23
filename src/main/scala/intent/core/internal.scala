@@ -16,6 +16,11 @@ trait TestSupport extends FormatterGivens with EqGivens with ExpectGivens
 trait IntentStructure:
   private[intent] def allTestCases: Seq[ITestCase]
 
+  /**
+   * A focused intent contains at least one focused test.
+   */
+  private[intent] def isFocused: Boolean
+
 case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase:
   def run(): Future[TestCaseResult] =
     Future.successful(TestCaseResult(Duration.Zero, nameParts, TestIgnored()))
@@ -108,8 +113,11 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
         case _ => ??? // should not happen since we handle None above
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
+  private[intent] override def isFocused: Boolean = inFocusedMode
+
   private var testCases: Seq[ITestCase] = Seq.empty
   private var reverseContextStack: Seq[Context] = Seq.empty
+  private var inFocusedMode: Boolean = false
 
   def (context: String) using (init: => TState) given (pos: Position) : Context = ContextInit(context, () => init, pos)
   def (context: String) using (tx: Transform) given (pos: Position) : Context = ContextTx(context, tx, pos)
@@ -119,12 +127,27 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
     try block finally reverseContextStack = reverseContextStack.tail
 
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
-    val contexts = reverseContextStack.reverse
-    testCases :+= TestCase(contexts, testName, testImpl, pos)
+    // When in focused mode, all "ordinary" tests becomes ignored
+    if (inFocusedMode) then
+      val contexts = reverseContextStack.reverse
+      testCases :+= IgnoredTestCase(contexts.map(_.name) :+ testName)
+    else
+      val contexts = reverseContextStack.reverse
+      testCases :+= TestCase(contexts, testName, testImpl, pos)
 
   def (testName: String) ignore (testImpl: TState => Expectation): Unit =
     val contexts = reverseContextStack.reverse
     testCases :+= IgnoredTestCase(contexts.map(_.name) :+ testName)
+
+  def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
+    // If this is the first focused test, any existing testCase was not focused,
+    // and hence should be converted to ignored to ignored tests (without execution)
+    if (!inFocusedMode) then
+      inFocusedMode = true
+      testCases = testCases.map(existing => IgnoredTestCase(existing.nameParts))
+
+    val contexts = reverseContextStack.reverse
+    testCases :+= TestCase(contexts, testName, testImpl, pos)
 
 trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   case class SetupPart(name: String)
@@ -146,12 +169,20 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
           Future.successful(TestCaseResult(elapsed, nameParts, result))
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
+  private[intent] override def isFocused: Boolean = inFocusedMode
+
   private var testCases: Seq[ITestCase] = Seq.empty
   private var reverseSetupStack: Seq[SetupPart] = Seq.empty
+  private var inFocusedMode = false
 
   def (testName: String) in (testImpl: => Expectation): Unit =
-    val parts = reverseSetupStack.reverse
-    testCases :+= TestCase(parts, testName, () => testImpl)
+    // When in focused mode, all "ordinary" tests becomes ignored
+    if inFocusedMode then
+      val parts = reverseSetupStack.reverse
+      testCases :+= IgnoredTestCase(parts.map(_.name) :+ testName)
+    else
+      val parts = reverseSetupStack.reverse
+      testCases :+= TestCase(parts, testName, () => testImpl)
 
   def (blockName: String) apply (block: => Unit): Unit =
     val setupPart = SetupPart(blockName)
@@ -161,6 +192,16 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   def (testName: String) ignore (testImpl: => Expectation): Unit =
     val parts = reverseSetupStack.reverse
     testCases :+= IgnoredTestCase(parts.map(_.name) :+ testName)
+
+  def (testName: String) focus (testImpl: => Expectation): Unit =
+    // If this is the first focused test, any existing testCase was not focused,
+    // and hence should be converted to ignored to ignored tests (without execution)
+    if (!inFocusedMode)
+      inFocusedMode = true
+      testCases = testCases.map(existing => IgnoredTestCase(existing.nameParts))
+
+    val parts = reverseSetupStack.reverse
+    testCases :+= TestCase(parts, testName, () => testImpl)
 
 // TODO: Remove duplication wrt IntentStateSyntax
 // TODO: It would be nice if we could just do 'extends IntentStateSyntax[Future[TState]]',
@@ -235,8 +276,11 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
         case _ => ??? // should not happen since we handle None above
 
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
+  private[intent] override def isFocused: Boolean = inFocusedMode
+
   private var testCases: Seq[ITestCase] = Seq.empty
   private var reverseContextStack: Seq[Context] = Seq.empty
+  private var inFocusedMode: Boolean = false
 
   def (context: String) using (init: => TState) given (pos: Position): Context = ContextInit(context, () => Future.successful(init), pos)
   def (context: String) usingAsync (init: => Future[TState]) given (pos: Position): Context = ContextInit(context, () => init, pos)
@@ -248,9 +292,24 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
     try block finally reverseContextStack = reverseContextStack.tail
 
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
-    val contexts = reverseContextStack.reverse
-    testCases :+= TestCase(contexts, testName, testImpl, pos)
+    // When in focused mode, all "ordinary" tests becomes ignored
+    if inFocusedMode then
+      val contexts = reverseContextStack.reverse
+      testCases :+= IgnoredTestCase(contexts.map(_.name) :+ testName)
+    else
+      val contexts = reverseContextStack.reverse
+      testCases :+= TestCase(contexts, testName, testImpl, pos)
 
   def (testName: String) ignore (testImpl: TState => Expectation): Unit =
       val contexts = reverseContextStack.reverse
       testCases :+= IgnoredTestCase(contexts.map(_.name) :+ testName)
+
+  def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
+    // If this is the first focused test, any existing testCase was not focused,
+    // and hence should be converted to ignored to ignored tests (without execution)
+    if (!inFocusedMode)
+      inFocusedMode = true
+      testCases = testCases.map(existing => IgnoredTestCase(existing.nameParts))
+
+    val contexts = reverseContextStack.reverse
+    testCases :+= TestCase(contexts, testName, testImpl, pos)

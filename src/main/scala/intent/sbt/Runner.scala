@@ -40,22 +40,41 @@ class SbtRunner(
   val remoteArgs: Array[String],
   classLoader: ClassLoader) extends Runner:
 
-
   def done(): String =
     // This is called when test is done, and after that the test task myst not be called
     // Whatever is returned here is printed in the SBT log just before the summary
     ""
 
-  def tasks(list: Array[TaskDef]): Array[Task] = list.map(SbtTask(_, classLoader))
+  /**
+   * Called by SBT with all the classes that match our fingerprint.
+   *
+   */
+  def tasks(potentialTasks: Array[TaskDef]): Array[Task] =
+    case class Suite(td: TaskDef, structure: IntentStructure)
 
-/**
- * Top-level task runner, which in our case instantiates and loads a **Test Suite**
- * and run all the contained tests in there.
- *
- * Currently SBT feedback is only the name of the failed suite and not the specific
- * test.
- */
-class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task:
+    val runner = new TestSuiteRunner(classLoader)
+    var focusMode = false
+    var potentialSuites: Array[Suite] = potentialTasks
+      .map(td => {
+        runner.evaluateSuite(td.fullyQualifiedName) match {
+          case Left(ex) =>
+            // At this point there is no loggers, so just throw and abort execution.
+            // Errors here might occur if the class cannot be found, or if an error
+            // happen while instantiating
+            throw ex
+          case Right(suite) =>
+            if suite.isFocused then focusMode = true
+            Suite(td, suite)
+        }
+      })
+
+    if focusMode then
+      potentialSuites = potentialSuites.filter(_.structure.isFocused)
+
+    potentialSuites
+      .map(s => SbtTask(s.td, s.structure, runner, focusMode))
+
+class SbtTask(td: TaskDef, suit: IntentStructure, runner: TestSuiteRunner, focusMode: Boolean) extends Task:
   import scala.concurrent.{Await, Future}
   import scala.concurrent.duration._
   import scala.concurrent.ExecutionContext
@@ -72,14 +91,13 @@ class SbtTask(td: TaskDef, classLoader: ClassLoader) extends Task:
     Await.result(executeSuite(handler, loggers), Duration.Inf)
 
   private def executeSuite(handler: EventHandler, loggers: Array[Logger]) given (ec: ExecutionContext): Future[Array[Task]] =
-    val runner = new TestSuiteRunner(classLoader)
     val eventSubscriber = new Subscriber[TestCaseResult]:
       override def onNext(event: TestCaseResult): Unit =
         val sbtEvent = event.expectationResult match
-          case success: TestPassed => SuccessfulEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint)
-          case failure: TestFailed => FailedEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, failure.output, failure.ex)
-          case error: TestError => ErrorEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, error.context, error.ex)
-          case ignored: TestIgnored => IgnoredEvent(taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint)
+          case success: TestPassed  => SuccessfulEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, focusMode)
+          case failure: TestFailed  => FailedEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, focusMode, failure.output, failure.ex)
+          case error: TestError     => ErrorEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, focusMode, error.context, error.ex)
+          case ignored: TestIgnored => IgnoredEvent(taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, focusMode)
         handler.handle(sbtEvent)
         sbtEvent.log(loggers, event.duration.toMillis)
 
@@ -90,7 +108,7 @@ trait LoggedEvent(color: String, prefix: String, suiteName: String, testNames: S
 
   def log(loggers: Array[Logger], executionTime: Long): Unit = loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms)"))
 
-case class SuccessfulEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint) extends Event
+case class SuccessfulEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean) extends Event
   with LoggedEvent(Console.GREEN, "PASSED", suiteName, testNames):
 
   override def fullyQualifiedName = suiteName
@@ -98,7 +116,7 @@ case class SuccessfulEvent(duration: Long, suiteName: String, testNames: Seq[Str
   override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString(" >> "))
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
 
-case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, assertionMessage: String, err: Option[Throwable]) extends Event
+case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean, assertionMessage: String, err: Option[Throwable]) extends Event
   with LoggedEvent(Console.RED, "FAILED", suiteName, testNames):
   val color = Console.RED // Why are not these inherited form LoggedEvent?
   val prefix = "FAILED"
@@ -114,7 +132,7 @@ case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String]
     val error = err.map(e => "\n\n" + printErrorWithPrefix(e, s"\t${color}")).getOrElse("")
     loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${color}${assertionMessage}${error}"))
 
-case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, errContext: String, err: Option[Throwable]) extends Event
+case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean, errContext: String, err: Option[Throwable]) extends Event
   with LoggedEvent(Console.RED, "ERROR", suiteName, testNames) {
   val color = Console.RED // Why are not these inherited form LoggedEvent?
   val prefix = "ERROR"
@@ -130,7 +148,7 @@ case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String],
     loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${color}${errContext}${error}"))
 }
 
-case class IgnoredEvent(suiteName: String, testNames: Seq[String], fingerprint: Fingerprint) extends Event
+case class IgnoredEvent(suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean) extends Event
   with LoggedEvent(Console.YELLOW, "IGNORED", suiteName, testNames):
 
   override def duration = 0L
@@ -138,3 +156,5 @@ case class IgnoredEvent(suiteName: String, testNames: Seq[String], fingerprint: 
   override def status = sbt.testing.Status.Ignored
   override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString(" >> "))
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
+  override def log(loggers: Array[Logger], executionTime: Long): Unit =
+      if (!focusMode) then super.log(loggers, executionTime)
