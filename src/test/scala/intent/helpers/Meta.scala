@@ -1,6 +1,6 @@
 package intent.helpers
 
-import intent.core.{ExpectationResult, Expectation, TestError, TestFailed, TestPassed, TestLanguage, TestSupport}
+import intent.core._
 import scala.concurrent.{Future, ExecutionContext}
 import java.util.regex.Pattern
 
@@ -15,5 +15,6 @@ trait Meta:
               val expQ = Pattern.quote(expected)
               val fnQ = Pattern.quote(expectedFileName)
               expect(s).toMatch(s"^$expQ.*\\(.*$fnQ".r).evaluate()
-            case TestPassed()  => Future.successful(TestFailed("Expected a test failure", None))
-            case t: TestError  => Future.successful(t)
+            case TestPassed()   => Future.successful(TestFailed("Expected a test failure", None))
+            case TestIgnored()  => Future.successful(TestFailed("Expected a test failure", None))
+            case t: TestError   => Future.successful(t)
