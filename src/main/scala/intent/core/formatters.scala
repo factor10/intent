@@ -6,6 +6,9 @@ trait Formatter[T]:
 object IntFmt extends Formatter[Int]:
   def format(i: Int): String = i.toString
 
+object DoubleFmt extends Formatter[Double]:
+  def format(d: Double): String = d.toString // TODO: Consider Locale here, maybe take as given??
+
 object BooleanFmt extends Formatter[Boolean]:
   def format(b: Boolean): String = b.toString
 
@@ -15,20 +18,21 @@ object StringFmt extends Formatter[String]:
 object CharFmt extends Formatter[Char]:
   def format(ch: Char): String = s"'$ch'"
 
-object ThrowableFmt extends Formatter[Throwable]:
-  def format(t: Throwable): String =
+class ThrowableFmt[T <: Throwable] extends Formatter[T]:
+  def format(t: T): String =
     // TODO: stack trace??
     s"${t.getClass.getName}: ${t.getMessage}"
 
-class OptionFmt[T] given (innerFmt: Formatter[T]) extends Formatter[Option[T]]:
-  def format(value: Option[T]): String = value match
+class OptionFmt[TInner, T <: Option[TInner]] given (innerFmt: Formatter[TInner]) extends Formatter[T]:
+  def format(value: T): String = value match
     case Some(x) => s"Some(${innerFmt.format(x)})"
     case None => "None"
 
 trait FormatterGivens:
   given as Formatter[Int] = IntFmt
-  given as Formatter[Throwable] = ThrowableFmt
+  given [T <: Throwable] as Formatter[T] = ThrowableFmt[T]
   given as Formatter[Boolean] = BooleanFmt
   given as Formatter[String] = StringFmt
   given as Formatter[Char] = CharFmt
-  given [T] as Formatter[Option[T]] given Formatter[T] = new OptionFmt[T]
+  given as Formatter[Double] = DoubleFmt
+  given [TInner, T <: Option[TInner]] as Formatter[T] given Formatter[TInner] = OptionFmt[TInner, T]

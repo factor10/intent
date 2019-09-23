@@ -6,6 +6,10 @@ trait Eq[T]:
 object IntEq extends Eq[Int]:
   def areEqual(a: Int, b: Int): Boolean = a == b
 
+// TODO: Consider precision here, or use special mather: toBeCloseTo (like Jasmine)
+object DoubleEq extends Eq[Double]:
+  def areEqual(a: Double, b: Double): Boolean = a == b
+
 object BooleanEq extends Eq[Boolean]:
   def areEqual(a: Boolean, b: Boolean): Boolean = a == b
 
@@ -15,8 +19,8 @@ object StringEq extends Eq[String]:
 object CharEq extends Eq[Char]:
   def areEqual(a: Char, b: Char): Boolean = a == b
 
-class OptionEq[T] given (innerEq: Eq[T]) extends Eq[Option[T]]:
-  def areEqual(a: Option[T], b: Option[T]): Boolean =
+class OptionEq[TInner, T <: Option[TInner]] given (innerEq: Eq[TInner]) extends Eq[T]:
+  def areEqual(a: T, b: T): Boolean =
     (a, b) match
       case (Some(aa), Some(bb)) => innerEq.areEqual(aa, bb)
       case (None, None) => true
@@ -27,4 +31,5 @@ trait EqGivens:
   given as Eq[Boolean] = BooleanEq
   given as Eq[String] = StringEq
   given as Eq[Char] = CharEq
-  given [T] as Eq[Option[T]] given Eq[T] = new OptionEq[T]
+  given as Eq[Double] = DoubleEq
+  given [TInner, T <: Option[TInner]] as Eq[T] given Eq[TInner] = OptionEq[TInner, T]
