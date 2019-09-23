@@ -6,8 +6,6 @@ import intent.runner.{TestSuiteRunner, TestSuiteError, TestSuiteResult}
 import intent.testdata._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
-import scala.concurrent.Await
 
 class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
   "TestSuiteRunner" using TestSuiteTestCase() to :
@@ -15,60 +13,60 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
     "running an empty suite" using (_.emptyTestSuite) to :
       "report that zero tests were run" in:
         state =>
-          val possible = Await.result(state.runAll(), 5 seconds)
-          possible match
-            case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.total).toEqual(0)  // TODO: Match on case class or individual fields?
+          whenComplete(state.runAll()):
+            possible => possible match
+              case Left(_) => fail("Unexpected Left")
+              case Right(result) => expect(result.total).toEqual(0)  // TODO: Match on case class or individual fields?
 
     "running the OneOfEachResultTestSuite (stateless)" using (_.oneOfEachResult) to :
       "report that totally 4 test was run" in:
         state =>
-          val possible = Await.result(state.runAll(), 5 seconds)
-          possible match
-            case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.total).toEqual(4)
+          whenComplete(state.runAll()):
+            possible => possible match
+              case Left(_) => fail("Unexpected Left")
+              case Right(result) => expect(result.total).toEqual(4)
 
       "report that 1 test was successful" in:
         state =>
-          val possible = Await.result(state.runAll(), 5 seconds)
-          possible match
-            case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.successful).toEqual(1)
+          whenComplete(state.runAll()):
+            possible => possible match
+              case Left(_) => fail("Unexpected Left")
+              case Right(result) => expect(result.successful).toEqual(1)
 
       "report that 1 test was failed" in:
         state =>
-          val possible = Await.result(state.runAll(), 5 seconds)
-          possible match
-            case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.failed).toEqual(1)
+          whenComplete(state.runAll()):
+            possible => possible match
+              case Left(_) => fail("Unexpected Left")
+              case Right(result) => expect(result.failed).toEqual(1)
 
       "report that 1 test had errors" in:
         state =>
-          val possible = Await.result(state.runAll(), 5 seconds)
-          possible match
-            case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.errors).toEqual(1)
+          whenComplete(state.runAll()):
+            possible => possible match
+              case Left(_) => fail("Unexpected Left")
+              case Right(result) => expect(result.errors).toEqual(1)
 
       "report that 1 test was ignored" in:
         state =>
-          val possible = Await.result(state.runAll(), 5 seconds)
-          possible match
-            case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.ignored).toEqual(1)
+          whenComplete(state.runAll()):
+            possible => possible match
+              case Left(_) => fail("Unexpected Left")
+              case Right(result) => expect(result.ignored).toEqual(1)
 
       "with a registered event subscriber" using (_.copy()) to : // TODO: can we use identity here?
         "should publish 4 events" in:
           state =>
-            val _ = Await.result(state.runWithEventSubscriber(), 5 seconds)
-            expect(state.receivedEvents()).toHaveLength(4)
+            whenComplete(state.runWithEventSubscriber()):
+              _ => expect(state.receivedEvents()).toHaveLength(4)
 
     "running the OneOfEachResulStatefulTestSuite (stateful)" using (_.oneOfEachResultState) to:
       "report that 1 test was ignored" in:
         state =>
-          val possible = Await.result(state.runAll(), 5 seconds)
-          possible match
-            case Left(_) => fail("Unexpected Left")
-            case Right(result) => expect(result.ignored).toEqual(1)
+          whenComplete(state.runAll()):
+            possible => possible match
+              case Left(_) => fail("Unexpected Left")
+              case Right(result) => expect(result.ignored).toEqual(1)
 
     "when test suite cannot be instantiated" using (_.invalidTestSuiteClass) to :
       "a TestSuiteError should be received" in:
@@ -76,10 +74,10 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
           // TOOD: Something better than `toCompleteWith` is needed when working with Futures.
           //       Maybe something similar to ScalaTest eventually / whenReady?
 
-          val possible = Await.result(state.runAll(), 5 seconds)
-          possible match
-            case Left(e) => expect(s"${e.ex.getClass}: ${e.ex.getMessage}").toEqual("class java.lang.ClassNotFoundException: foo.Bar")
-            case Right(_) => expect(false).toEqual(true)
+          whenComplete(state.runAll()):
+            possible => possible match
+              case Left(e) => expect(s"${e.ex.getClass}: ${e.ex.getMessage}").toEqual("class java.lang.ClassNotFoundException: foo.Bar")
+              case Right(_) => expect(false).toEqual(true)
 
 /**
  * Wraps a runner for a specific test suite
