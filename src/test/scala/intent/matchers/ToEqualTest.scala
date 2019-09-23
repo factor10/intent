@@ -22,3 +22,7 @@ class ToEqualTest extends TestSuite with Stateless:
       "<foo> should *not* equal <bar>" in expect("foo").not.toEqual("bar")
 
       "<🤓> should equal <🤓>" in expect("🤓").toEqual("🤓")
+
+    "for Char" :
+      "should support equality test" in expect('a').toEqual('a')
+      "should support inequality test" in expect('a').not.toEqual('A')
