@@ -57,7 +57,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
             case Right(result) => expect(result.ignored).toEqual(1)
 
       "with a registered event subscriber" using (_.copy()) to : // TODO: can we use identity here?
-        "should publish € events" in:
+        "should publish 4 events" in:
           state =>
             val _ = Await.result(state.runWithEventSubscriber(), 5 seconds)
             expect(state.receivedEvents()).toHaveLength(4)
