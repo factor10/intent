@@ -13,9 +13,9 @@ trait TestSupport extends FormatterGivens with EqGivens with ExpectGivens
 trait IntentStructure:
   private[intent] def allTestCases: Seq[ITestCase]
 
-  case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase:
-    def run(): Future[TestCaseResult] =
-      Future.successful(TestCaseResult(Duration.Zero, nameParts, TestIgnored()))
+case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase:
+  def run(): Future[TestCaseResult] =
+    Future.successful(TestCaseResult(Duration.Zero, nameParts, TestIgnored()))
 
 trait TestLanguage:
   def expect[T](expr: => T) given (pos: Position): Expect[T] = new Expect[T](expr, pos)
