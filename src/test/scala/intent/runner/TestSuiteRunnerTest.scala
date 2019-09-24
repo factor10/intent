@@ -4,6 +4,7 @@ import intent.{TestSuite, State, Stateless, AsyncState}
 import intent.core.{Expectation, ExpectationResult, TestError, TestFailed, Subscriber, TestCaseResult, IntentStructure}
 import intent.runner.{TestSuiteRunner, TestSuiteError, TestSuiteResult}
 import intent.testdata._
+import intent.helpers.TestSuiteRunnerTester
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -211,7 +212,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
 /**
  * Wraps a runner for a specific test suite
  */
-case class TestSuiteTestCase(suiteClassName: String = null) given (ec: ExecutionContext) extends Subscriber[TestCaseResult]:
+case class TestSuiteTestCase(suiteClassName: String = null) given (ec: ExecutionContext) extends TestSuiteRunnerTester:
 
   def emptyTestSuite = TestSuiteTestCase("intent.testdata.EmtpyTestSuite")
   def invalidTestSuiteClass = TestSuiteTestCase("foo.Bar")
@@ -224,30 +225,6 @@ case class TestSuiteTestCase(suiteClassName: String = null) given (ec: Execution
   def focusedStatelessTestSuite = TestSuiteTestCase("intent.runner.FocusedStatelessTestSuite")
   def focusedStatefulTestSuite = TestSuiteTestCase("intent.runner.FocusedStatefulTestSuite")
   def focusedAsyncTestSuite = TestSuiteTestCase("intent.runner.FocusedAsyncStatefulTestSuite")
-
-  private object lock
-  val runner = new TestSuiteRunner(cl)
-  var events = List[TestCaseResult]()
-
-  def runAll(): Future[Either[TestSuiteError, TestSuiteResult]] =
-    assert(suiteClassName != null, "Suite class name must be set")
-    runner.runSuite(suiteClassName)
-
-  def runWithEventSubscriber(): Future[Either[TestSuiteError, TestSuiteResult]] =
-    assert(suiteClassName != null, "Suite class name must be set")
-    runner.runSuite(suiteClassName, Some(this))
-
-  def evaluate(): IntentStructure = runner.evaluateSuite(suiteClassName) match
-    case Right(r) => r
-    case Left(err) => ???
-
-  def receivedEvents(): Seq[TestCaseResult] = events
-
-  override def onNext(event: TestCaseResult): Unit =
-    lock.synchronized:
-      events :+= event
-
-  private def cl = getClass.getClassLoader
 
 class OneOfEachResultTestSuite extends Stateless :
   "successful" in success()
