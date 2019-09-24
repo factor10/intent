@@ -237,7 +237,9 @@ case class TestSuiteTestCase(suiteClassName: String = null) given (ec: Execution
     assert(suiteClassName != null, "Suite class name must be set")
     runner.runSuite(suiteClassName, Some(this))
 
-  def evaluate(): IntentStructure = runner.evaluateSuite(suiteClassName).right.get
+  def evaluate(): IntentStructure = runner.evaluateSuite(suiteClassName) match
+    case Right(r) => r
+    case Left(err) => ???
 
   def receivedEvents(): Seq[TestCaseResult] = events
 
