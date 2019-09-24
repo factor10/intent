@@ -9,6 +9,9 @@ object IntFmt extends Formatter[Int]:
 object DoubleFmt extends Formatter[Double]:
   def format(d: Double): String = d.toString // TODO: Consider Locale here, maybe take as given??
 
+object FloatFmt extends Formatter[Float]:
+  def format(f: Float): String = f.toString // TODO: Consider Locale here, maybe take as given??
+
 object BooleanFmt extends Formatter[Boolean]:
   def format(b: Boolean): String = b.toString
 
@@ -35,4 +38,5 @@ trait FormatterGivens:
   given as Formatter[String] = StringFmt
   given as Formatter[Char] = CharFmt
   given as Formatter[Double] = DoubleFmt
+  given as Formatter[Float] = FloatFmt
   given [TInner, T <: Option[TInner]] as Formatter[T] given Formatter[TInner] = OptionFmt[TInner, T]
