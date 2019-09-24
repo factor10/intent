@@ -35,3 +35,20 @@ in yellow.
 
 > Note: A ignored test will not be evaluated, but the signature must be valid so
 > it needs to return an expectation.
+
+
+## Focusing tests
+
+If you only want to run a single (or a few) tests, you can substitute the `in`
+keyword with `focus`.
+
+```scala
+"test work in progress" focus:
+  expect(30 + 3).toEqual(33)
+```
+
+This will result in that _only_ focused tests are run, and all other tests are
+marked interpreted as ignored.
+
+> When in focued mode, SBT reporting will only print success or failure for tests
+> no ignored tests will be logged.

@@ -62,6 +62,14 @@ class TestSuiteRunner(classLoader: ClassLoader) extends HotObservable[TestCaseRe
       case Success(instance) => runTestsForSuite(instance, eventSubscriber).map(res => Right(res))
       case Failure(ex: Throwable) => Future.successful(Left(TestSuiteError(ex)))
 
+  /**
+   * Instantiate the given test suite and evaluate which tests that should be run or ignored
+   */
+  private[intent] def evaluateSuite(className: String): Either[TestSuiteError, IntentStructure] =
+    instantiateSuite(className) match
+      case Success(instance) => Right(instance)
+      case Failure(ex: Throwable) => Left(TestSuiteError(ex))
+
   private def runTestsForSuite(suite: IntentStructure, eventSubscriber: Option[Subscriber[TestCaseResult]]) given(ec: ExecutionContext): Future[TestSuiteResult] =
     // TODO: We should measure Suite time as well. Might be good to find expensive setup or scheduling problems.
     val futureTestResults = suite.allTestCases.map(tc =>
