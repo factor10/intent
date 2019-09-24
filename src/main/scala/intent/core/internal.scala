@@ -142,7 +142,7 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
     // If this is the first focused test, any existing testCase was not focused,
     // and hence should be converted to ignored to ignored tests (without execution)
-    if (!inFocusedMode) then
+    if !inFocusedMode then
       inFocusedMode = true
       testCases = testCases.map(existing => IgnoredTestCase(existing.nameParts))
 
@@ -196,7 +196,7 @@ trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
   def (testName: String) focus (testImpl: => Expectation): Unit =
     // If this is the first focused test, any existing testCase was not focused,
     // and hence should be converted to ignored to ignored tests (without execution)
-    if (!inFocusedMode)
+    if !inFocusedMode then
       inFocusedMode = true
       testCases = testCases.map(existing => IgnoredTestCase(existing.nameParts))
 
@@ -307,7 +307,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStructure with TestLanguage:
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
     // If this is the first focused test, any existing testCase was not focused,
     // and hence should be converted to ignored to ignored tests (without execution)
-    if (!inFocusedMode)
+    if !inFocusedMode then
       inFocusedMode = true
       testCases = testCases.map(existing => IgnoredTestCase(existing.nameParts))
 

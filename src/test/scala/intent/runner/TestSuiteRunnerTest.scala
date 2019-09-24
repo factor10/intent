@@ -121,12 +121,12 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
               case Right(result) => expect(result.ignored).toEqual(1)
 
     "running the FocusedStatelessTestSuite" using (_.focusedStatelessTestSuite) to:
-      "report that 1 test was run" in:
+      "report that 2 tests were run" in:
         state =>
           whenComplete(state.runAll()):
             possible => possible match
               case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.successful).toEqual(1)
+              case Right(result) => expect(result.successful).toEqual(2)
 
       "report that 1 test was ignored" in:
         state =>
@@ -136,12 +136,12 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
               case Right(result) => expect(result.ignored).toEqual(1)
 
     "running the FocusedStatefulTestSuite" using (_.focusedStatefulTestSuite) to:
-      "report that 1 test was run" in:
+      "report that 2 tests were run" in:
         state =>
           whenComplete(state.runAll()):
             possible => possible match
               case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.successful).toEqual(1)
+              case Right(result) => expect(result.successful).toEqual(2)
 
       "report that 1 test was ignored" in:
         state =>
@@ -151,12 +151,12 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
               case Right(result) => expect(result.ignored).toEqual(1)
 
     "running the FocusedAsyncStatefulTestSuite" using (_.focusedAsyncTestSuite) to:
-      "report that 1 test was run" in:
+      "report that 2 tests were run" in:
         state =>
           whenComplete(state.runAll()):
             possible => possible match
               case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.successful).toEqual(1)
+              case Right(result) => expect(result.successful).toEqual(2)
 
       "report that 1 test was ignored" in:
         state =>
@@ -299,6 +299,7 @@ class StatefulNoContextAsyncTestSuite extends AsyncState[StatefulFailingTestStat
 class FocusedStatelessTestSuite extends Stateless:
   "should not be run" in fail("Test is not expected to run!")
   "should be run" focus success()
+  "should also be run" focus success()
 
 class FocusedStatefulTestSuite extends State[Unit]:
   "with state" using (()) to:
@@ -306,10 +307,14 @@ class FocusedStatefulTestSuite extends State[Unit]:
       _ => fail("Test is not expected to run!")
     "should be run" focus:
       _ => success()
+    "should also be run" focus:
+      _ => success()
 
 class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]:
   "with state" usingAsync (Future.successful(())) to:
     "should not be run" in:
       _ => fail("Test is not expected to run!")
     "should be run" focus:
+      _ => success()
+    "should also be run" focus:
       _ => success()
