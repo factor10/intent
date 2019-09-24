@@ -81,7 +81,7 @@ expect(Seq(1, 2, 3)).toContain(2)
 
 ### .toCompleteWith
 
-Match the result of a `Future` to equal the exepected value.
+Match the result of a `Future` to equal the expected value.
 
 ```scala
 expect(Future.successful("foo")).toCompleteWith("foo")

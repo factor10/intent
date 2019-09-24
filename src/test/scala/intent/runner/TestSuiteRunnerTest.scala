@@ -295,19 +295,19 @@ class StatefulNoContextAsyncTestSuite extends AsyncState[StatefulFailingTestStat
     _ => expect(1).toEqual(2)
 
 class FocusedStatelessTestSuite extends Stateless:
-  "should not be run" in fail("Test is not exepected to run!")
+  "should not be run" in fail("Test is not expected to run!")
   "should be run" focus success()
 
 class FocusedStatefulTestSuite extends State[Unit]:
   "with state" using (()) to:
     "should not be run" in:
-      _ => fail("Test is not exepected to run!")
+      _ => fail("Test is not expected to run!")
     "should be run" focus:
       _ => success()
 
 class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]:
   "with state" usingAsync (Future.successful(())) to:
     "should not be run" in:
-      _ => fail("Test is not exepected to run!")
+      _ => fail("Test is not expected to run!")
     "should be run" focus:
       _ => success()
