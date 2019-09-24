@@ -12,26 +12,23 @@ object DefaultDoubleFloatingPointPrecision extends FloatingPointPrecision[Double
 object DefaultFloatFloatingPointPrecision extends FloatingPointPrecision[Float]:
   def numberOfDecimals: Int = 6
 
+private def compareFPs[T : Numeric](a: T, b: T) given (prec: FloatingPointPrecision[T]): Boolean =
+  if a == b then
+    return true
+  val num = the[Numeric[T]]
+  val mul = math.pow(10, prec.numberOfDecimals.asInstanceOf[Double])
+  val am = math.floor(num.toDouble(a) * mul)
+  val bm = math.floor(num.toDouble(b) * mul)
+  am == bm
+
 object IntEq extends Eq[Int]:
   def areEqual(a: Int, b: Int): Boolean = a == b
 
 class DoubleEq given (prec: FloatingPointPrecision[Double]) extends Eq[Double]:
-  def areEqual(a: Double, b: Double): Boolean =
-    if a == b then
-      return true
-    val mul = math.pow(10, prec.numberOfDecimals.asInstanceOf[Double])
-    val am = math.floor(a * mul)
-    val bm = math.floor(b * mul)
-    am == bm
+  def areEqual(a: Double, b: Double): Boolean = compareFPs(a, b)
 
 class FloatEq given (prec: FloatingPointPrecision[Float]) extends Eq[Float]:
-  def areEqual(a: Float, b: Float): Boolean =
-    if a == b then
-      return true
-    val mul = math.pow(10, prec.numberOfDecimals.asInstanceOf[Double])
-    val am = math.floor(a * mul)
-    val bm = math.floor(b * mul)
-    am == bm
+  def areEqual(a: Float, b: Float): Boolean = compareFPs(a, b)
 
 object BooleanEq extends Eq[Boolean]:
   def areEqual(a: Boolean, b: Boolean): Boolean = a == b
