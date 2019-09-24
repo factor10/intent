@@ -31,6 +31,14 @@ class ToEqualTest extends TestSuite with Stateless:
       "should support equality test" in expect(3.14d).toEqual(3.14d)
       "should support inequality test" in expect(3.14d).not.toEqual(2.72d)
 
+      "with precision" :
+        "should test equal with 12 decimals" in expect(1.123456789123d).toEqual(1.123456789123d)
+        "should allow diff in the 13th decimal" in expect(1.1234567891234d).toEqual(1.1234567891235d)
+        "should allow customization of precision" in:
+          given customPrecision as intent.core.FloatingPointPrecision :
+            def numberOfDecimals: Int = 2
+          expect(1.234).toEqual(1.235)
+
     "for Option" :
       "Some should equal Some" in expect(Some(42)).toEqual(Some(42))
       "Some should test inner equality" in expect(Some(42)).not.toEqual(Some(43))

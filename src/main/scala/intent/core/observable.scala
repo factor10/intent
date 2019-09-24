@@ -29,6 +29,7 @@ trait HotObservable[T] extends Observable[T]:
       try {
          s.onNext(event)
       } catch {
-        case _ => /* Like a boss! */
+        case e =>
+          /* Like a boss! */
       }
   })
