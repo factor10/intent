@@ -50,19 +50,21 @@ trait TestLanguage:
   // TODO: Can this be overridden? Or do we need a protected def
   given executionContext as ExecutionContext = ExecutionContext.global
 
-trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
+sealed trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
   type Transform = TState => TState
 
-  trait Context:
+  protected[intent] def isStateful: Boolean
+
+  private[intent] sealed trait Context:
     def name: String
     def transform(opt: Option[TState]): Option[TState]
     def position: Position
-  case class ContextInit(name: String, init: () => TState, position: Position) extends Context:
+  private[intent] case class ContextInit(name: String, init: () => TState, position: Position) extends Context:
     def transform(opt: Option[TState]) = Some(init())
-  case class ContextTx(name: String, tx: Transform, position: Position) extends Context:
+  private[intent] case class ContextTx(name: String, tx: Transform, position: Position) extends Context:
     def transform(opt: Option[TState]) = opt.map(tx)
 
-  case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase:
+  private[intent] case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase:
     def nameParts: Seq[String] = contexts.map(_.name) :+ name
     def run(): Future[TestCaseResult] =
       import PositionDescription._
@@ -79,8 +81,8 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
       def failure(msg: String, ex: Option[Throwable], pos: Position): TestCaseResult =
         result(msg, ex, pos, TestFailed.apply)
 
-      if contexts.size == 0 then
-        return Future.successful(error("Top-level test cases are not allowed in a state-based test suite", None, tcPosition))
+      if isStateful && contexts.size == 0 then
+       return Future.successful(error("Top-level test cases are not allowed in a state-based test suite", None, tcPosition))
 
       // Execute the contexts. If a transformation results in None, something is seriously wrong
       // so treat as error. If an exception is thrown, treat as test failure (since we have started
@@ -99,9 +101,11 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
 
       postSetup match
         case Left(r) => Future.successful(r)
-        case Right(Some(state)) =>
+        case Right(opt) =>
           try
-            val expectation = impl(state)
+            // The getOrElse+asInstanceOf part is ugly, but it is only required in the
+            // stateless case, in which case TState == Unit.
+            val expectation = impl(opt.getOrElse(()).asInstanceOf[TState])
             expectation.evaluate().map { result =>
               val elapsed = (System.nanoTime - before).nanos
               TestCaseResult(elapsed, nameParts, result)
@@ -110,98 +114,90 @@ trait IntentStateSyntax[TState] extends IntentStructure with TestLanguage:
             case NonFatal(t) =>
               Future.successful(failure("Test failure", Some(t), tcPosition))
 
-        case _ => ??? // should not happen since we handle None above
-
   private[intent] override def allTestCases: Seq[ITestCase] = testCases
   private[intent] override def isFocused: Boolean = inFocusedMode
 
+  private[intent] def withContext(ctx: Context)(block: => Unit): Unit =
+    reverseContextStack +:= ctx
+    try block finally reverseContextStack = reverseContextStack.tail
+
+  private[intent] def contextsInOrder: Seq[Context] = reverseContextStack.reverse
+  private[intent] def addTestCase(tc: ITestCase): Unit = testCases :+= tc
+  private[intent] def rewriteTestCases(mapper: ITestCase => ITestCase): Unit =
+    testCases = testCases.map(mapper)
+
   private var testCases: Seq[ITestCase] = Seq.empty
   private var reverseContextStack: Seq[Context] = Seq.empty
-  private var inFocusedMode: Boolean = false
+  protected var inFocusedMode: Boolean = false
+
+/**
+  * Provides the Intent stateful test syntax, i.e. where contexts arrange state and
+  * test cases act and assert on the state. 
+  */
+trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
+
+  protected[intent] override def isStateful = true
 
   def (context: String) using (init: => TState) given (pos: Position) : Context = ContextInit(context, () => init, pos)
   def (context: String) using (tx: Transform) given (pos: Position) : Context = ContextTx(context, tx, pos)
 
-  def (ctx: Context) to (block: => Unit): Unit =
-    reverseContextStack +:= ctx
-    try block finally reverseContextStack = reverseContextStack.tail
+  def (ctx: Context) to (block: => Unit): Unit = withContext(ctx)(block)
 
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
     // When in focused mode, all "ordinary" tests becomes ignored
-    if (inFocusedMode) then
-      val contexts = reverseContextStack.reverse
-      testCases :+= IgnoredTestCase(contexts.map(_.name) :+ testName)
+    val contexts = contextsInOrder
+    if inFocusedMode then
+      addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
     else
-      val contexts = reverseContextStack.reverse
-      testCases :+= TestCase(contexts, testName, testImpl, pos)
+      addTestCase(TestCase(contexts, testName, testImpl, pos))
 
   def (testName: String) ignore (testImpl: TState => Expectation): Unit =
-    val contexts = reverseContextStack.reverse
-    testCases :+= IgnoredTestCase(contexts.map(_.name) :+ testName)
+    val contexts = contextsInOrder
+    addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
 
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
     // If this is the first focused test, any existing testCase was not focused,
     // and hence should be converted to ignored to ignored tests (without execution)
     if !inFocusedMode then
       inFocusedMode = true
-      testCases = testCases.map(existing => IgnoredTestCase(existing.nameParts))
+      rewriteTestCases(existing => IgnoredTestCase(existing.nameParts))
 
-    val contexts = reverseContextStack.reverse
-    testCases :+= TestCase(contexts, testName, testImpl, pos)
+    val contexts = contextsInOrder
+    addTestCase(TestCase(contexts, testName, testImpl, pos))
 
-trait IntentStatelessSyntax extends IntentStructure with TestLanguage:
-  case class SetupPart(name: String)
-  case class Block(blk: () => Unit)
-  case class TestCase(setup: Seq[SetupPart], name: String, impl: () => Expectation) extends ITestCase:
-    def nameParts: Seq[String] = setup.map(_.name) :+ name
-    def run(): Future[TestCaseResult] =
-      val before = System.nanoTime
-      try
-        val expectation = impl()
-        expectation.evaluate().map { result =>
-          val elapsed = (System.nanoTime - before).nanos
-          TestCaseResult(elapsed, nameParts, result)
-        }
-      catch
-        case NonFatal(t) =>
-          val elapsed = (System.nanoTime - before).nanos
-          val result = TestFailed("Test failure", Some(t))
-          Future.successful(TestCaseResult(elapsed, nameParts, result))
+/**
+  * Provides the Intent stateless test syntax, i.e. where contexts are merely structural
+  * and test cases are entirely responsible for arrange-act-assert.
+  */
+trait IntentStatelessSyntax extends IntentStateBase[Unit]:
 
-  private[intent] override def allTestCases: Seq[ITestCase] = testCases
-  private[intent] override def isFocused: Boolean = inFocusedMode
+  protected[intent] override def isStateful = false
 
-  private var testCases: Seq[ITestCase] = Seq.empty
-  private var reverseSetupStack: Seq[SetupPart] = Seq.empty
-  private var inFocusedMode = false
-
-  def (testName: String) in (testImpl: => Expectation): Unit =
+  def (testName: String) in (testImpl: => Expectation) given (pos: Position): Unit =
     // When in focused mode, all "ordinary" tests becomes ignored
+    val contexts = contextsInOrder
     if inFocusedMode then
-      val parts = reverseSetupStack.reverse
-      testCases :+= IgnoredTestCase(parts.map(_.name) :+ testName)
+      addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
     else
-      val parts = reverseSetupStack.reverse
-      testCases :+= TestCase(parts, testName, () => testImpl)
+      addTestCase(TestCase(contexts, testName, _ => testImpl, pos))
 
-  def (blockName: String) apply (block: => Unit): Unit =
-    val setupPart = SetupPart(blockName)
-    reverseSetupStack +:= setupPart
-    try block finally reverseSetupStack = reverseSetupStack.tail
+  def (blockName: String) apply (block: => Unit) given (pos: Position): Unit =
+    val ctx = ContextInit(blockName, () => (), pos)
+    withContext(ctx)(block)
 
   def (testName: String) ignore (testImpl: => Expectation): Unit =
-    val parts = reverseSetupStack.reverse
-    testCases :+= IgnoredTestCase(parts.map(_.name) :+ testName)
+    val contexts = contextsInOrder
+    addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
 
-  def (testName: String) focus (testImpl: => Expectation): Unit =
+  def (testName: String) focus (testImpl: => Expectation) given (pos: Position): Unit =
     // If this is the first focused test, any existing testCase was not focused,
     // and hence should be converted to ignored to ignored tests (without execution)
     if !inFocusedMode then
       inFocusedMode = true
-      testCases = testCases.map(existing => IgnoredTestCase(existing.nameParts))
+      rewriteTestCases(existing => IgnoredTestCase(existing.nameParts))
 
-    val parts = reverseSetupStack.reverse
-    testCases :+= TestCase(parts, testName, () => testImpl)
+    val contexts = contextsInOrder
+    addTestCase(TestCase(contexts, testName, _ => testImpl, pos))
 
 // TODO: Remove duplication wrt IntentStateSyntax
 // TODO: It would be nice if we could just do 'extends IntentStateSyntax[Future[TState]]',
