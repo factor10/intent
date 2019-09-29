@@ -164,21 +164,17 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
   def (ctx: Context) to (block: => Unit): Unit = withContext(ctx)(block)
 
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
-    // When in focused mode, all "ordinary" tests becomes ignored
-    val contexts = contextsInOrder
     if inFocusedMode then
-      addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
+      testName ignore testImpl
     else
-      addTestCase(TestCase(contexts, testName, testImpl, pos))
+      addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
 
   def (testName: String) ignore (testImpl: TState => Expectation): Unit =
-    val contexts = contextsInOrder
-    addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
+    addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
 
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
     enableFocusedMode()
-    val contexts = contextsInOrder
-    addTestCase(TestCase(contexts, testName, testImpl, pos))
+    addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
 
 /**
   * Provides the Intent stateless test syntax, i.e. where contexts are merely structural
@@ -190,24 +186,21 @@ trait IntentStatelessSyntax extends IntentStateBase[Unit]:
 
   def (testName: String) in (testImpl: => Expectation) given (pos: Position): Unit =
     // When in focused mode, all "ordinary" tests becomes ignored
-    val contexts = contextsInOrder
     if inFocusedMode then
-      addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
+      testName ignore testImpl
     else
-      addTestCase(TestCase(contexts, testName, _ => testImpl, pos))
+      addTestCase(TestCase(contextsInOrder, testName, _ => testImpl, pos))
 
   def (blockName: String) apply (block: => Unit) given (pos: Position): Unit =
     val ctx = ContextInit(blockName, () => Future.successful(()), pos)
     withContext(ctx)(block)
 
   def (testName: String) ignore (testImpl: => Expectation): Unit =
-    val contexts = contextsInOrder
-    addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
+    addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
 
   def (testName: String) focus (testImpl: => Expectation) given (pos: Position): Unit =
     enableFocusedMode()
-    val contexts = contextsInOrder
-    addTestCase(TestCase(contexts, testName, _ => testImpl, pos))
+    addTestCase(TestCase(contextsInOrder, testName, _ => testImpl, pos))
 
 trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
 
@@ -222,18 +215,14 @@ trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
     withContext(ctx)(block)
 
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
-    // When in focused mode, all "ordinary" tests becomes ignored
-    val contexts = contextsInOrder
     if inFocusedMode then
-      addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
+      testName ignore testImpl
     else
-      addTestCase(TestCase(contexts, testName, testImpl, pos))
+      addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
 
   def (testName: String) ignore (testImpl: TState => Expectation): Unit =
-      val contexts = contextsInOrder
-      addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
+      addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
 
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
     enableFocusedMode()
-    val contexts = contextsInOrder
-    addTestCase(TestCase(contexts, testName, testImpl, pos))
+    addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
