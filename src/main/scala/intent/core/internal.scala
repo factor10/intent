@@ -142,6 +142,12 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
   private var reverseContextStack: Seq[Context] = Seq.empty
   protected var inFocusedMode: Boolean = false
 
+  private[intent] def enableFocusedMode(): Unit =
+    // If this is the first focused test, any existing testCase was not focused,
+    // and hence should be converted to ignored to ignored tests (without execution)
+    if !inFocusedMode then
+      inFocusedMode = true
+      rewriteTestCases(existing => IgnoredTestCase(existing.nameParts))
 
 /**
   * Provides the Intent stateful test syntax, i.e. where contexts arrange state and
@@ -170,12 +176,7 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
     addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
 
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
-    // If this is the first focused test, any existing testCase was not focused,
-    // and hence should be converted to ignored to ignored tests (without execution)
-    if !inFocusedMode then
-      inFocusedMode = true
-      rewriteTestCases(existing => IgnoredTestCase(existing.nameParts))
-
+    enableFocusedMode()
     val contexts = contextsInOrder
     addTestCase(TestCase(contexts, testName, testImpl, pos))
 
@@ -204,12 +205,7 @@ trait IntentStatelessSyntax extends IntentStateBase[Unit]:
     addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
 
   def (testName: String) focus (testImpl: => Expectation) given (pos: Position): Unit =
-    // If this is the first focused test, any existing testCase was not focused,
-    // and hence should be converted to ignored to ignored tests (without execution)
-    if !inFocusedMode then
-      inFocusedMode = true
-      rewriteTestCases(existing => IgnoredTestCase(existing.nameParts))
-
+    enableFocusedMode()
     val contexts = contextsInOrder
     addTestCase(TestCase(contexts, testName, _ => testImpl, pos))
 
@@ -238,11 +234,6 @@ trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
       addTestCase(IgnoredTestCase(contexts.map(_.name) :+ testName))
 
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
-    // If this is the first focused test, any existing testCase was not focused,
-    // and hence should be converted to ignored to ignored tests (without execution)
-    if !inFocusedMode then
-      inFocusedMode = true
-      rewriteTestCases(existing => IgnoredTestCase(existing.nameParts))
-
+    enableFocusedMode()
     val contexts = contextsInOrder
     addTestCase(TestCase(contexts, testName, testImpl, pos))
