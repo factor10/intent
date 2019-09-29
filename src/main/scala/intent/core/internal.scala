@@ -59,7 +59,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
   type Map = TState => TState
   type FlatMap = TState => Future[TState]
 
-  protected[intent] def isStateful: Boolean
+  private[intent] def isStateful: Boolean
 
   private[intent] sealed trait Context:
     def name: String
@@ -154,7 +154,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
   * test cases act and assert on the state. 
   */
 trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
-  protected[intent] override def isStateful = true
+  private[intent] override def isStateful = true
 
   def (context: String) using (init: => TState) given (pos: Position) : Context =
     ContextInit(context, () => Future.successful(init), pos)
@@ -186,7 +186,7 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
   */
 trait IntentStatelessSyntax extends IntentStateBase[Unit]:
 
-  protected[intent] override def isStateful = false
+  private[intent] override def isStateful = false
 
   def (testName: String) in (testImpl: => Expectation) given (pos: Position): Unit =
     // When in focused mode, all "ordinary" tests becomes ignored
@@ -211,7 +211,7 @@ trait IntentStatelessSyntax extends IntentStateBase[Unit]:
 
 trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
 
-  protected[intent] override def isStateful = true
+  private[intent] override def isStateful = true
 
   def (context: String) using (init: => TState) given (pos: Position): Context = ContextInit(context, () => Future.successful(init), pos)
   def (context: String) usingAsync (init: => Future[TState]) given (pos: Position): Context = ContextInit(context, () => init, pos)
