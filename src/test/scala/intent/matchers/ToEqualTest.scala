@@ -60,3 +60,7 @@ class ToEqualTest extends TestSuite with Stateless:
         given customIntEq as intent.core.Eq[Int] :
           def areEqual(a: Int, b: Int) = Math.abs(a - b) == 1
         expect(Some(42)).toEqual(Some(43))
+
+    "for Long" :
+      "should support equality test" in expect(10L).toEqual(10L)
+      "should support inequality test" in expect(10L).not.toEqual(11L)

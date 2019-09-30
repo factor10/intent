@@ -4,6 +4,7 @@ import intent._
 
 class FormatTest extends TestSuite with Stateless:
   "Formatting" :
+    "supports Long" in expect(format(42L)).toEqual("42")
     "surrounds Char in single quotes" in expect(format('a')).toEqual("'a'")
     "surrounds String in double quotes" in expect(format("a")).toEqual("\"a\"")
     "supports Option-Some" in expect(format(Some(42))).toEqual("Some(42)")

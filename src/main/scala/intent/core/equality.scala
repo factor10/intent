@@ -24,6 +24,9 @@ private def compareFPs[T : Numeric](a: T, b: T) given (prec: FloatingPointPrecis
 object IntEq extends Eq[Int]:
   def areEqual(a: Int, b: Int): Boolean = a == b
 
+object LongEq extends Eq[Long]:
+  def areEqual(a: Long, b: Long): Boolean = a == b
+
 class DoubleEq given (prec: FloatingPointPrecision[Double]) extends Eq[Double]:
   def areEqual(a: Double, b: Double): Boolean = compareFPs(a, b)
 
@@ -52,6 +55,7 @@ trait EqGivens:
   given as FloatingPointPrecision[Float] = DefaultFloatFloatingPointPrecision
 
   given as Eq[Int] = IntEq
+  given as Eq[Long] = LongEq
   given as Eq[Boolean] = BooleanEq
   given as Eq[String] = StringEq
   given as Eq[Char] = CharEq

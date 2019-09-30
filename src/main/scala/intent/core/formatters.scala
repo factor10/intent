@@ -6,6 +6,9 @@ trait Formatter[T]:
 object IntFmt extends Formatter[Int]:
   def format(i: Int): String = i.toString
 
+object LongFmt extends Formatter[Long]:
+  def format(l: Long): String = l.toString
+
 object DoubleFmt extends Formatter[Double]:
   def format(d: Double): String = d.toString // TODO: Consider Locale here, maybe take as given??
 
@@ -33,6 +36,7 @@ class OptionFmt[TInner, T <: Option[TInner]] given (innerFmt: Formatter[TInner])
 
 trait FormatterGivens:
   given as Formatter[Int] = IntFmt
+  given as Formatter[Long] = LongFmt
   given [T <: Throwable] as Formatter[T] = ThrowableFmt[T]
   given as Formatter[Boolean] = BooleanFmt
   given as Formatter[String] = StringFmt
