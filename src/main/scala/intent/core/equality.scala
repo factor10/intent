@@ -1,5 +1,8 @@
 package intent.core
 
+import scala.reflect.ClassTag
+import scala.util.{Try, Success, Failure}
+
 trait Eq[T]:
   def areEqual(a: T, b: T): Boolean
 
@@ -42,11 +45,27 @@ object StringEq extends Eq[String]:
 object CharEq extends Eq[Char]:
   def areEqual(a: Char, b: Char): Boolean = a == b
 
+class ThrowableEq[T <: Throwable] extends Eq[T]:
+  def areEqual(a: T, b: T): Boolean = a == b
+
+object AnyEq extends Eq[Any]:
+  def areEqual(a: Any, b: Any): Boolean = a == b
+
+object NothingEq extends Eq[Nothing]:
+  def areEqual(a: Nothing, b: Nothing): Boolean = a == b
+
 class OptionEq[TInner, T <: Option[TInner]] given (innerEq: Eq[TInner]) extends Eq[T]:
   def areEqual(a: T, b: T): Boolean =
     (a, b) match
       case (Some(aa), Some(bb)) => innerEq.areEqual(aa, bb)
       case (None, None) => true
+      case _ => false
+      
+class TryEq[TInner, T <: Try[TInner]] given (innerEq: Eq[TInner], throwableEq: Eq[Throwable]) extends Eq[T]:
+  def areEqual(a: T, b: T): Boolean =
+    (a, b) match
+      case (Success(aa), Success(bb)) => innerEq.areEqual(aa, bb)
+      case (Failure(ta), Failure(tb)) => throwableEq.areEqual(ta, tb)
       case _ => false
 
 trait EqGivens:
@@ -61,4 +80,9 @@ trait EqGivens:
   given as Eq[Char] = CharEq
   given as Eq[Double] given FloatingPointPrecision[Double] = DoubleEq()
   given as Eq[Float] given FloatingPointPrecision[Float] = FloatEq()
+  given throwableEq[T <: Throwable] as Eq[T] = ThrowableEq[T]
+
   given [TInner, T <: Option[TInner]] as Eq[T] given Eq[TInner] = OptionEq[TInner, T]
+
+  // The use of ClassTag here prevents "double definition" error due to type erasure
+  given [TInner, T <: Try[TInner] : ClassTag] as Eq[T] given Eq[TInner] = TryEq[TInner, T]

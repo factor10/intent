@@ -45,10 +45,7 @@ class TryFmt[TInner, T <: Try[TInner]] given (innerFmt: Formatter[TInner], throw
 object AnyFmt extends Formatter[Any]:
   def format(a: Any): String = a.toString // TODO: Null!
 
-trait LowPriorityFormatterGivens:
-  given as Formatter[Any] = AnyFmt
-
-trait FormatterGivens extends LowPriorityFormatterGivens:
+trait FormatterGivens:
   given as Formatter[Int] = IntFmt
   given as Formatter[Long] = LongFmt
   given [T <: Throwable] as Formatter[T] = ThrowableFmt[T]

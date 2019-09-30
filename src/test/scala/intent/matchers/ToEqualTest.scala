@@ -1,6 +1,7 @@
 package intent.matchers
 
 import intent.{Stateless, TestSuite}
+import scala.util.{Success, Failure, Try}
 
 class ToEqualTest extends TestSuite with Stateless:
   "toEqual" :
@@ -60,6 +61,18 @@ class ToEqualTest extends TestSuite with Stateless:
         given customIntEq as intent.core.Eq[Int] :
           def areEqual(a: Int, b: Int) = Math.abs(a - b) == 1
         expect(Some(42)).toEqual(Some(43))
+
+    "for Try" :
+      "Success should equal Success" in expect[Try[Int]](Success(42)).toEqual(Success(42))
+      "Success should test inner equality" in expect[Try[Int]](Success(42)).not.toEqual(Success(43))
+      "Success should not equal Failure" in expect[Try[Int]](Success(42)).not.toEqual(Failure(new Exception("oops")))
+      "Failure should equal Failure" in :
+        val ex = RuntimeException("oops")
+        expect[Try[Int]](Failure(ex)).toEqual(Failure(ex))
+      "Failure should test inner equality" in :
+        val ex1 = RuntimeException("oops1")
+        val ex2 = RuntimeException("oops2")
+        expect[Try[Int]](Failure(ex1)).not.toEqual(Failure(ex2))
 
     "for Long" :
       "should support equality test" in expect(10L).toEqual(10L)
