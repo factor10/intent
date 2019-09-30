@@ -219,6 +219,17 @@ trait ExpectGivens {
         val actual = expect.evaluate()
         evalToEqual(actual, expected, expect, listTypeName(actual), listTypeName(expected))
 
+  // We use ClassTag here to avoid "double definition error" wrt Expect[Iterable[T]]
+  def (expect: Expect[Array[T]]) toEqual[T : ClassTag] (expected: Array[T]) 
+      given (
+        eqq: Eq[T],
+        fmt: Formatter[T]
+      ): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] =
+        val actual = expect.evaluate()
+        evalToEqual(actual, expected, expect, "Array", "Array")
+  
   /**
    * (1, 2, 3) toHaveLength 3
    */
