@@ -42,9 +42,6 @@ class TryFmt[TInner, T <: Try[TInner]] given (innerFmt: Formatter[TInner], throw
     case Success(x) => s"Success(${innerFmt.format(x)})"
     case Failure(t) => s"Failure(${throwableFmt.format(t)})"
 
-object AnyFmt extends Formatter[Any]:
-  def format(a: Any): String = a.toString // TODO: Null!
-
 trait FormatterGivens:
   given as Formatter[Int] = IntFmt
   given as Formatter[Long] = LongFmt
