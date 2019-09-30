@@ -77,3 +77,9 @@ class ToEqualTest extends TestSuite with Stateless:
     "for Long" :
       "should support equality test" in expect(10L).toEqual(10L)
       "should support inequality test" in expect(10L).not.toEqual(11L)
+
+    "for collection" :
+      "supports equality test" in expect(Seq(1, 2)).toEqual(Seq(1, 2))
+      "detects inquality in shorter length" in expect(Seq(1, 2)).not.toEqual(Seq(1))
+      "detects inquality in longer length" in expect(Seq(1, 2)).not.toEqual(Seq(1, 2, 3))
+      "detects inquality in item" in expect(Seq(1, 2)).not.toEqual(Seq(1, 3))

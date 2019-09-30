@@ -112,6 +112,11 @@ trait ExpectGivens {
             val r = expect.fail(desc)
             Success(r)
 
+  private def listTypeName[T](actual: IterableOnce[T]): String =
+    actual.getClass match
+      case c if classOf[List[_]].isAssignableFrom(c) => "List"
+      case c                                         => c.getSimpleName
+
   private def evalToContain[T](actual: IterableOnce[T],
                                expected: T,
                                expect: Expect[_],
@@ -163,10 +168,56 @@ trait ExpectGivens {
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
         val actual = expect.evaluate()
-        val listTypeName = actual.getClass match
-          case c if classOf[List[_]].isAssignableFrom(c) => "List"
-          case c                                         => c.getSimpleName
-        evalToContain(actual, expected, expect, listTypeName)
+        evalToContain(actual, expected, expect, listTypeName(actual))
+
+  private def evalToEqual[T](actual: Iterable[T],
+                             expected: Iterable[T],
+                             expect: Expect[_],
+                             actualListTypeName: String,
+                             expectedListTypeName: String)
+      given (
+        eqq: Eq[T],
+        fmt: Formatter[T]
+      ): Future[ExpectationResult] =
+    val actualFormatted = ListBuffer[String]()
+    val expectedFormatted = ListBuffer[String]()
+    val actualIterator = actual.iterator
+    val expectedIterator = expected.iterator
+    var mismatch = false
+    // TODO: Handle very long / infinite collections
+    while !mismatch && actualIterator.hasNext && expectedIterator.hasNext do
+      val actualNext = actualIterator.next()
+      val expectedNext = expectedIterator.next()
+      actualFormatted += fmt.format(actualNext)
+      expectedFormatted += fmt.format(expectedNext)
+      if !eqq.areEqual(actualNext, expectedNext) then
+        mismatch = true
+    
+    val hasDiff = mismatch || actualIterator.hasNext || expectedIterator.hasNext
+    val allGood = if expect.isNegated then hasDiff else !hasDiff
+
+    val r = if !allGood then
+      val actualStr = actualListTypeName + actualFormatted.mkString("(", ", ", ")")
+      val expectedStr = expectedListTypeName + expectedFormatted.mkString("(", ", ", ")")
+
+      val desc = if expect.isNegated then
+        s"Expected $actualStr to not equal $expectedStr"
+      else
+        s"Expected $actualStr to equal $expectedStr"
+      expect.fail(desc)
+    else expect.pass
+    Future.successful(r)
+
+  // Note: Not using IterableOnce here as it matches Option and we don't want that.
+  def (expect: Expect[Iterable[T]]) toEqual[T] (expected: Iterable[T]) 
+      given (
+        eqq: Eq[T],
+        fmt: Formatter[T]
+      ): Expectation =
+    new Expectation:
+      def evaluate(): Future[ExpectationResult] =
+        val actual = expect.evaluate()
+        evalToEqual(actual, expected, expect, listTypeName(actual), listTypeName(expected))
 
   /**
    * (1, 2, 3) toHaveLength 3
