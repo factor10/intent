@@ -1,5 +1,8 @@
 package intent.core
 
+import scala.util.{Try, Success, Failure}
+import scala.reflect.ClassTag
+
 trait Formatter[T]:
   def format(value: T): String
 
@@ -34,7 +37,18 @@ class OptionFmt[TInner, T <: Option[TInner]] given (innerFmt: Formatter[TInner])
     case Some(x) => s"Some(${innerFmt.format(x)})"
     case None => "None"
 
-trait FormatterGivens:
+class TryFmt[TInner, T <: Try[TInner]] given (innerFmt: Formatter[TInner], throwableFmt: Formatter[Throwable]) extends Formatter[T]:
+  def format(value: T): String = value match
+    case Success(x) => s"Success(${innerFmt.format(x)})"
+    case Failure(t) => s"Failure(${throwableFmt.format(t)})"
+
+object AnyFmt extends Formatter[Any]:
+  def format(a: Any): String = a.toString // TODO: Null!
+
+trait LowPriorityFormatterGivens:
+  given as Formatter[Any] = AnyFmt
+
+trait FormatterGivens extends LowPriorityFormatterGivens:
   given as Formatter[Int] = IntFmt
   given as Formatter[Long] = LongFmt
   given [T <: Throwable] as Formatter[T] = ThrowableFmt[T]
@@ -43,4 +57,8 @@ trait FormatterGivens:
   given as Formatter[Char] = CharFmt
   given as Formatter[Double] = DoubleFmt
   given as Formatter[Float] = FloatFmt
+
   given [TInner, T <: Option[TInner]] as Formatter[T] given Formatter[TInner] = OptionFmt[TInner, T]
+
+  // The use of ClassTag here prevents "double definition" error due to type erasure
+  given [TInner, T <: Try[TInner] : ClassTag] as Formatter[T] given Formatter[TInner] = TryFmt[TInner, T]
