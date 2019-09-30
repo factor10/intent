@@ -115,7 +115,8 @@ trait ExpectGivens {
   private def listTypeName[T](actual: IterableOnce[T]): String =
     actual.getClass match
       case c if classOf[List[_]].isAssignableFrom(c) => "List"
-      case c                                         => c.getSimpleName
+      case c if classOf[scala.collection.mutable.ArraySeq[_]].isAssignableFrom(c)  => "Array"
+      case c => c.getSimpleName
 
   private def evalToContain[T](actual: IterableOnce[T],
                                expected: T,
@@ -197,6 +198,12 @@ trait ExpectGivens {
     val allGood = if expect.isNegated then hasDiff else !hasDiff
 
     val r = if !allGood then
+
+      // Collect the rest of the collections, if needed
+      while actualIterator.hasNext || expectedIterator.hasNext do
+        if actualIterator.hasNext then actualFormatted += fmt.format(actualIterator.next())
+        if expectedIterator.hasNext then expectedFormatted += fmt.format(expectedIterator.next())
+
       val actualStr = actualListTypeName + actualFormatted.mkString("(", ", ", ")")
       val expectedStr = expectedListTypeName + expectedFormatted.mkString("(", ", ", ")")
 

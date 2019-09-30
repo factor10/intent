@@ -18,6 +18,22 @@ class FailureTest extends TestSuite with Stateless with Meta:
     "is described properly with Option" in :
       runExpectation(expect(Some(1)).toEqual(None), "Expected None but found Some(1)")
 
+    "is described properly for Iterables, when actual is longer" in :
+      runExpectation(expect(Seq(1, 2)).toEqual(Seq(1)),
+        "Expected List(1, 2) to equal List(1)")
+
+    "is described properly for Iterables, when actual is shorter" in :
+      runExpectation(expect(Seq(1, 2)).toEqual(Seq(1, 2, 3)),
+        "Expected List(1, 2) to equal List(1, 2, 3)")
+
+    "is described properly for Arrays" in :
+      runExpectation(expect(Array(1, 2)).toEqual(Array(1)),
+        "Expected Array(1, 2) to equal Array(1)")
+
+    "is described properly for Array-Iterable" in :
+      runExpectation(expect(Array(1, 2)).toEqual(Seq(1)),
+        "Expected Array(1, 2) to equal List(1)")
+      
   "a toMatch failure" :
     "is described properly" in :
       runExpectation(expect("foobar").toMatch("^bar".r), "Expected \"foobar\" to match /^bar/")
