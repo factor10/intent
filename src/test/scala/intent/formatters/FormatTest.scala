@@ -1,7 +1,7 @@
 package intent.formatters
 
 import intent._
-import scala.util.{Success, Failure}
+import scala.util.{Success, Failure, Try}
 
 class FormatTest extends TestSuite with Stateless:
   "Formatting" :
@@ -12,6 +12,9 @@ class FormatTest extends TestSuite with Stateless:
     "supports Option-None" in expect(format[Option[String]](None)).toEqual("None")
     "supports Try-Success" in expect(format(Success(42))).toEqual("Success(42)")
     "supports Try-Failure" in expect(format(Failure(RuntimeException("oops")))).toEqual("Failure(java.lang.RuntimeException: oops)")
+    "supports Try as Try" in :
+      val t: Try[Int] = Success(42)
+      expect(format(t)).toEqual("Success(42)")
     "supports recursive Option" in expect(format(Some("test"))).toEqual("Some(\"test\")")
     "supports Throwable" in :
       val t = RuntimeException("oops")
