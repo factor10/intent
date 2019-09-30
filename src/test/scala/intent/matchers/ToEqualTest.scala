@@ -87,3 +87,4 @@ class ToEqualTest extends TestSuite with Stateless:
     "for array" :
       "supports equality test" in expect(Array(1, 2)).toEqual(Array(1, 2))
       "detects inquality in item" in expect(Array(1, 2)).not.toEqual(Array(1, 3))
+      "supports equality test with non-array" in expect(Array(1, 2)).toEqual(Seq(1, 2))
