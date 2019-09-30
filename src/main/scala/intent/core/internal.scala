@@ -81,6 +81,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
     def name: String
     def transform(f: Future[Option[TState]]): Future[Option[TState]]
     def position: Position
+    def expand(): Iterable[Context] = Seq(this)
   private[intent] sealed case class ContextInit(name: String, init: () => Future[TState], position: Position) extends Context:
     def transform(f: Future[Option[TState]]) = init().map(Some.apply)
   private[intent] sealed case class ContextMap(name: String, tx: Map, position: Position) extends Context:
@@ -146,8 +147,10 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
   private[intent] override def isFocused: Boolean = inFocusedMode
 
   private[intent] def withContext(ctx: Context)(block: => Unit): Unit =
-    reverseContextStack +:= ctx
-    try block finally reverseContextStack = reverseContextStack.tail
+    ctx.expand().foreach:
+      subContext =>
+        reverseContextStack +:= subContext
+        try block finally reverseContextStack = reverseContextStack.tail
 
   private[intent] def contextsInOrder: Seq[Context] = reverseContextStack.reverse
   private[intent] def addTestCase(tc: ITestCase): Unit = testCases :+= tc
@@ -191,6 +194,18 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
     enableFocusedMode()
     addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
+
+  private case class TableDriveContext(name: String, generator: () => Iterable[TState], position: Position) extends Context:
+    def transform(f: Future[Option[TState]]): Future[Option[TState]] =
+      Future.failed(new ShouldNotHappenException("TableDriveContext should not be used directly"))
+    override def expand(): Iterable[Context] =
+      generator().map(s => ContextInit(s"$name: $s", () => Future.successful(s), position))
+
+
+  // TODO: Move to separate trait?
+  // TODO: Only works on root level currently...
+  def (context: String) usingTable (generator: => Iterable[TState]) given (pos: Position): Context =
+    TableDriveContext(context, () => generator, pos)
 
 /**
   * Provides the Intent stateless test syntax, i.e. where contexts are merely structural
