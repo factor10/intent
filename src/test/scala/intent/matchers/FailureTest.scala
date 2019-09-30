@@ -3,7 +3,9 @@ package intent.matchers
 
 import intent._
 import intent.helpers.Meta
-import scala.concurrent.Future
+import intent.core.TestTimeout
+import scala.concurrent.{Future, Promise}
+import scala.concurrent.duration._
 
 class FailureTest extends TestSuite with Stateless with Meta:
   "a toEqual failure" :
@@ -35,3 +37,12 @@ class FailureTest extends TestSuite with Stateless with Meta:
 
   "using fail()" :
     "should fail with the given description" in runExpectation(fail("Manually failed"), "Manually failed")
+
+  "Future timeout" :
+    "should abort a long-running test" in :
+      given customTimeout as TestTimeout = TestTimeout(50.millis)
+      val p = Promise[Int]()
+      runExpectation({
+        whenComplete(p.future) :
+          result => expect(result).toEqual(42)
+      }, "Test timed out")

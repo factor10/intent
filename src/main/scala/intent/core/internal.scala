@@ -8,6 +8,12 @@ import scala.reflect.ClassTag
 
 import intent.macros.Position
 import intent.core.PositionDescription
+import intent.util.DelayedFuture
+
+/**
+  * Thrown to abort a long-running [[Future]] in `whenComplete`.
+  */
+private class TestTimeoutException extends RuntimeException
 
 private class ShouldNotHappenException(msg: String) extends RuntimeException(msg)
 
@@ -25,15 +31,23 @@ case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase:
   def run(): Future[TestCaseResult] =
     Future.successful(TestCaseResult(Duration.Zero, nameParts, TestIgnored()))
 
+// TODO: Should not be in intent.core, since the user can override. But that applies
+// TODO: to Eq/Formatting as well... we need a good strategy here!
+case class TestTimeout(timeout: FiniteDuration)
+
 trait TestLanguage:
   def expect[T](expr: => T) given (pos: Position): Expect[T] = new Expect[T](expr, pos)
 
-  def whenComplete[T](expr: => Future[T])(impl: T => Expectation) given (pos: Position): Expectation =
+  def whenComplete[T](expr: => Future[T])(impl: T => Expectation) given (pos: Position, timeout: TestTimeout): Expectation =
     import PositionDescription._
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
-        expr.transformWith:
+        val timeoutFuture = DelayedFuture(timeout.timeout):
+          throw TestTimeoutException()
+        Future.firstCompletedOf(Seq(expr, timeoutFuture)).transformWith:
           case Success(r) => impl(r).evaluate()
+          case Failure(t: TestTimeoutException) => Future.successful(
+            TestFailed(pos.contextualize("Test timed out"), None))
           case Failure(t) => Future.successful(
             TestFailed(pos.contextualize("The Future passed to 'whenComplete' failed"), Some(t)))
 
@@ -49,6 +63,8 @@ trait TestLanguage:
 
   // TODO: Can this be overridden? Or do we need a protected def
   given executionContext as ExecutionContext = ExecutionContext.global
+
+  given defaultTestTimeout as TestTimeout = TestTimeout(5.seconds)
 
 /**
   * Base structure for Intent test cases, whether they are async, sync, stateful or stateless.
