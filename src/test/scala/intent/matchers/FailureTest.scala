@@ -46,10 +46,14 @@ class FailureTest extends TestSuite with Stateless with Meta:
       runExpectation(expect(Seq(1, 2)).toContain(3), "Expected List(1, 2) to contain 3")
 
     "is described properly in the negative" in :
-      runExpectation(expect(Seq(1, 2)).not.toContain(1), "Expected List(1, 2) not to contain 1")
+      runExpectation(expect(Seq(1, 2)).not.toContain(1), "Expected List(1, ...) not to contain 1")
 
     "is described properly for Array" in :
       runExpectation(expect(Array(1, 2)).toContain(3), "Expected Array(1, 2) to contain 3")
+
+    "is described properly when item is found in infinite stream but it's not expected" in :
+      val s = LazyList.from(1)
+      runExpectation(expect(s).not.toContain(4), "Expected LazyList(1, 2, 3, 4, ...) not to contain 4")
 
   "using fail()" :
     "should fail with the given description" in runExpectation(fail("Manually failed"), "Manually failed")

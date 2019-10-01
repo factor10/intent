@@ -129,16 +129,22 @@ trait ExpectGivens {
     val seen = ListBuffer[String]()
     var found = false
     val iterator = actual.iterator
-    while iterator.hasNext do
+    val shouldNotFind = expect.isNegated
+    var breakEarly = false
+    while !breakEarly && iterator.hasNext do
       val next = iterator.next()
       seen += fmt.format(next)
       if !found && eqq.areEqual(next, expected) then
         found = true
+        if shouldNotFind then
+          breakEarly = true
       // TODO: use some heuristic here. Should we continue to collect item string representations? For how long?
 
     val allGood = if expect.isNegated then !found else found
 
     val r = if !allGood then
+      if iterator.hasNext then
+        seen += "..."
       val actualStr = listTypeName + seen.mkString("(", ", ", ")")
       val expectedStr = fmt.format(expected)
 
