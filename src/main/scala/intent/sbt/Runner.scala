@@ -91,6 +91,7 @@ class SbtTask(td: TaskDef, suit: IntentStructure, runner: TestSuiteRunner, focus
     Await.result(executeSuite(handler, loggers), Duration.Inf)
 
   private def executeSuite(handler: EventHandler, loggers: Array[Logger]) given (ec: ExecutionContext): Future[Array[Task]] =
+    object lock
     val eventSubscriber = new Subscriber[TestCaseResult]:
       override def onNext(event: TestCaseResult): Unit =
         val sbtEvent = event.expectationResult match
@@ -98,8 +99,9 @@ class SbtTask(td: TaskDef, suit: IntentStructure, runner: TestSuiteRunner, focus
           case failure: TestFailed  => FailedEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, focusMode, failure.output, failure.ex)
           case error: TestError     => ErrorEvent(event.duration.toMillis, taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, focusMode, error.context, error.ex)
           case ignored: TestIgnored => IgnoredEvent(taskDef.fullyQualifiedName, event.qualifiedName, taskDef.fingerprint, focusMode)
-        handler.handle(sbtEvent)
-        sbtEvent.log(loggers, event.duration.toMillis)
+        lock.synchronized:
+          handler.handle(sbtEvent)
+          sbtEvent.log(loggers, event.duration.toMillis)
 
     runner.runSuite(td.fullyQualifiedName, Some(eventSubscriber)).map(_ => Array.empty)
 
