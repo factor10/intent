@@ -57,7 +57,7 @@ class FailureTest extends TestSuite with Stateless with Meta:
 
     "is described properly when item is not found in infinite stream but it's expected" in :
       val s = LazyList.from(1)
-      runExpectation(expect(s).toContain(-1), "Expected LazyList(1, ...) to contain -1")
+      runExpectation(expect(s).toContain(-1), "Expected LazyList(1, 2, 3, 4, 5, ...) to contain -1")
 
   "using fail()" :
     "should fail with the given description" in runExpectation(fail("Manually failed"), "Manually failed")

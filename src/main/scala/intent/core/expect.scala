@@ -16,8 +16,9 @@ import intent.macros.Position
   * possible to use `toEqual` and `toContain` with infinite lists.
   *
   * @param maxItems determines how many items of the list to check before giving up
+  * @param printItems the number of items to print in case of a "cutoff abort"
   */
-case class ListCutoff(maxItems: Int = 1000)
+case class ListCutoff(maxItems: Int = 1000, printItems: Int = 5)
 
 class CompoundExpectation(inner: Seq[Expectation]) given (ec: ExecutionContext) extends Expectation:
   def evaluate(): Future[ExpectationResult] =
@@ -147,7 +148,7 @@ trait ExpectGivens {
       if itemsChecked >= cutoff.maxItems then
         breakEarly = true
         // This results in failure output like: List(X, ...)
-        seen.takeInPlace(1)
+        seen.takeInPlace(cutoff.printItems)
       else
         val next = iterator.next()
         seen += fmt.format(next)
