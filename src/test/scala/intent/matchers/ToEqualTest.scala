@@ -83,6 +83,9 @@ class ToEqualTest extends TestSuite with Stateless:
       "detects inquality in shorter length" in expect(Seq(1, 2)).not.toEqual(Seq(1))
       "detects inquality in longer length" in expect(Seq(1, 2)).not.toEqual(Seq(1, 2, 3))
       "detects inquality in item" in expect(Seq(1, 2)).not.toEqual(Seq(1, 3))
+      "supports equalit with same LazyList" in:
+        val list = LazyList.from(1)
+        expect(list).toEqual(list)
 
     "for array" :
       "supports equality test" in expect(Array(1, 2)).toEqual(Array(1, 2))

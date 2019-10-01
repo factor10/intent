@@ -186,6 +186,13 @@ trait ExpectGivens {
         eqq: Eq[T],
         fmt: Formatter[T]
       ): Future[ExpectationResult] =
+
+    val areSameOk = (actual eq expected) && !expect.isNegated
+    if areSameOk then
+      // Shortcut the logic below. This allows us to test that an infinite list is
+      // equal to itself.
+      return Future.successful(expect.pass)
+
     val actualFormatted = ListBuffer[String]()
     val expectedFormatted = ListBuffer[String]()
     val actualIterator = actual.iterator
