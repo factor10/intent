@@ -6,7 +6,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Try,Success,Failure}
 
 import intent.core.{IntentStructure, ExpectationResult, TestSuite, TestCaseResult,
-  TestPassed, TestFailed, TestError, TestIgnored, Subscriber, HotObservable}
+  TestPassed, TestFailed, TestError, TestIgnored, Subscriber}
 
 /**
  * Fatal error during construction or loading (including test discovery) of a test suite.
@@ -47,7 +47,7 @@ case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0,
  *
  * @param classLoader The class loader used to load and instantiate the test suite
  */
-class TestSuiteRunner(classLoader: ClassLoader) extends HotObservable[TestCaseResult]:
+class TestSuiteRunner(classLoader: ClassLoader):
   /**
    * Instantiate and run the given test suite.
    *
