@@ -60,6 +60,7 @@ out/
 build/
 !out/.keep
 testlogs/
+_site/
 
 # Ignore build-file
 .packages
