@@ -33,7 +33,13 @@ class FailureTest extends TestSuite with Stateless with Meta:
     "is described properly for Array-Iterable" in :
       runExpectation(expect(Array(1, 2)).toEqual(Seq(1)),
         "Expected Array(1, 2) to equal List(1)")
-      
+
+    "with custom formatting" in :
+      given customIntFmt as core.Formatter[Int] :
+        def format(a: Int): String = a.toString.replace("4", "forty-")
+      runExpectation(expect(42).toEqual(43),
+        "Expected forty-3 but found forty-2")
+
   "a toMatch failure" :
     "is described properly" in :
       runExpectation(expect("foobar").toMatch("^bar".r), "Expected \"foobar\" to match /^bar/")
@@ -63,10 +69,17 @@ class FailureTest extends TestSuite with Stateless with Meta:
     "should fail with the given description" in runExpectation(fail("Manually failed"), "Manually failed")
 
   "Future timeout" :
-    "should abort a long-running test" in :
+    "should abort a long-running test when whenComplete is used" in :
       given customTimeout as TestTimeout = TestTimeout(50.millis)
       val p = Promise[Int]()
       runExpectation({
         whenComplete(p.future) :
           result => expect(result).toEqual(42)
+      }, "Test timed out")
+
+    "should abort a long-running test when toCompleteWith is used" in :
+      given customTimeout as TestTimeout = TestTimeout(50.millis)
+      val p = Promise[Int]()
+      runExpectation({
+        expect(p.future).toCompleteWith(42)
       }, "Test timed out")
