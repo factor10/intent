@@ -10,6 +10,7 @@ import scala.reflect.ClassTag
 
 import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed, PositionDescription}
 import intent.macros.Position
+import intent.util.DelayedFuture
 
 /**
   * Defines cutoff limit for list comparisons (equality as well as contains), in order to make it
@@ -93,11 +94,14 @@ trait ExpectGivens {
         eqq: Eq[T], 
         fmt: Formatter[T], 
         errFmt: Formatter[Throwable], 
-        ec: ExecutionContext
+        ec: ExecutionContext,
+        timeout: TestTimeout
       ): Expectation =
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
-        expect.evaluate().transform:
+        val timeoutFuture = DelayedFuture(timeout.timeout):
+          throw TestTimeoutException()
+        Future.firstCompletedOf(Seq(expect.evaluate(), timeoutFuture)).transform:
           case Success(actual) =>
             var comparisonResult = eqq.areEqual(actual, expected)
             if expect.isNegated then comparisonResult = !comparisonResult
@@ -113,6 +117,8 @@ trait ExpectGivens {
               expect.fail(desc)
             } else expect.pass
             Success(r)
+          case Failure(t: TestTimeoutException) =>
+            Success(expect.fail("Test timed out"))
           case Failure(_) if expect.isNegated =>
             // ok, Future was not completed with <expected>
             Success(expect.pass)
