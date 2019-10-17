@@ -11,6 +11,7 @@ import scala.reflect.ClassTag
 import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed, PositionDescription}
 import intent.macros.Position
 import intent.util.DelayedFuture
+import intent.core.expectations._
 
 /**
   * Defines cutoff limit for list comparisons (equality as well as contains), in order to make it
@@ -46,45 +47,11 @@ trait ExpectGivens {
   def (expect: Expect[T]) not[T]: Expect[T] = expect.negate()
 
   def (expect: Expect[T]) toEqual[T] (expected: T) given (eqq: Eq[T], fmt: Formatter[T]): Expectation =
-    new Expectation:
-      def evaluate(): Future[ExpectationResult] =
-        val actual = expect.evaluate()
-
-        var comparisonResult = eqq.areEqual(actual, expected)
-        if expect.isNegated then comparisonResult = !comparisonResult
-
-        val r = if !comparisonResult then
-          val actualStr = fmt.format(actual)
-          val expectedStr = fmt.format(expected)
-
-          val desc = if expect.isNegated then
-            s"Expected $actualStr not to equal $expectedStr"
-          else
-            s"Expected $expectedStr but found $actualStr"
-          expect.fail(desc)
-        else expect.pass
-        Future.successful(r)
+    new EqualExpectation(expect, expected)
 
   // toMatch is partial
   def (expect: Expect[String]) toMatch[T] (re: Regex) given (fmt: Formatter[String]): Expectation =
-    new Expectation:
-      def evaluate(): Future[ExpectationResult] =
-        val actual = expect.evaluate()
-
-        var comparisonResult = re.findFirstIn(actual).isDefined
-        if expect.isNegated then comparisonResult = !comparisonResult
-
-        val r = if !comparisonResult then
-          val actualStr = fmt.format(actual)
-          val expectedStr = re.toString
-
-          val desc = if expect.isNegated then
-            s"Expected $actualStr not to match /$expectedStr/"
-          else
-            s"Expected $actualStr to match /$expectedStr/"
-          expect.fail(desc)
-        else expect.pass
-        Future.successful(r)
+    new MatchExpectation(expect, re)
 
   def (expect: Expect[Future[T]]) toCompleteWith[T] (expected: T) 
       given (
@@ -94,37 +61,7 @@ trait ExpectGivens {
         ec: ExecutionContext,
         timeout: TestTimeout
       ): Expectation =
-    new Expectation:
-      def evaluate(): Future[ExpectationResult] =
-        val timeoutFuture = DelayedFuture(timeout.timeout):
-          throw TestTimeoutException()
-        Future.firstCompletedOf(Seq(expect.evaluate(), timeoutFuture)).transform:
-          case Success(actual) =>
-            var comparisonResult = eqq.areEqual(actual, expected)
-            if expect.isNegated then comparisonResult = !comparisonResult
-
-            val r = if !comparisonResult then {
-              val actualStr = fmt.format(actual)
-              val expectedStr = fmt.format(expected)
-
-              val desc = if expect.isNegated then
-                s"Expected Future not to be completed with $expectedStr"
-              else
-                s"Expected Future to be completed with $expectedStr but found $actualStr"
-              expect.fail(desc)
-            } else expect.pass
-            Success(r)
-          case Failure(t: TestTimeoutException) =>
-            Success(expect.fail("Test timed out"))
-          case Failure(_) if expect.isNegated =>
-            // ok, Future was not completed with <expected>
-            Success(expect.pass)
-          case Failure(t) =>
-            val expectedStr = fmt.format(expected)
-            val errorStr = errFmt.format(t)
-            val desc = s"Expected Future to be completed with $expectedStr but it failed with $errorStr"
-            val r = expect.fail(desc)
-            Success(r)
+    new ToCompleteWithExpectation(expect, expected)
 
   private def listTypeName[T](actual: IterableOnce[T]): String =
     actual.getClass match
