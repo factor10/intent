@@ -1,7 +1,7 @@
 val dottyVersion = "0.18.1-RC1"
 
 ThisBuild / name := "intent"
-ThisBuild / version := "0.0.12"
+ThisBuild / version := "0.0.13"
 ThisBuild / scalaVersion := dottyVersion
 ThisBuild / publishTo := sonatypePublishToBundle.value
 
