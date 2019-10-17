@@ -5,6 +5,15 @@ Intent.
 We'll try to state minimum requried Dotty version in `README.md` (and it can be found
 in  `build.sbt`)
 
+## Setting up SBT
+
+The first thing you need to do is to add Intent to your SBT project with the following
+lines to your `build.sbt`:
+
+```scala
+libraryDependencies += "com.factor10" %% "intent" % "0.1.0",
+testFrameworks += new TestFramework("intent.sbt.Framework")
+```
 
 ## Our first test
 

@@ -47,6 +47,9 @@ has inspired us greatly:
 * Jasmine, supporting nested tests and the format of the expect / matchers
 * ScalaTest, FreeSpec style and the use of test fixtures
 
+Using Dotty and the new features are also a motivator, having fun and experimenting is
+always important.
+
 Let us see how a test suite looks like for intent:
 
 ```scala
