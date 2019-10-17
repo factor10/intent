@@ -137,67 +137,13 @@ trait ExpectGivens {
         val actual = expect.evaluate()
         evalToContain(actual, expected, expect, listTypeName(actual))
 
-  private def evalToEqual[T](actual: Iterable[T],
-                             expected: Iterable[T],
-                             expect: Expect[_],
-                             actualListTypeName: String,
-                             expectedListTypeName: String)
-      given (
-        eqq: Eq[T],
-        fmt: Formatter[T]
-      ): Future[ExpectationResult] =
-
-    val areSameOk = (actual eq expected) && !expect.isNegated
-    if areSameOk then
-      // Shortcut the logic below. This allows us to test that an infinite list is
-      // equal to itself.
-      return Future.successful(expect.pass)
-
-    val actualFormatted = ListBuffer[String]()
-    val expectedFormatted = ListBuffer[String]()
-    val actualIterator = actual.iterator
-    val expectedIterator = expected.iterator
-    var mismatch = false
-    // TODO: Handle very long / infinite collections
-    while !mismatch && actualIterator.hasNext && expectedIterator.hasNext do
-      val actualNext = actualIterator.next()
-      val expectedNext = expectedIterator.next()
-      actualFormatted += fmt.format(actualNext)
-      expectedFormatted += fmt.format(expectedNext)
-      if !eqq.areEqual(actualNext, expectedNext) then
-        mismatch = true
-    
-    val hasDiff = mismatch || actualIterator.hasNext || expectedIterator.hasNext
-    val allGood = if expect.isNegated then hasDiff else !hasDiff
-
-    val r = if !allGood then
-
-      // Collect the rest of the collections, if needed
-      while actualIterator.hasNext || expectedIterator.hasNext do
-        if actualIterator.hasNext then actualFormatted += fmt.format(actualIterator.next())
-        if expectedIterator.hasNext then expectedFormatted += fmt.format(expectedIterator.next())
-
-      val actualStr = actualListTypeName + actualFormatted.mkString("(", ", ", ")")
-      val expectedStr = expectedListTypeName + expectedFormatted.mkString("(", ", ", ")")
-
-      val desc = if expect.isNegated then
-        s"Expected $actualStr to not equal $expectedStr"
-      else
-        s"Expected $actualStr to equal $expectedStr"
-      expect.fail(desc)
-    else expect.pass
-    Future.successful(r)
-
   // Note: Not using IterableOnce here as it matches Option and we don't want that.
   def (expect: Expect[Iterable[T]]) toEqual[T] (expected: Iterable[T]) 
       given (
         eqq: Eq[T],
         fmt: Formatter[T]
       ): Expectation =
-    new Expectation:
-      def evaluate(): Future[ExpectationResult] =
-        val actual = expect.evaluate()
-        evalToEqual(actual, expected, expect, listTypeName(actual), listTypeName(expected))
+    new IterableEqualExpectation(expect, expected)
 
   // We use ClassTag here to avoid "double definition error" wrt Expect[Iterable[T]]
   def (expect: Expect[Array[T]]) toEqual[T : ClassTag] (expected: Iterable[T]) 
@@ -205,10 +151,7 @@ trait ExpectGivens {
         eqq: Eq[T],
         fmt: Formatter[T]
       ): Expectation =
-    new Expectation:
-      def evaluate(): Future[ExpectationResult] =
-        val actual = expect.evaluate()
-        evalToEqual(actual, expected, expect, "Array", listTypeName(expected))
+    new ArrayEqualExpectation(expect, expected)
   
   /**
    * (1, 2, 3) toHaveLength 3
