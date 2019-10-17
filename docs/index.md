@@ -63,4 +63,4 @@ case class Cart(items: Seq[CartItem] = Seq.empty):
   def totalQuantity = items.map(_.qty).sum
 ```
 
-Want to konw more? Continue with [getting started](getting-started.md)
+Want to know more? Continue with [getting started](getting-started.md)
