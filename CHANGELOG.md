@@ -1,5 +1,5 @@
 # Changelog
 
-## 0.1.0 (Pending)
+## 0.1.0 (2019-10-17)
 
 * Initial public release
