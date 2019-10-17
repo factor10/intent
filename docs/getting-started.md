@@ -74,7 +74,7 @@ case class StatefulState(stuff: Seq[String] = Seq.empty):
 
 A test suite that needs state must implement `State[T]`, where `T` is the type carrying
 the state you need. There are _no requirements_ on the type `T` or its signature, you are free
-to use whatever type you want. We prefere to use `case class` as they are immutable, but any
+to use whatever type you want. We prefer to use `case class` as they are immutable, but any
 type will do.
 
 The _root state_ gets created in the `"root context"` and passed downstream to any child context.
