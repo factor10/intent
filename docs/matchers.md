@@ -97,6 +97,29 @@ expect(Future.successful("foo")).toCompleteWith("foo")
 
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToCompleteWithTest.scala)
 
+### .toMatch
+
+Match the result of a String using a regular expression.
+
+```scala
+expect(someString).toMatch("^a".r)
+```
+
+Note that the regular expression only needs to partially match the actual string,
+since we reckon that is the most common use case. Thus, the following test will pass:
+
+```scala
+expect("foo").toMatch("o+".r)
+```
+
+If a complete match is desired, use `^` as prefix and `$` as suffix. For example,
+this will fail:
+
+```scala
+expect("foo").toMatch("^o+$".r)
+```
+
+[Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToMatchTest.scala)
 
 ## Manually fail or succeed a test
 
