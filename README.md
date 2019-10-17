@@ -14,13 +14,17 @@ the following principles:
 Here is an example on how the tests look:
 
 ```scala
-import intent.{Stateless, TestSuite}
+class StatefulTest extends TestSuite with State[Cart] :
+  "an empty cart" using Cart() to :
+    "with two items" using (_.add(CartItem("beach-chair", 2))) to :
+      "and another three items" using (_.add(CartItem("sunscreen", 3))) to :
+        "contains 5 items" in :
+          cart => expect(cart.totalQuantity).toEqual(5)
 
-class ToEqualTest extends TestSuite with Stateless:
-  "toEqual" :
-    "for Boolean" :
-      "true should equal true" in expect(true).toEqual(true)
-      "true should *not* equal false" in expect(true).not.toEqual(false)
+case class CartItem(artNo: String, qty: Int)
+case class Cart(items: Seq[CartItem] = Seq.empty):
+  def add(item: CartItem): Cart = copy(items = items :+ item)
+  def totalQuantity = items.map(_.qty).sum
 ```
 
 This readme is focused on building and testing Intent, for documentation on
@@ -49,11 +53,6 @@ However there are a few gotchas related to the same:
 * Tests that are not supposed to be discovered by SBT should not extend `TestSuite`.
   Instead they should be programatically loaded by the running test (e.g. the tests
   under `intent.testdata`).
-
-
-## Releasing
-
-TBD
 
 
 ## Contributing
