@@ -10,6 +10,16 @@ import scala.reflect.ClassTag
 
 import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed, PositionDescription}
 import intent.macros.Position
+import intent.util.DelayedFuture
+
+/**
+  * Defines cutoff limit for list comparisons (equality as well as contains), in order to make it
+  * possible to use `toEqual` and `toContain` with infinite lists.
+  *
+  * @param maxItems determines how many items of the list to check before giving up
+  * @param printItems the number of items to print in case of a "cutoff abort"
+  */
+case class ListCutoff(maxItems: Int = 1000, printItems: Int = 5)
 
 class CompoundExpectation(inner: Seq[Expectation]) given (ec: ExecutionContext) extends Expectation:
   def evaluate(): Future[ExpectationResult] =
@@ -30,6 +40,8 @@ class Expect[T](blk: => T, position: Position, negated: Boolean = false):
   def pass: ExpectationResult               = TestPassed()
 
 trait ExpectGivens {
+
+  given defaultListCutoff as ListCutoff = ListCutoff()
 
   def (expect: Expect[T]) not[T]: Expect[T] = expect.negate()
 
@@ -74,19 +86,19 @@ trait ExpectGivens {
         else expect.pass
         Future.successful(r)
 
-  def (expect: Expect[String]) toMatch[T] (re: String) given (fmt: Formatter[String]): Expectation =
-    expect.toMatch(re.r)
-
   def (expect: Expect[Future[T]]) toCompleteWith[T] (expected: T) 
       given (
         eqq: Eq[T], 
         fmt: Formatter[T], 
         errFmt: Formatter[Throwable], 
-        ec: ExecutionContext
+        ec: ExecutionContext,
+        timeout: TestTimeout
       ): Expectation =
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
-        expect.evaluate().transform:
+        val timeoutFuture = DelayedFuture(timeout.timeout):
+          throw TestTimeoutException()
+        Future.firstCompletedOf(Seq(expect.evaluate(), timeoutFuture)).transform:
           case Success(actual) =>
             var comparisonResult = eqq.areEqual(actual, expected)
             if expect.isNegated then comparisonResult = !comparisonResult
@@ -102,6 +114,8 @@ trait ExpectGivens {
               expect.fail(desc)
             } else expect.pass
             Success(r)
+          case Failure(t: TestTimeoutException) =>
+            Success(expect.fail("Test timed out"))
           case Failure(_) if expect.isNegated =>
             // ok, Future was not completed with <expected>
             Success(expect.pass)
@@ -124,21 +138,28 @@ trait ExpectGivens {
                                listTypeName: String)
       given (
         eqq: Eq[T],
-        fmt: Formatter[T]
+        fmt: Formatter[T],
+        cutoff: ListCutoff
       ): Future[ExpectationResult] =
     val seen = ListBuffer[String]()
     var found = false
     val iterator = actual.iterator
     val shouldNotFind = expect.isNegated
     var breakEarly = false
+    var itemsChecked = 0
     while !breakEarly && iterator.hasNext do
-      val next = iterator.next()
-      seen += fmt.format(next)
-      if !found && eqq.areEqual(next, expected) then
-        found = true
-        if shouldNotFind then
-          breakEarly = true
-      // TODO: use some heuristic here. Should we continue to collect item string representations? For how long?
+      if itemsChecked >= cutoff.maxItems then
+        breakEarly = true
+        // This results in failure output like: List(X, ...)
+        seen.takeInPlace(cutoff.printItems)
+      else
+        val next = iterator.next()
+        seen += fmt.format(next)
+        if !found && eqq.areEqual(next, expected) then
+          found = true
+          if shouldNotFind then
+            breakEarly = true
+        itemsChecked += 1
 
     val allGood = if expect.isNegated then !found else found
 
@@ -157,10 +178,11 @@ trait ExpectGivens {
     Future.successful(r)
 
   // We use ClassTag here to avoid "double definition error" wrt Expect[IterableOnce[T]]
-  def (expect: Expect[Array[T]]) toContain[T : ClassTag] (expected: T) 
+  def (expect: Expect[Array[T]]) toContain[T : ClassTag] (expected: T)
       given (
         eqq: Eq[T],
-        fmt: Formatter[T]
+        fmt: Formatter[T],
+        cutoff: ListCutoff
       ): Expectation =
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
@@ -170,7 +192,8 @@ trait ExpectGivens {
   def (expect: Expect[IterableOnce[T]]) toContain[T] (expected: T) 
       given (
         eqq: Eq[T],
-        fmt: Formatter[T]
+        fmt: Formatter[T],
+        cutoff: ListCutoff
       ): Expectation =
     new Expectation:
       def evaluate(): Future[ExpectationResult] =

@@ -12,7 +12,7 @@ sealed trait ExpectationResult
 case class TestPassed() extends ExpectationResult
 
 /**
-  * TestFailure is used for errors happening once we have started to execute a test case.
+  * TestFailed is used for errors happening once we have started to execute a test case.
   * This includes assertion errors/failures.
   *
   * @param output the failure output

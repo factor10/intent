@@ -15,3 +15,13 @@ class ToContainTest extends TestSuite with Stateless:
     "a list of Boolean" :
       "should contain element" in expect(Seq(true, false)).toContain(false)
       "should **not** contain missing element" in expect(Seq(true)).not.toContain(false)
+
+    "an infinite list" :
+      "can be contains-checked, but will abort" in:
+        val list = LazyList.from(1)
+        expect(list).not.toContain(-1)
+
+      "can be contains-checked, but will not detect anything beyond the limit" in:
+        given cutoff as intent.core.ListCutoff = intent.core.ListCutoff(5)
+        val list = LazyList.from(1)
+        expect(list).not.toContain(10)
