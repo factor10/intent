@@ -14,3 +14,4 @@ Intent is designed to give you clear and concise tests by focusing on:
 1. [Getting started](getting-started.md)
 2. [Running tests](running-tests.md)
 3. [Matchers](matchers.md)
+4. [Test styles](test-styles.md)
