@@ -1,4 +1,4 @@
-Intents philosophy is to include commonly used matchers for the Scala standard library
+Intent's philosophy is to include commonly used matchers for the Scala standard library
 (including `Future`, `Option` and `Either`) but not to go overboard. Instead Intent makes is
 quite easy to defined your own matchers where needed.
 
@@ -14,10 +14,10 @@ parameter to expect and the _expected value_ value is what is used in the matche
 paramter.
 
 ```scala
-expect( actual value ).<matcher>( expected value )
+expect( <actual value> ).<matcher>( <expected value> )
 ```
 
-> Each matcher contains a reference to Intent's own unit-tests for that specific matcher to
+> The documentation for each matcher contains a reference to Intent's own unit-tests for that specific matcher to
 > serve as additional examples.
 
 
@@ -28,10 +28,14 @@ The following types are currently supported:
 - String
 - Boolean
 - Int
+- Long
+- Float
+- Double
+- Char
 - Option
 
-> TODO: Describe how to provide a custom equality check and formatter for types
-
+> TODO: Consider how this should be described; test with case classes; perhaps this should be a
+  "what's not supported" list?
 
 ## Prefixes
 
@@ -49,18 +53,22 @@ expect(true).not.toEqual(false)
 
 ### .toEqual
 
-Match the _actual_ value to be equal to the _expected_ value
+Match the _actual_ value to be equal to the _expected_ value.
 
 ```scala
 expect(true).not.toEqual(false)
 ```
 
-[Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToEqualTest.scala)
+To compare the values, the `==` operator is used behind the scenes.
 
+The values can also be sequences (`IterableOnce`/`Array`), in which case they must
+have the same length and elements on the same position must be equal.
+
+[Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToEqualTest.scala)
 
 ### .toHaveLength
 
-Match a `Seq` to have the expected length
+Match a `Seq`/`List` (in fact, any `IterableOnce`) to have the expected length.
 
 ```scala
 expect(Seq("one")).toHaveLength(1)
@@ -71,7 +79,7 @@ expect(Seq("one")).toHaveLength(1)
 
 ### .toContain
 
-Match if a given sequence contains the expected element.
+Match if a given sequence (either `IterableOnce` or `Array`) contains the expected element.
 
 ```scala
 expect(Seq(1, 2, 3)).toContain(2)
@@ -96,3 +104,79 @@ Two convenience methods exists where you can manually provide the the test expec
 
 * `fail("Reason for failure...")` to fail a test
 * `success()` to pass a test
+
+## Asyncness
+
+If you need to await the result of a `Future` before using a matcher, you can use
+`whenComplete`:
+
+```scala
+whenComplete(Future.successful(Seq("foo", "bar"))):
+  actual => expect(actual).toContain("foo")
+```
+
+This allows for more complex testing compared to when using `toCompleteWith`.
+
+> `whenComplete` can be used regardless of the suite type, i.e. it doesn't need to
+  be in an `AsyncState` suite. The async part of `AsyncState` allows for building the
+  test state asynchronously, but has nothing to do with the expectations used.
+
+## Customization
+
+### Equality
+
+It is possible to define custom equality for a type. Consider the following example
+from Intent's own test suite:
+
+```scala
+given customIntEq as intent.core.Eq[Int] :
+  def areEqual(a: Int, b: Int) = Math.abs(a - b) == 1
+expect(Some(42)).toEqual(Some(43))
+```
+
+In this case, a custom equality definition for `Int` says that two values
+are equal if they diff by 1. This causes the `toEqual` matcher to succeed.
+
+### Floating-point precision
+
+When floating-point values (`Float` and `Double`) are compared, Intent compares up
+to a certain precision, defined as the number of decimals that must match.
+
+Here's an example where a custom precision is used:
+
+```scala
+given customPrecision as intent.core.FloatingPointPrecision[Float] :
+  def numberOfDecimals: Int = 2
+expect(1.234f).toEqual(1.235f)
+```
+
+The test passes because we say that two `Float`s are equal to the precision of
+2 decimals. In other words, the equality check actually compares 1.23 and 1.23.
+
+The default precision is 12 decimals for `Double` and 6 decimals for `Float`.
+
+### Formatting
+
+It is possible to customize how a value is printed in a test failure message.
+Here's an example from Intent's test suite that shows how:
+
+```scala
+given customIntFmt as core.Formatter[Int] :
+  def format(a: Int): String = a.toString.replace("4", "forty-")
+runExpectation(expect(42).toEqual(43),
+  "Expected forty-3 but found forty-2")
+```
+
+### Timeout
+
+The default timeout for `whenComplete` and `toCompleteWith` is 5 seconds.
+It is possible to use a custom timeout:
+
+```scala
+given customTimeout as TestTimeout = TestTimeout(500.millis)
+expect(someFuture).toCompleteWith("fast")
+```
+
+### List cutoff limit
+
+TBD
