@@ -30,6 +30,14 @@ case class Cart(items: Seq[CartItem] = Seq.empty):
 This readme is focused on building and testing Intent, for documentation on
 how to use Intent to write tests, see [User documentation](docs/index.md).
 
+## Getting started
+
+Add Intent to your SBT project with the following lines to your `build.sbt`:
+
+```scala
+libraryDependencies += "com.factor10" %% "intent" % "0.1.0",
+testFrameworks += new TestFramework("intent.sbt.Framework")
+```
 
 ## Development environment
 
