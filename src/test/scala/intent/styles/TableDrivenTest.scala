@@ -3,8 +3,8 @@ package intent.styles
 import intent._
 
 class TableDrivenTest extends TestSuite with State[TableState]
-  "Table-driven test" usingTable (myTable) to :
-    "uses table data" in :
+  "Table-driven test" usingTable (myTable) to:
+    "uses table data" in:
       s =>
         expect(s.a + s.b).toEqual(s.sum)
 

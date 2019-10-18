@@ -22,17 +22,19 @@ class ToCompleteWithExpectation[T](expect: Expect[Future[T]], expected: T)
       case Success(actual) =>
         var comparisonResult = eqq.areEqual(actual, expected)
         if expect.isNegated then comparisonResult = !comparisonResult
+        val r =
+          if !comparisonResult then
+            val actualStr = fmt.format(actual)
+            val expectedStr = fmt.format(expected)
 
-        val r = if !comparisonResult then {
-          val actualStr = fmt.format(actual)
-          val expectedStr = fmt.format(expected)
-
-          val desc = if expect.isNegated then
-            s"Expected Future not to be completed with $expectedStr"
+            val desc = if expect.isNegated then
+              s"Expected Future not to be completed with $expectedStr"
+            else
+              s"Expected Future to be completed with $expectedStr but found $actualStr"
+            expect.fail(desc)
           else
-            s"Expected Future to be completed with $expectedStr but found $actualStr"
-          expect.fail(desc)
-        } else expect.pass
+            expect.pass
+
         Success(r)
       case Failure(t: TestTimeoutException) =>
         Success(expect.fail("Test timed out"))

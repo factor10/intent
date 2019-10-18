@@ -114,7 +114,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage
         case l@Left(_) => Future.successful(l)
         case Right(stateOpt) =>
           try
-            ctx.transform(Future.successful(stateOpt)).transform :
+            ctx.transform(Future.successful(stateOpt)).transform:
               case Success(newStateOpt) => Success(Right(newStateOpt))
               case Failure(t: ShouldNotHappenException) =>
                 Success(Left(error(s"""${t.getMessage} for context \"${ctx.name}\"""", None, ctx.position)))
@@ -126,7 +126,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage
               Future.successful(Left(error(s"""The transformation for context \"${ctx.name}\" failed""", Some(t), ctx.position)))
       })
 
-      postSetup.flatMap :
+      postSetup.flatMap:
         case Left(r) => Future.successful(r)
         case Right(opt) =>
           try

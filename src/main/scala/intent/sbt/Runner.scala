@@ -132,7 +132,7 @@ case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String]
     loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${color}${assertionMessage}${error}"))
 
 case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean, errContext: String, err: Option[Throwable]) extends Event
-  with LoggedEvent(Console.RED, "ERROR", suiteName, testNames) {
+  with LoggedEvent(Console.RED, "ERROR", suiteName, testNames)
   val color = Console.RED // Why are not these inherited form LoggedEvent?
   val prefix = "ERROR"
 
@@ -143,7 +143,6 @@ case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String],
   override def log(loggers: Array[Logger], executionTime: Long): Unit =
     val error = err.map(e => "\n\n" + printErrorWithPrefix(e, s"\t${color}")).getOrElse("")
     loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${color}${errContext}${error}"))
-}
 
 case class IgnoredEvent(suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean) extends Event
   with LoggedEvent(Console.YELLOW, "IGNORED", suiteName, testNames)

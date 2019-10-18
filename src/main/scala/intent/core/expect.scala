@@ -40,7 +40,7 @@ class Expect[T](blk: => T, position: Position, negated: Boolean = false)
   def fail(desc: String): ExpectationResult = TestFailed(position.contextualize(desc), None)
   def pass: ExpectationResult               = TestPassed()
 
-trait ExpectGivens {
+trait ExpectGivens
 
   given defaultListCutoff: ListCutoff = ListCutoff()
 
@@ -113,4 +113,3 @@ trait ExpectGivens {
   //     - expect(myMap) toContain "foo" -> 42
   //     - expect(myMap) toContain(value(42))
   //     - expect(myMap).to.contain.key(42)
-}

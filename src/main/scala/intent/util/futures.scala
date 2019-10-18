@@ -7,9 +7,8 @@ import scala.concurrent.duration.Duration
 import scala.concurrent._
 import scala.util.Try
 
-trait DelayedFuture[T] extends Future[T] {
+trait DelayedFuture[T] extends Future[T]
   def cancel(): Unit
-}
 
 // From: http://stackoverflow.com/questions/16359849/scala-scheduledfuture
 object DelayedFuture

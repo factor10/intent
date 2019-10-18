@@ -27,24 +27,23 @@ object DelayedFutureTestState
 
 class DelayedFutureTest extends TestSuite with State[DelayedFutureTestState]
 
-  "A DelayedFuture" using (DelayedFutureTestState.instance) to :
+  "A DelayedFuture" using (DelayedFutureTestState.instance) to:
 
-    "should run the callback in the supplied execution context" in :
+    "should run the callback in the supplied execution context" in:
       s =>
-        s.run :
+        s.run:
           val f = DelayedFuture(10 milliseconds)(Thread.currentThread().getId)
-          whenComplete(f) :
+          whenComplete(f):
             tid => expect(tid).toEqual(s.executorThreadId)
 
     "should be cancellable" in:
       s =>
         s.run:
           var hasRun = false
-          val f = DelayedFuture(100 milliseconds) {
+          val f = DelayedFuture(100 milliseconds):
             hasRun = true
-          }
           f.cancel()
-          whenComplete(f) :
+          whenComplete(f):
             _ => expect(hasRun).toEqual(false)
 
     "should have a default result after being cancelled" in:

@@ -8,7 +8,7 @@ trait Meta
   self: TestLanguage with TestSupport =>
     def runExpectation(e: => Expectation, expected: String)(given ExecutionContext): Expectation =
       val expectedFileName = getClass.getSimpleName // Assume class X is in X.scala
-      new Expectation :
+      new Expectation:
         def evaluate(): Future[ExpectationResult] =
           e.evaluate().flatMap:
             case TestFailed(s, _) =>
