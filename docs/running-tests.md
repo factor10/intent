@@ -47,6 +47,16 @@ keyword with `focus`.
   expect(30 + 3).toEqual(33)
 ```
 
+If you want to focus on a hierarchy of tests, just substitute `to` with `focused`
+
+E.g.:
+
+```scala
+"name" using (state) focused
+"name" usingTable(source) focused:
+"name" usingAsync(state) focused:
+```
+
 This will result in that _only_ focused tests are run, and all other tests are
 marked interpreted as ignored.
 

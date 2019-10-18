@@ -2,7 +2,8 @@
 
 ## Pending
 
-* Make it possible to focus on a  hierarchy / tree of tests using `focused` on context level.
+* Make it possible to focus on a hierarchy / tree of tests using `focused` instead of `to` on context level.
+  See [Focusing tests](docs/running-tests.md#Focusing-tests) for more details.
 
 ## 0.1.0 (2019-10-17)
 
