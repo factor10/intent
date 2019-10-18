@@ -9,10 +9,10 @@ import intent.helpers.TestSuiteRunnerTester
 import scala.concurrent.{ExecutionContext, Future}
 
 class FocusedTest extends TestSuite with State[FocusedTestCase]:
-  "FocusedTest" usingTable (focusedSuites) to:
+  "FocusedTest" usingTable (focusedSuites) focused:
     "should be focused" in:
       state =>
-        expect(state.evaluate().isFocused).toEqual(true)
+        expect(state.evaluate().isFocused).toEqual(state.focused)
 
     "report that correct number of tests were run" in:
       state =>
@@ -36,17 +36,22 @@ class FocusedTest extends TestSuite with State[FocusedTestCase]:
             case Right(result) => expect(result.failed).toEqual(0)
 
   def focusedSuites = Seq(
-    FocusedTestCase("intent.runner.NestedFocusedStatelessTestSuite", expectedSuccessful = 4, expectedIgnored = 2),
-    FocusedTestCase("intent.runner.MidBranchFocusedStatelessTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
-    FocusedTestCase("intent.runner.NestedFocusedStatefulTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
-    FocusedTestCase("intent.runner.MidBranchFocusedStatefulTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
-    FocusedTestCase("intent.runner.FocusedStatelessTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
-    FocusedTestCase("intent.runner.FocusedStatefulTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
-    FocusedTestCase("intent.runner.FocusedAsyncStatefulTestSuite", expectedSuccessful = 4, expectedIgnored = 1),
-    FocusedTestCase("intent.runner.FocusedTableDrivenTestSuite", expectedSuccessful = 4, expectedIgnored = 1)
+    FocusedTestCase("intent.runner.NestedFocusedStatelessTestSuite", expectedSuccessful = 4, expectedIgnored = 2, focused = true),
+    FocusedTestCase("intent.runner.MidBranchFocusedStatelessTestSuite", expectedSuccessful = 3, expectedIgnored = 2, focused = true),
+    FocusedTestCase("intent.runner.NestedFocusedStatefulTestSuite", expectedSuccessful = 3, expectedIgnored = 2, focused = true),
+    FocusedTestCase("intent.runner.MidBranchFocusedStatefulTestSuite", expectedSuccessful = 3, expectedIgnored = 2, focused = true),
+    FocusedTestCase("intent.runner.FocusedStatelessTestSuite", expectedSuccessful = 2, expectedIgnored = 1, focused = true),
+    FocusedTestCase("intent.runner.FocusedStatefulTestSuite", expectedSuccessful = 2, expectedIgnored = 1, focused = true),
+    FocusedTestCase("intent.runner.FocusedAsyncStatefulTestSuite", expectedSuccessful = 4, expectedIgnored = 1, focused = true),
+    FocusedTestCase("intent.runner.FocusedTableDrivenTestSuite", expectedSuccessful = 4, expectedIgnored = 1, focused = true),
+    FocusedTestCase("intent.runner.IgnoredStatelessTestSuite", expectedSuccessful = 1, expectedIgnored = 5, focused = false),
   )
 
-case class FocusedTestCase(suiteClassName: String = null, expectedSuccessful:Int = 0, expectedIgnored:Int = 0) given (ec: ExecutionContext) extends TestSuiteRunnerTester
+case class FocusedTestCase(
+  suiteClassName: String = null,
+  expectedSuccessful:Int = 0,
+  expectedIgnored:Int = 0,
+  focused: Boolean = false) given (ec: ExecutionContext) extends TestSuiteRunnerTester
 
 class NestedFocusedStatelessTestSuite extends Stateless:
   "some suite" focused:
@@ -160,3 +165,14 @@ class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]:
          _ => success()
     "should be run" in:
        _ => success()
+
+class IgnoredStatelessTestSuite extends Stateless:
+  "top":
+    "child" ignored:
+      "should not be run" in fail("should not happen")
+      "should also not be run" in fail("should not happen")
+      "should ignore focus" focus fail("should not happen")
+      "focus has less prio" focused:
+        "should not be run" in fail("should not happen")
+        "should also not be run" in fail("should not happen")
+    "should be run" in success()
