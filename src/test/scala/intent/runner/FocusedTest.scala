@@ -8,9 +8,7 @@ import intent.helpers.TestSuiteRunnerTester
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
-class FocusedTestTwo extends TestSuite with State[FocusedTestCase]:
-  // TOOD: Move the other focus tests to this file
+class FocusedTest extends TestSuite with State[FocusedTestCase]:
   // TOOD: Test Async state
   // TOOD: Test focused table
 
@@ -45,6 +43,9 @@ class FocusedTestTwo extends TestSuite with State[FocusedTestCase]:
     FocusedTestCase("intent.runner.MidBranchFocusedStatelessTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
     FocusedTestCase("intent.runner.NestedFocusedStatefulTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
     FocusedTestCase("intent.runner.MidBranchFocusedStatefulTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
+    FocusedTestCase("intent.runner.FocusedStatelessTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
+    FocusedTestCase("intent.runner.FocusedStatefulTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
+    FocusedTestCase("intent.runner.FocusedAsyncStatefulTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
   )
 
 case class FocusedTestCase(suiteClassName: String = null, expectedSuccessful:Int = 0, expectedIgnored:Int = 0) given (ec: ExecutionContext) extends TestSuiteRunnerTester:
@@ -120,3 +121,26 @@ class MidBranchFocusedStatefulTestSuite extends State[Unit]:
     "a third suite" using (()) to:
       "should include single focus" focus:
         _ => success()
+
+class FocusedStatelessTestSuite extends Stateless:
+  "should not be run" in fail("Test is not expected to run!")
+  "should be run" focus success()
+  "should also be run" focus success()
+
+class FocusedStatefulTestSuite extends State[Unit]:
+  "with state" using (()) to:
+    "should not be run" in:
+      _ => fail("Test is not expected to run!")
+    "should be run" focus:
+      _ => success()
+    "should also be run" focus:
+      _ => success()
+
+class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]:
+  "with state" usingAsync (Future.successful(())) to:
+    "should not be run" in:
+      _ => fail("Test is not expected to run!")
+    "should be run" focus:
+      _ => success()
+    "should also be run" focus:
+      _ => success()
