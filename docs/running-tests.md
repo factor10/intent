@@ -26,6 +26,16 @@ If you want to ignore a test you can substitute the `in` keyword with `ignore`.
   fail("This should never fail, only be ignored!")
 ```
 
+If you want to ignore a hierarchy of tests, just substitute `to` with `ignored`
+
+E.g.:
+
+```scala
+"name" using (state) ignored:
+"name" usingTable(source) ignored:
+"name" usingAsync(state) ignored:
+```
+
 Ignored tests will still be logged by SBT, but classified as `IGNORED` and printed
 in yellow.
 
@@ -52,7 +62,7 @@ If you want to focus on a hierarchy of tests, just substitute `to` with `focused
 E.g.:
 
 ```scala
-"name" using (state) focused
+"name" using (state) focused:
 "name" usingTable(source) focused:
 "name" usingAsync(state) focused:
 ```
