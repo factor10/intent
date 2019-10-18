@@ -9,7 +9,7 @@ import intent.helpers.TestSuiteRunnerTester
 import scala.concurrent.{ExecutionContext, Future}
 
 class FocusedTest extends TestSuite with State[FocusedTestCase]:
-  "FocusedTest" usingTable (focusedSuites) focused:
+  "FocusedTest" usingTable (focusedSuites) to:
     "should be focused" in:
       state =>
         expect(state.evaluate().isFocused).toEqual(state.focused)
