@@ -9,8 +9,6 @@ import intent.helpers.TestSuiteRunnerTester
 import scala.concurrent.{ExecutionContext, Future}
 
 class FocusedTest extends TestSuite with State[FocusedTestCase]:
-  // TOOD: Test Async state
-
   "FocusedTest" usingTable (focusedSuites) to:
     "should be focused" in:
       state =>
@@ -44,7 +42,7 @@ class FocusedTest extends TestSuite with State[FocusedTestCase]:
     FocusedTestCase("intent.runner.MidBranchFocusedStatefulTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
     FocusedTestCase("intent.runner.FocusedStatelessTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
     FocusedTestCase("intent.runner.FocusedStatefulTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
-    FocusedTestCase("intent.runner.FocusedAsyncStatefulTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
+    FocusedTestCase("intent.runner.FocusedAsyncStatefulTestSuite", expectedSuccessful = 4, expectedIgnored = 1),
     FocusedTestCase("intent.runner.FocusedTableDrivenTestSuite", expectedSuccessful = 4, expectedIgnored = 1)
   )
 
@@ -155,3 +153,10 @@ class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]:
       _ => success()
     "should also be run" focus:
       _ => success()
+
+  "sibling" usingAsync (Future.successful(())) focused:
+    "sibling child" usingAsync (Future.successful(())) to:
+      "should be run" in:
+         _ => success()
+    "should be run" in:
+       _ => success()

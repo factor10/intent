@@ -294,7 +294,12 @@ trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
   def (context: String) usingAsync (fmc: FlatMap) given (pos: Position): Context = ContextFlatMap(context, fmc, pos)
 
   def (ctx: Context) to (block: => Unit): Unit =
-    withContext(ctx)(block)
+    isParentFocused() match
+      case true => withContext(ctx.withFocus())(block)
+      case _ => withContext(ctx)(block)
+
+  def (ctx: Context) focused (block: => Unit): Unit =
+    withContext(ctx.withFocus())(block)
 
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
     if inFocusedMode && !isParentFocused() then
