@@ -45,6 +45,8 @@ class FocusedTest extends TestSuite with State[FocusedTestCase]:
     FocusedTestCase("intent.runner.FocusedAsyncStatefulTestSuite", expectedSuccessful = 4, expectedIgnored = 1, focused = true),
     FocusedTestCase("intent.runner.FocusedTableDrivenTestSuite", expectedSuccessful = 4, expectedIgnored = 1, focused = true),
     FocusedTestCase("intent.runner.IgnoredStatelessTestSuite", expectedSuccessful = 1, expectedIgnored = 5, focused = false),
+    FocusedTestCase("intent.runner.IgnoredTableDrivenTestSuite", expectedSuccessful = 2, expectedIgnored = 3, focused = false),
+    FocusedTestCase("intent.runner.IgnoredStatefulTestSuite", expectedSuccessful = 1, expectedIgnored = 3, focused = false),
   )
 
 case class FocusedTestCase(
@@ -176,3 +178,34 @@ class IgnoredStatelessTestSuite extends Stateless:
         "should not be run" in fail("should not happen")
         "should also not be run" in fail("should not happen")
     "should be run" in success()
+
+class IgnoredTableDrivenTestSuite extends State[Unit]:
+  "top level" using (()) to:
+    "nested level" using (()) to:
+      "should be run" in:
+        _ => success()
+
+  "another suite" using (()) to:
+    "that use a table" usingTable(tableTests) ignored:
+      "should *not* be run" in:
+        _ => fail("should not happen")
+    "should be run" in:
+      _ => success()
+
+  def tableTests = Seq((), (), ())
+
+class IgnoredStatefulTestSuite extends State[Unit]:
+  "some suite" using (()) ignored:
+    "nested suite" using (()) to:
+      "should not be run" in:
+        _ => fail("should not happen")
+    "nested focus has lower prio" using (()) focused:
+      "should not be run" in:
+          _ => fail("should not happen")
+
+    "should also not be run" in:
+        _ => fail("should not happen")
+
+  "another suite" using (()) to:
+    "should be run" in:
+      _ => success()

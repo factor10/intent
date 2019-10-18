@@ -88,18 +88,22 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
     def isIgnored: Boolean
     /** Returns a focused context */
     def withFocus(): Context
+    /** Returns a ignored and unfocused context */
+    def withIgnore(): Context
 
   private[intent] sealed case class ContextInit(name: String, init: () => Future[TState], position: Position,
     hasFocus: Boolean = false, isIgnored: Boolean = false) extends Context:
 
     def transform(f: Future[Option[TState]]) = init().map(Some.apply)
-    def withFocus() = this.copy(hasFocus = true)
+    def withFocus() = copy(hasFocus = true)
+    def withIgnore() = copy(isIgnored = true, hasFocus = false)
 
   private[intent] sealed case class ContextMap(name: String, tx: Map, position: Position,
     hasFocus: Boolean = false, isIgnored: Boolean = false) extends Context:
 
     def transform(f: Future[Option[TState]]) = f.map(_.map(tx))
-    def withFocus() = this.copy(hasFocus = true)
+    def withFocus() = copy(hasFocus = true)
+    def withIgnore() = copy(isIgnored = true, hasFocus = false)
 
   private[intent] sealed case class ContextFlatMap(name: String, tx: FlatMap, position: Position,
     hasFocus: Boolean = false, isIgnored: Boolean = false) extends Context:
@@ -109,7 +113,8 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
         case Some(state) => tx(state).map(Some.apply)
         case None        => throw ShouldNotHappenException("Unexpected state None after Future transform")
 
-    def withFocus() = this.copy(hasFocus = true)
+    def withFocus() = copy(hasFocus = true)
+    def withIgnore() = copy(isIgnored = true, hasFocus = false)
 
   case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase:
     def nameParts: Seq[String] = contexts.map(_.name) :+ name
@@ -219,18 +224,28 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
   def (context: String) using (tx: Map) given (pos: Position) : Context =
     ContextMap(context, tx, pos)
 
-  def (ctx: Context) to (block: => Unit): Unit = isParentFocused() match
-    case true => withContext(ctx.withFocus())(block)
-    case _ => withContext(ctx)(block)
+  def (ctx: Context) to (block: => Unit): Unit =
+    val ctxToUse = isParentIgnored() match
+      case true => ctx.withIgnore()
+      case false => isParentFocused() match
+        case true => ctx.withFocus()
+        case _ => ctx
+    withContext(ctxToUse)(block)
 
   def (ctx: Context) focused (block: => Unit): Unit =
-    enableFocusedMode()
-    doesParentAllowFocus() match
-      case true => withContext(ctx.withFocus())(block)
-      case _ => withContext(ctx)(block)
+    val ctxToUse = doesParentAllowFocus() match
+      case true =>
+        enableFocusedMode()
+        ctx.withFocus()
+      case false =>
+        ctx.withIgnore()
+    withContext(ctxToUse)(block)
+
+  def (ctx: Context) ignored (block: => Unit): Unit =
+    withContext(ctx.withIgnore())(block)
 
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
-    if inFocusedMode && !isParentFocused() then
+    if inFocusedMode && !isParentFocused() || isParentIgnored() then
       testName ignore testImpl
     else
       addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
@@ -239,8 +254,12 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
     addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
 
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
-    enableFocusedMode()
-    addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
+    doesParentAllowFocus() match
+      case true =>
+        enableFocusedMode()
+        addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
+      case false =>
+        testName ignore testImpl
 
   private case class TableDriveContext(name: String, generator: () => Iterable[TState], position: Position,
     hasFocus: Boolean = false, isIgnored: Boolean = false) extends Context:
@@ -249,9 +268,10 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
       Future.failed(new ShouldNotHappenException("TableDriveContext should not be used directly"))
 
     override def expand(): Iterable[Context] =
-      generator().map(s => ContextInit(s"$name: $s", () => Future.successful(s), position, hasFocus = hasFocus))
+      generator().map(s => ContextInit(s"$name: $s", () => Future.successful(s), position, hasFocus = hasFocus, isIgnored = isIgnored))
 
-    def withFocus() = this.copy(hasFocus = true)
+    def withFocus() = copy(hasFocus = true)
+    def withIgnore() = copy(isIgnored = true, hasFocus = false)
 
   // TODO: Move to separate trait?
   // TODO: Only works on root level currently...
