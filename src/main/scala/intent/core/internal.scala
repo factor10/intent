@@ -189,9 +189,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
    * If there is a parent context, and that is set to ignore tests then don't allow children to be
    * focused (i.e. ignore > focus)
    */
-  protected[intent] def doesParentAllowFocus(): Boolean = parentContext match
-    case Some(ctx) => !ctx.isIgnored
-    case None => true
+  protected[intent] def doesParentAllowFocus(): Boolean = !isParentIgnored()
 
   protected[intent] def isParentFocused(): Boolean = parentContext match
     case Some(ctx) => ctx.hasFocus
