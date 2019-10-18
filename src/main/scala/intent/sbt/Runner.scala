@@ -2,11 +2,10 @@ package intent.sbt
 
 import intent.core.{IntentStructure, TestPassed, TestFailed, TestError, TestIgnored, Subscriber, TestCaseResult}
 import intent.runner.TestSuiteRunner
+import sbt.testing.{Framework => SFramework, _ }
 import scala.concurrent.duration._
+import scala.language.implicitConversions
 import java.io.{PrintWriter, StringWriter}
-import sbt.testing.{
-  Framework => SFramework,
-  _ }
 
 class Framework extends SFramework:
   def name(): String = "intent"
@@ -126,9 +125,7 @@ case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String]
   override def fullyQualifiedName = suiteName
   override def status = sbt.testing.Status.Failure
   override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString(" >> "))
-  override def throwable(): sbt.testing.OptionalThrowable = err match
-    case Some(e) => sbt.testing.OptionalThrowable(e)
-    case None    => sbt.testing.OptionalThrowable()
+  override def throwable(): sbt.testing.OptionalThrowable = err
 
   override def log(loggers: Array[Logger], executionTime: Long): Unit =
     val error = err.map(e => "\n\n" + printErrorWithPrefix(e, s"\t${color}")).getOrElse("")
@@ -142,9 +139,7 @@ case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String],
   override def fullyQualifiedName = suiteName
   override def status = sbt.testing.Status.Failure
   override def selector(): sbt.testing.Selector = new NestedTestSelector(suiteName, testNames.mkString(" >> "))
-  override def throwable(): sbt.testing.OptionalThrowable = err match
-    case Some(e) => sbt.testing.OptionalThrowable(e)
-    case None    => sbt.testing.OptionalThrowable()
+  override def throwable(): sbt.testing.OptionalThrowable = err
   override def log(loggers: Array[Logger], executionTime: Long): Unit =
     val error = err.map(e => "\n\n" + printErrorWithPrefix(e, s"\t${color}")).getOrElse("")
     loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${color}${errContext}${error}"))
@@ -160,3 +155,8 @@ case class IgnoredEvent(suiteName: String, testNames: Seq[String], fingerprint: 
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
   override def log(loggers: Array[Logger], executionTime: Long): Unit =
       if (!focusMode) then super.log(loggers, executionTime)
+
+implicit def option2ot(ot: Option[Throwable]): OptionalThrowable =
+  ot match
+    case Some(e) => sbt.testing.OptionalThrowable(e)
+    case None    => sbt.testing.OptionalThrowable()
