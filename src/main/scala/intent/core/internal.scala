@@ -245,7 +245,7 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
       Future.failed(new ShouldNotHappenException("TableDriveContext should not be used directly"))
 
     override def expand(): Iterable[Context] =
-      generator().map(s => ContextInit(s"$name: $s", () => Future.successful(s), position))
+      generator().map(s => ContextInit(s"$name: $s", () => Future.successful(s), position, hasFocus = hasFocus))
 
     def withFocus() = this.copy(hasFocus = true)
 

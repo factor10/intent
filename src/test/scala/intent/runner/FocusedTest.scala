@@ -10,7 +10,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FocusedTest extends TestSuite with State[FocusedTestCase]:
   // TOOD: Test Async state
-  // TOOD: Test focused table
 
   "FocusedTest" usingTable (focusedSuites) to:
     "should be focused" in:
@@ -46,13 +45,10 @@ class FocusedTest extends TestSuite with State[FocusedTestCase]:
     FocusedTestCase("intent.runner.FocusedStatelessTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
     FocusedTestCase("intent.runner.FocusedStatefulTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
     FocusedTestCase("intent.runner.FocusedAsyncStatefulTestSuite", expectedSuccessful = 2, expectedIgnored = 1),
+    FocusedTestCase("intent.runner.FocusedTableDrivenTestSuite", expectedSuccessful = 4, expectedIgnored = 1)
   )
 
-case class FocusedTestCase(suiteClassName: String = null, expectedSuccessful:Int = 0, expectedIgnored:Int = 0) given (ec: ExecutionContext) extends TestSuiteRunnerTester:
-  def nestedStateless       = FocusedTestCase("intent.runner.NestedFocusedStatelessTestSuite")
-  def midBranchStateless    = FocusedTestCase("intent.runner.MidBranchFocusedStatelessTestSuite")
-  def nestedStateful        = FocusedTestCase("intent.runner.NestedFocusedStatefulTestSuite")
-  def midBranchStateful     = FocusedTestCase("intent.runner.MidBranchFocusedStatefulTestSuite")
+case class FocusedTestCase(suiteClassName: String = null, expectedSuccessful:Int = 0, expectedIgnored:Int = 0) given (ec: ExecutionContext) extends TestSuiteRunnerTester
 
 class NestedFocusedStatelessTestSuite extends Stateless:
   "some suite" focused:
@@ -121,6 +117,21 @@ class MidBranchFocusedStatefulTestSuite extends State[Unit]:
     "a third suite" using (()) to:
       "should include single focus" focus:
         _ => success()
+
+class FocusedTableDrivenTestSuite extends State[Unit]:
+  "top level" using (()) to:
+    "nested level" using (()) to:
+      "should not be run" in:
+        _ => fail("should not happen")
+    "should be run" focus:
+      _ => success()
+
+  "another suite" using (()) to:
+    "that use a table" usingTable(tableTests) focused:
+      "should be run" in:
+        _ => success()
+
+  def tableTests = Seq((), (), ())
 
 class FocusedStatelessTestSuite extends Stateless:
   "should not be run" in fail("Test is not expected to run!")
