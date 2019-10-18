@@ -47,6 +47,7 @@ class FocusedTest extends TestSuite with State[FocusedTestCase]:
     FocusedTestCase("intent.runner.IgnoredStatelessTestSuite", expectedSuccessful = 1, expectedIgnored = 5, focused = false),
     FocusedTestCase("intent.runner.IgnoredTableDrivenTestSuite", expectedSuccessful = 2, expectedIgnored = 3, focused = false),
     FocusedTestCase("intent.runner.IgnoredStatefulTestSuite", expectedSuccessful = 1, expectedIgnored = 3, focused = false),
+    FocusedTestCase("intent.runner.IgnoredAsyncStatefulTestSuite", expectedSuccessful = 2, expectedIgnored = 2, focused = false),
   )
 
 case class FocusedTestCase(
@@ -209,3 +210,17 @@ class IgnoredStatefulTestSuite extends State[Unit]:
   "another suite" using (()) to:
     "should be run" in:
       _ => success()
+
+class IgnoredAsyncStatefulTestSuite extends AsyncState[Unit]:
+  "with state" usingAsync (Future.successful(())) ignored:
+    "should not be run" in:
+      _ => fail("Test is not expected to run!")
+    "should be run" focus:
+      _ => fail("Test is not expected to run!")
+
+  "sibling" usingAsync (Future.successful(())) to:
+    "sibling child" usingAsync (Future.successful(())) to:
+      "should be run" in:
+         _ => success()
+    "should be run" in:
+       _ => success()

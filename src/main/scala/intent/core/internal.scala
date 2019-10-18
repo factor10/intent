@@ -328,15 +328,21 @@ trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
   def (context: String) usingAsync (fmc: FlatMap) given (pos: Position): Context = ContextFlatMap(context, fmc, pos)
 
   def (ctx: Context) to (block: => Unit): Unit =
-    isParentFocused() match
-      case true => withContext(ctx.withFocus())(block)
-      case _ => withContext(ctx)(block)
+    val ctxToUse = isParentIgnored() match
+      case true => ctx.withIgnore()
+      case false => isParentFocused() match
+        case true => ctx.withFocus()
+        case _ => ctx
+    withContext(ctxToUse)(block)
 
   def (ctx: Context) focused (block: => Unit): Unit =
     withContext(ctx.withFocus())(block)
 
+  def (ctx: Context) ignored (block: => Unit): Unit =
+    withContext(ctx.withIgnore())(block)
+
   def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
-    if inFocusedMode && !isParentFocused() then
+    if inFocusedMode && !isParentFocused() || isParentIgnored() then
       testName ignore testImpl
     else
       addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
@@ -345,5 +351,8 @@ trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
       addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
 
   def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
-    enableFocusedMode()
-    addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
+    if isParentIgnored() then
+      testName ignore testImpl
+    else
+      enableFocusedMode()
+      addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
