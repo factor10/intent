@@ -183,7 +183,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
     testCases = testCases.map(mapper)
 
   private var testCases: Seq[ITestCase] = Seq.empty
-  protected var reverseContextStack: Seq[Context] = Seq.empty
+  private var reverseContextStack: Seq[Context] = Seq.empty
 
   /**
    * If there is a parent context, and that is set to ignore tests then don't allow children to be
