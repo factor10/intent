@@ -7,13 +7,13 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Failure}
 
 class ToCompleteWithExpectation[T](expect: Expect[Future[T]], expected: T)
-  given (
-    eqq: Eq[T], 
-    fmt: Formatter[T], 
-    errFmt: Formatter[Throwable], 
+ (given
+    eqq: Eq[T],
+    fmt: Formatter[T],
+    errFmt: Formatter[Throwable],
     ec: ExecutionContext,
     timeout: TestTimeout
-  ) extends Expectation:
+  ) extends Expectation
 
   def evaluate(): Future[ExpectationResult] =
     val timeoutFuture = DelayedFuture(timeout.timeout):

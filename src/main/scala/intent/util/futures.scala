@@ -12,10 +12,10 @@ trait DelayedFuture[T] extends Future[T] {
 }
 
 // From: http://stackoverflow.com/questions/16359849/scala-scheduledfuture
-object DelayedFuture :
+object DelayedFuture
   private val timer = new Timer
 
-  private def makeTask[T](body: => T)(schedule: TimerTask => Unit) given (ctx: ExecutionContext): Future[T] =
+  private def makeTask[T](body: => T)(schedule: TimerTask => Unit)(given ctx: ExecutionContext): Future[T] =
     val prom = Promise[T]()
     schedule(
       new TimerTask {
@@ -28,14 +28,14 @@ object DelayedFuture :
     )
     prom.future
 
-  def apply[T](duration: Duration)(body: => T) given (ctx: ExecutionContext): DelayedFuture[T] =
+  def apply[T](duration: Duration)(body: => T)(given ctx: ExecutionContext): DelayedFuture[T] =
     val isCancelled = new AtomicBoolean(false)
     val f = makeTask({
       if (!isCancelled.get()) body else null.asInstanceOf[T]
     })(timer.schedule(_, duration.toMillis))
     DelayedFutureImpl(f, () => isCancelled.set(true))
 
-  private class DelayedFutureImpl[T](val inner: Future[T], cancelFun: () => Unit) extends DelayedFuture[T] :
+  private class DelayedFutureImpl[T](val inner: Future[T], cancelFun: () => Unit) extends DelayedFuture[T]
     override def cancel(): Unit = cancelFun()
 
     override def onComplete[U](f: (Try[T]) => U)(implicit executor: ExecutionContext): Unit = inner.onComplete(f)
