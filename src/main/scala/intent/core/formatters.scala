@@ -52,7 +52,5 @@ trait FormatterGivens
   given Formatter[Double] = DoubleFmt
   given Formatter[Float] = FloatFmt
 
-  given [TInner, T <: Option[TInner]](given Formatter[TInner]): Formatter[T] = OptionFmt[TInner, T]
-
-  // The use of ClassTag here prevents "double definition" error due to type erasure
-  given [TInner, T <: Try[TInner] : ClassTag](given Formatter[TInner]): Formatter[T] = TryFmt[TInner, T]
+  given optFmt[TInner, T <: Option[TInner]](given Formatter[TInner]): Formatter[T] = OptionFmt[TInner, T]
+  given tryFmt[TInner, T <: Try[TInner]](given Formatter[TInner]): Formatter[T] = TryFmt[TInner, T]
