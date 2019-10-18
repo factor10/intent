@@ -8,116 +8,46 @@ import intent.helpers.TestSuiteRunnerTester
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FocusedTest extends TestSuite with State[FocusedTestCase]:
-  // TODO: Convert these tests to table driven tests
+
+class FocusedTestTwo extends TestSuite with State[FocusedTestCase]:
   // TOOD: Move the other focus tests to this file
+  // TOOD: Test Async state
+  // TOOD: Test focused table
 
-  "FocusedTest" using FocusedTestCase() to :
-    "running nested stateless" using (_.nestedStateless) to:
-      "should be focused" in:
-        state =>
-            expect(state.evaluate().isFocused).toEqual(true)
+  "FocusedTest" usingTable (focusedSuites) to:
+    "should be focused" in:
+      state =>
+        expect(state.evaluate().isFocused).toEqual(true)
 
-      "report that 2 tests were run" in:
-          state =>
-            whenComplete(state.runAll()):
-              possible => possible match
-                case Left(_) => fail("Unexpected Left")
-                case Right(result) => expect(result.successful).toEqual(4)
+    "report that correct number of tests were run" in:
+      state =>
+        whenComplete(state.runAll()):
+          possible => possible match
+            case Left(_) => fail("Unexpected Left")
+            case Right(result) => expect(result.successful).toEqual(state.expectedSuccessful)
 
-      "report that 2 test were ignored" in:
-        state =>
-          whenComplete(state.runAll()):
-            possible => possible match
-              case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.ignored).toEqual(2)
+    "report that correct number test were ignored" in:
+      state =>
+        whenComplete(state.runAll()):
+          possible => possible match
+            case Left(_) => fail("Unexpected Left")
+            case Right(result) => expect(result.ignored).toEqual(state.expectedIgnored)
 
-      "no tests should be failed" in:
-        state =>
-          whenComplete(state.runAll()):
-            possible => possible match
-              case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.failed).toEqual(0)
+    "no tests should be failed" in:
+      state =>
+        whenComplete(state.runAll()):
+          possible => possible match
+            case Left(_) => fail("Unexpected Left")
+            case Right(result) => expect(result.failed).toEqual(0)
 
-    "running mid-branch stateless" using (_.midBranchStateless) to :
-      "should be focused" in:
-        state =>
-            expect(state.evaluate().isFocused).toEqual(true)
+  def focusedSuites = Seq(
+    FocusedTestCase("intent.runner.NestedFocusedStatelessTestSuite", expectedSuccessful = 4, expectedIgnored = 2),
+    FocusedTestCase("intent.runner.MidBranchFocusedStatelessTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
+    FocusedTestCase("intent.runner.NestedFocusedStatefulTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
+    FocusedTestCase("intent.runner.MidBranchFocusedStatefulTestSuite", expectedSuccessful = 3, expectedIgnored = 2),
+  )
 
-      "report that 2 tests were run" in:
-          state =>
-            whenComplete(state.runAll()):
-              possible => possible match
-                case Left(_) => fail("Unexpected Left")
-                case Right(result) => expect(result.successful).toEqual(3)
-
-      "report that 2 test were ignored" in:
-        state =>
-          whenComplete(state.runAll()):
-            possible => possible match
-              case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.ignored).toEqual(2)
-
-      "no tests should be failed" in:
-        state =>
-          whenComplete(state.runAll()):
-            possible => possible match
-              case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.failed).toEqual(0)
-
-    "running nested stateful" using (_.nestedStateful) to:
-      "should be focused" in:
-        state =>
-            expect(state.evaluate().isFocused).toEqual(true)
-
-      "report that 2 tests were run" in:
-          state =>
-            whenComplete(state.runAll()):
-              possible => possible match
-                case Left(_) => fail("Unexpected Left")
-                case Right(result) => expect(result.successful).toEqual(3)
-
-      "report that 2 test were ignored" in:
-        state =>
-          whenComplete(state.runAll()):
-            possible => possible match
-              case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.ignored).toEqual(2)
-
-      "no tests should be failed" in:
-        state =>
-          whenComplete(state.runAll()):
-            possible => possible match
-              case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.failed).toEqual(0)
-
-    "running mid-branch stateful" using (_.midBranchStateful) to :
-      "should be focused" in:
-        state =>
-          expect(state.evaluate().isFocused).toEqual(true)
-
-      "report that 2 tests were run" in:
-        state =>
-          whenComplete(state.runAll()):
-            possible => possible match
-              case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.successful).toEqual(3)
-
-      "report that 2 test were ignored" in:
-        state =>
-          whenComplete(state.runAll()):
-            possible => possible match
-              case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.ignored).toEqual(2)
-
-      "no tests should be failed" in:
-        state =>
-          whenComplete(state.runAll()):
-            possible => possible match
-              case Left(_) => fail("Unexpected Left")
-              case Right(result) => expect(result.failed).toEqual(0)
-
-case class FocusedTestCase(suiteClassName: String = null) given (ec: ExecutionContext) extends TestSuiteRunnerTester:
+case class FocusedTestCase(suiteClassName: String = null, expectedSuccessful:Int = 0, expectedIgnored:Int = 0) given (ec: ExecutionContext) extends TestSuiteRunnerTester:
   def nestedStateless       = FocusedTestCase("intent.runner.NestedFocusedStatelessTestSuite")
   def midBranchStateless    = FocusedTestCase("intent.runner.MidBranchFocusedStatelessTestSuite")
   def nestedStateful        = FocusedTestCase("intent.runner.NestedFocusedStatefulTestSuite")
