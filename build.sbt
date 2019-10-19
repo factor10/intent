@@ -5,6 +5,11 @@ ThisBuild / version := "0.1.0"
 ThisBuild / scalaVersion := dottyVersion
 ThisBuild / publishTo := sonatypePublishToBundle.value
 
+// Let 'sbt clean' remove files that may cause the editor to get out-of-sync
+// with the compiler.
+cleanFiles += new java.io.File(".dotty-ide.json")
+cleanFiles += new java.io.File(".dotty-ide-artifact")
+
 lazy val macros = (project in file("macros"))
   .settings(
     publish := {},
