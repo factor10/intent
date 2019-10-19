@@ -51,9 +51,7 @@ Intent is an early adopter of Dotty features, which means:
 
 ## Contributing
 
-Until we are satisified with design of Intent and how tests are structured, we are
-not accepting any contributions.
-
+See [Contributing to Intent](./CONTRIBUTING.md)
 
 ## License
 
