@@ -7,7 +7,7 @@ import scala.concurrent.duration._
 import scala.language.implicitConversions
 import java.io.{PrintWriter, StringWriter}
 
-class Framework extends SFramework:
+class Framework extends SFramework
   def name(): String = "intent"
   def fingerprints(): Array[Fingerprint] = Array(IntentFingerprint)
   def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): Runner =
@@ -21,7 +21,7 @@ private def printErrorWithPrefix(t: Throwable, linePrefix: String): String =
 /**
  * Defines how to find the Intent's test classes
  */
-object IntentFingerprint extends SubclassFingerprint:
+object IntentFingerprint extends SubclassFingerprint
   // Disable the usage of modules (singleton objects) - this makes discovery faster
   val isModule = false
 
@@ -37,7 +37,7 @@ object IntentFingerprint extends SubclassFingerprint:
 class SbtRunner(
   val args: Array[String],
   val remoteArgs: Array[String],
-  classLoader: ClassLoader) extends Runner:
+  classLoader: ClassLoader) extends Runner
 
   def done(): String =
     // This is called when test is done, and after that the test task myst not be called
@@ -73,7 +73,7 @@ class SbtRunner(
     potentialSuites
       .map(s => SbtTask(s.td, s.structure, runner, focusMode))
 
-class SbtTask(td: TaskDef, suit: IntentStructure, runner: TestSuiteRunner, focusMode: Boolean) extends Task:
+class SbtTask(td: TaskDef, suit: IntentStructure, runner: TestSuiteRunner, focusMode: Boolean) extends Task
   import scala.concurrent.{Await, Future}
   import scala.concurrent.duration._
   import scala.concurrent.ExecutionContext
@@ -89,7 +89,7 @@ class SbtTask(td: TaskDef, suit: IntentStructure, runner: TestSuiteRunner, focus
     // Hmm, do we need really to block here? Does SBT come with something included to be async
     Await.result(executeSuite(handler, loggers), Duration.Inf)
 
-  private def executeSuite(handler: EventHandler, loggers: Array[Logger]) given (ec: ExecutionContext): Future[Array[Task]] =
+  private def executeSuite(handler: EventHandler, loggers: Array[Logger])(given ec: ExecutionContext): Future[Array[Task]] =
     object lock
     val eventSubscriber = new Subscriber[TestCaseResult]:
       override def onNext(event: TestCaseResult): Unit =
@@ -104,13 +104,13 @@ class SbtTask(td: TaskDef, suit: IntentStructure, runner: TestSuiteRunner, focus
 
     runner.runSuite(td.fullyQualifiedName, Some(eventSubscriber)).map(_ => Array.empty)
 
-trait LoggedEvent(color: String, prefix: String, suiteName: String, testNames: Seq[String]):
+trait LoggedEvent(color: String, prefix: String, suiteName: String, testNames: Seq[String])
   val fullyQualifiedTestName: String = suiteName + " >> " + testNames.mkString(" >> ")
 
   def log(loggers: Array[Logger], executionTime: Long): Unit = loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms)"))
 
 case class SuccessfulEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean) extends Event
-  with LoggedEvent(Console.GREEN, "PASSED", suiteName, testNames):
+  with LoggedEvent(Console.GREEN, "PASSED", suiteName, testNames)
 
   override def fullyQualifiedName = suiteName
   override def status = sbt.testing.Status.Success
@@ -118,7 +118,7 @@ case class SuccessfulEvent(duration: Long, suiteName: String, testNames: Seq[Str
   override def throwable(): sbt.testing.OptionalThrowable = sbt.testing.OptionalThrowable()
 
 case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean, assertionMessage: String, err: Option[Throwable]) extends Event
-  with LoggedEvent(Console.RED, "FAILED", suiteName, testNames):
+  with LoggedEvent(Console.RED, "FAILED", suiteName, testNames)
   val color = Console.RED // Why are not these inherited form LoggedEvent?
   val prefix = "FAILED"
 
@@ -132,7 +132,7 @@ case class FailedEvent(duration: Long, suiteName: String, testNames: Seq[String]
     loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${color}${assertionMessage}${error}"))
 
 case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean, errContext: String, err: Option[Throwable]) extends Event
-  with LoggedEvent(Console.RED, "ERROR", suiteName, testNames) {
+  with LoggedEvent(Console.RED, "ERROR", suiteName, testNames)
   val color = Console.RED // Why are not these inherited form LoggedEvent?
   val prefix = "ERROR"
 
@@ -143,10 +143,9 @@ case class ErrorEvent(duration: Long, suiteName: String, testNames: Seq[String],
   override def log(loggers: Array[Logger], executionTime: Long): Unit =
     val error = err.map(e => "\n\n" + printErrorWithPrefix(e, s"\t${color}")).getOrElse("")
     loggers.foreach(_.info(color + s"[${prefix}] ${fullyQualifiedTestName} (${executionTime} ms) \n\t${color}${errContext}${error}"))
-}
 
 case class IgnoredEvent(suiteName: String, testNames: Seq[String], fingerprint: Fingerprint, focusMode: Boolean) extends Event
-  with LoggedEvent(Console.YELLOW, "IGNORED", suiteName, testNames):
+  with LoggedEvent(Console.YELLOW, "IGNORED", suiteName, testNames)
 
   override def duration = 0L
   override def fullyQualifiedName = suiteName

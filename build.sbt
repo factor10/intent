@@ -1,4 +1,4 @@
-val dottyVersion = "0.18.1-RC1"
+val dottyVersion = "0.19.0-RC1"
 
 ThisBuild / name := "intent"
 ThisBuild / version := "0.1.0"
@@ -18,6 +18,8 @@ lazy val root = project
     organization := "com.factor10",
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     testFrameworks += new TestFramework("intent.sbt.Framework"),
+
+    scalacOptions += "-Yindent-colons",
 
     // include the macro classes and resources in the main jar
     mappings in (Compile, packageBin) ++= mappings.in(macros, Compile, packageBin).value,

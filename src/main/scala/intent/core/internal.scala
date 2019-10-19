@@ -19,7 +19,7 @@ private class ShouldNotHappenException(msg: String) extends RuntimeException(msg
 
 trait TestSupport extends FormatterGivens with EqGivens with ExpectGivens
 
-trait IntentStructure:
+trait IntentStructure
   private[intent] def allTestCases: Seq[ITestCase]
 
   /**
@@ -27,7 +27,7 @@ trait IntentStructure:
    */
   private[intent] def isFocused: Boolean
 
-case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase:
+case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase
   def run(): Future[TestCaseResult] =
     Future.successful(TestCaseResult(Duration.Zero, nameParts, TestIgnored()))
 
@@ -35,10 +35,10 @@ case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase:
 // TODO: to Eq/Formatting as well... we need a good strategy here!
 case class TestTimeout(timeout: FiniteDuration)
 
-trait TestLanguage:
-  def expect[T](expr: => T) given (pos: Position): Expect[T] = new Expect[T](expr, pos)
+trait TestLanguage
+  def expect[T](expr: => T)(given pos: Position): Expect[T] = new Expect[T](expr, pos)
 
-  def whenComplete[T](expr: => Future[T])(impl: T => Expectation) given (pos: Position, timeout: TestTimeout): Expectation =
+  def whenComplete[T](expr: => Future[T])(impl: T => Expectation)(given pos: Position, timeout: TestTimeout): Expectation =
     import PositionDescription._
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
@@ -51,48 +51,46 @@ trait TestLanguage:
           case Failure(t) => Future.successful(
             TestFailed(pos.contextualize("The Future passed to 'whenComplete' failed"), Some(t)))
 
-  def fail(reason: String) given (pos: Position) =
+  def fail(reason: String)(given pos: Position): Expectation =
     import PositionDescription._
-    new Expectation:
-      def evaluate() = Future.successful(TestFailed(pos.contextualize(reason), None))
+    new { def evaluate() = Future.successful(TestFailed(pos.contextualize(reason), None)) }
 
-  def success() given (pos: Position) =
+  def success()(given pos: Position): Expectation =
     import PositionDescription._
-    new Expectation:
-      def evaluate() = Future.successful(TestPassed())
+    new { def evaluate() = Future.successful(TestPassed()) }
 
   // TODO: Can this be overridden? Or do we need a protected def
-  given executionContext as ExecutionContext = ExecutionContext.global
+  given executionContext: ExecutionContext = ExecutionContext.global
 
-  given defaultTestTimeout as TestTimeout = TestTimeout(5.seconds)
+  given defaultTestTimeout: TestTimeout = TestTimeout(5.seconds)
 
 /**
   * Base structure for Intent test cases, whether they are async, sync, stateful or stateless.
   * The structure is based on asynchronous execution, since it's possible to fit sync in async,
   * but not vice versa.
   */
-trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
+trait IntentStateBase[TState] extends IntentStructure with TestLanguage
   type Map = TState => TState
   type FlatMap = TState => Future[TState]
 
   private[intent] def isStateful: Boolean
 
-  private[intent] sealed trait Context:
+  private[intent] sealed trait Context
     def name: String
     def transform(f: Future[Option[TState]]): Future[Option[TState]]
     def position: Position
     def expand(): Iterable[Context] = Seq(this)
-  private[intent] sealed case class ContextInit(name: String, init: () => Future[TState], position: Position) extends Context:
+  private[intent] sealed case class ContextInit(name: String, init: () => Future[TState], position: Position) extends Context
     def transform(f: Future[Option[TState]]) = init().map(Some.apply)
-  private[intent] sealed case class ContextMap(name: String, tx: Map, position: Position) extends Context:
+  private[intent] sealed case class ContextMap(name: String, tx: Map, position: Position) extends Context
     def transform(f: Future[Option[TState]]) = f.map(_.map(tx))
-  private[intent] sealed case class ContextFlatMap(name: String, tx: FlatMap, position: Position) extends Context:
+  private[intent] sealed case class ContextFlatMap(name: String, tx: FlatMap, position: Position) extends Context
     def transform(f: Future[Option[TState]]) =
       f.flatMap:
         case Some(state) => tx(state).map(Some.apply)
         case None        => throw ShouldNotHappenException("Unexpected state None after Future transform")
 
-  case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase:
+  case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase
     def nameParts: Seq[String] = contexts.map(_.name) :+ name
     def run(): Future[TestCaseResult] =
       import PositionDescription._
@@ -116,7 +114,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
         case l@Left(_) => Future.successful(l)
         case Right(stateOpt) =>
           try
-            ctx.transform(Future.successful(stateOpt)).transform :
+            ctx.transform(Future.successful(stateOpt)).transform:
               case Success(newStateOpt) => Success(Right(newStateOpt))
               case Failure(t: ShouldNotHappenException) =>
                 Success(Left(error(s"""${t.getMessage} for context \"${ctx.name}\"""", None, ctx.position)))
@@ -128,7 +126,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
               Future.successful(Left(error(s"""The transformation for context \"${ctx.name}\" failed""", Some(t), ctx.position)))
       })
 
-      postSetup.flatMap :
+      postSetup.flatMap:
         case Left(r) => Future.successful(r)
         case Right(opt) =>
           try
@@ -170,19 +168,19 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
 
 /**
   * Provides the Intent stateful test syntax, i.e. where contexts arrange state and
-  * test cases act and assert on the state. 
+  * test cases act and assert on the state.
   */
-trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
+trait IntentStateSyntax[TState] extends IntentStateBase[TState]
   private[intent] override def isStateful = true
 
-  def (context: String) using (init: => TState) given (pos: Position) : Context =
+  def (context: String) using (init: => TState)(given pos: Position) : Context =
     ContextInit(context, () => Future.successful(init), pos)
-  def (context: String) using (tx: Map) given (pos: Position) : Context =
+  def (context: String) using (tx: Map)(given pos: Position) : Context =
     ContextMap(context, tx, pos)
 
   def (ctx: Context) to (block: => Unit): Unit = withContext(ctx)(block)
 
-  def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
+  def (testName: String) in (testImpl: TState => Expectation)(given pos: Position): Unit =
     if inFocusedMode then
       testName ignore testImpl
     else
@@ -191,11 +189,11 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
   def (testName: String) ignore (testImpl: TState => Expectation): Unit =
     addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
 
-  def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
+  def (testName: String) focus (testImpl: TState => Expectation)(given pos: Position): Unit =
     enableFocusedMode()
     addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
 
-  private case class TableDriveContext(name: String, generator: () => Iterable[TState], position: Position) extends Context:
+  private case class TableDriveContext(name: String, generator: () => Iterable[TState], position: Position) extends Context
     def transform(f: Future[Option[TState]]): Future[Option[TState]] =
       Future.failed(new ShouldNotHappenException("TableDriveContext should not be used directly"))
     override def expand(): Iterable[Context] =
@@ -204,48 +202,48 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
 
   // TODO: Move to separate trait?
   // TODO: Only works on root level currently...
-  def (context: String) usingTable (generator: => Iterable[TState]) given (pos: Position): Context =
+  def (context: String) usingTable (generator: => Iterable[TState])(given pos: Position): Context =
     TableDriveContext(context, () => generator, pos)
 
 /**
   * Provides the Intent stateless test syntax, i.e. where contexts are merely structural
   * and test cases are entirely responsible for arrange-act-assert.
   */
-trait IntentStatelessSyntax extends IntentStateBase[Unit]:
+trait IntentStatelessSyntax extends IntentStateBase[Unit]
 
   private[intent] override def isStateful = false
 
-  def (testName: String) in (testImpl: => Expectation) given (pos: Position): Unit =
+  def (testName: String) in (testImpl: => Expectation)(given pos: Position): Unit =
     // When in focused mode, all "ordinary" tests becomes ignored
     if inFocusedMode then
       testName ignore testImpl
     else
       addTestCase(TestCase(contextsInOrder, testName, _ => testImpl, pos))
 
-  def (blockName: String) apply (block: => Unit) given (pos: Position): Unit =
+  def (blockName: String) apply (block: => Unit)(given pos: Position): Unit =
     val ctx = ContextInit(blockName, () => Future.successful(()), pos)
     withContext(ctx)(block)
 
   def (testName: String) ignore (testImpl: => Expectation): Unit =
     addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
 
-  def (testName: String) focus (testImpl: => Expectation) given (pos: Position): Unit =
+  def (testName: String) focus (testImpl: => Expectation)(given pos: Position): Unit =
     enableFocusedMode()
     addTestCase(TestCase(contextsInOrder, testName, _ => testImpl, pos))
 
-trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
+trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]
 
   private[intent] override def isStateful = true
 
-  def (context: String) using (init: => TState) given (pos: Position): Context = ContextInit(context, () => Future.successful(init), pos)
-  def (context: String) usingAsync (init: => Future[TState]) given (pos: Position): Context = ContextInit(context, () => init, pos)
-  def (context: String) using (tx: Map) given (pos: Position): Context = ContextMap(context, tx, pos)
-  def (context: String) usingAsync (fmc: FlatMap) given (pos: Position): Context = ContextFlatMap(context, fmc, pos)
+  def (context: String) using (init: => TState)(given pos: Position): Context = ContextInit(context, () => Future.successful(init), pos)
+  def (context: String) usingAsync (init: => Future[TState])(given pos: Position): Context = ContextInit(context, () => init, pos)
+  def (context: String) using (tx: Map)(given pos: Position): Context = ContextMap(context, tx, pos)
+  def (context: String) usingAsync (fmc: FlatMap)(given pos: Position): Context = ContextFlatMap(context, fmc, pos)
 
   def (ctx: Context) to (block: => Unit): Unit =
     withContext(ctx)(block)
 
-  def (testName: String) in (testImpl: TState => Expectation) given (pos: Position): Unit =
+  def (testName: String) in (testImpl: TState => Expectation)(given pos: Position): Unit =
     if inFocusedMode then
       testName ignore testImpl
     else
@@ -254,6 +252,6 @@ trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
   def (testName: String) ignore (testImpl: TState => Expectation): Unit =
       addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
 
-  def (testName: String) focus (testImpl: TState => Expectation) given (pos: Position): Unit =
+  def (testName: String) focus (testImpl: TState => Expectation)(given pos: Position): Unit =
     enableFocusedMode()
     addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))

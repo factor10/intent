@@ -8,29 +8,29 @@ import intent.helpers.TestSuiteRunnerTester
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
-  "TestSuiteRunner" using TestSuiteTestCase() to :
+class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]
+  "TestSuiteRunner" using TestSuiteTestCase() to:
 
-    "running a stateful suite without context" using (_.noContextTestSuite) to :
+    "running a stateful suite without context" using (_.noContextTestSuite) to:
       "has an error event" in:
         expectErrorMatching("^Top-level test cases".r)
 
-    "running a suite that fails in setup" using (_.setupFailureTestSuite) to :
-      "reports that 1 test was run" in :
+    "running a suite that fails in setup" using (_.setupFailureTestSuite) to:
+      "reports that 1 test was run" in:
         state =>
-          whenComplete(state.runAll()) :
+          whenComplete(state.runAll()):
             case Left(_) => fail("unexpected Left")
             case Right(result) => expect(result.total).toEqual(1)
 
       "reports that 1 test failed" in:
         state =>
-          whenComplete(state.runAll()) :
+          whenComplete(state.runAll()):
             case Left(_) => fail("unexpected Left")
             case Right(result) => expect(result.failed).toEqual(1)
 
       "has a failure event with the exception" in:
         state =>
-          whenComplete(state.runWithEventSubscriber()) :
+          whenComplete(state.runWithEventSubscriber()):
             case Left(_) => fail("unexpected Left")
             case Right(_) =>
               val maybeEx = state.receivedEvents().collectFirst { case TestCaseResult(_, _, TestFailed(_, Some(ex))) => ex }
@@ -38,10 +38,10 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
                 case Some(ex) => expect(ex.getMessage).toEqual("intentional failure")
                 case None => fail("unexpected None")
 
-    "running an async stateful suite that fails in setup" using (_.setupFailureAsyncTestSuite) to :
+    "running an async stateful suite that fails in setup" using (_.setupFailureAsyncTestSuite) to:
       "collects exceptions for all the failure variants" in:
         state =>
-          whenComplete(state.runWithEventSubscriber()) :
+          whenComplete(state.runWithEventSubscriber()):
             case Left(_) => fail("unexpected Left")
             case Right(_) =>
               val exceptions = state.receivedEvents().collect { case TestCaseResult(_, _, TestFailed(_, Some(ex))) => ex }
@@ -51,7 +51,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
 
       "describes all the failure variants" in:
         state =>
-          whenComplete(state.runWithEventSubscriber()) :
+          whenComplete(state.runWithEventSubscriber()):
             case Left(_) => fail("unexpected Left")
             case Right(_) =>
               val messages = state.receivedEvents().collect { case TestCaseResult(_, _, TestFailed(msg, _)) => msg }
@@ -59,11 +59,11 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
               val combined = messages.mkString("|")
               expect(combined).toMatch("^The state setup".r) // TODO: this doesn't test all three
 
-    "running an async stateful suite without context" using (_.noContextAsyncTestSuite) to :
+    "running an async stateful suite without context" using (_.noContextAsyncTestSuite) to:
       "has an error event" in:
         expectErrorMatching("^Top-level test cases".r)
 
-    "running an empty suite" using (_.emptyTestSuite) to :
+    "running an empty suite" using (_.emptyTestSuite) to:
       "report that zero tests were run" in:
         state =>
           whenComplete(state.runAll()):
@@ -71,7 +71,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
               case Left(_) => fail("Unexpected Left")
               case Right(result) => expect(result.total).toEqual(0)  // TODO: Match on case class or individual fields?
 
-    "running the OneOfEachResultTestSuite (stateless)" using (_.oneOfEachResult) to :
+    "running the OneOfEachResultTestSuite (stateless)" using (_.oneOfEachResult) to:
       "report that totally 4 test was run" in:
         state =>
           whenComplete(state.runAll()):
@@ -166,7 +166,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
               case Left(_) => fail("Unexpected Left")
               case Right(result) => expect(result.ignored).toEqual(1)
 
-    "when test suite cannot be instantiated" using (_.invalidTestSuiteClass) to :
+    "when test suite cannot be instantiated" using (_.invalidTestSuiteClass) to:
       "a TestSuiteError should be received" in:
         state =>
           whenComplete(state.runAll()):
@@ -174,34 +174,34 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
               case Left(e) => expect(s"${e.ex.getClass}: ${e.ex.getMessage}").toEqual("class java.lang.ClassNotFoundException: foo.Bar")
               case Right(_) => expect(false).toEqual(true)
 
-    "evaluting an empty suite" using (_.emptyTestSuite) to :
+    "evaluting an empty suite" using (_.emptyTestSuite) to:
       "should not be focused" in:
         state =>
           expect(state.evaluate().isFocused).toEqual(false)
 
-    "evaluting the OneOfEachResultTestSuite" using (_.oneOfEachResult) to :
+    "evaluting the OneOfEachResultTestSuite" using (_.oneOfEachResult) to:
       "should not be focused" in:
         state =>
           expect(state.evaluate().isFocused).toEqual(false)
 
-    "evaluting the FocusedStatelessTestSuite" using (_.focusedStatelessTestSuite) to :
+    "evaluting the FocusedStatelessTestSuite" using (_.focusedStatelessTestSuite) to:
       "should be focused" in:
         state =>
           expect(state.evaluate().isFocused).toEqual(true)
 
-    "evaluting the FocusedStatefulTestSuite" using (_.focusedStatefulTestSuite) to :
+    "evaluting the FocusedStatefulTestSuite" using (_.focusedStatefulTestSuite) to:
       "should be focused" in:
         state =>
           expect(state.evaluate().isFocused).toEqual(true)
 
-    "evaluting the FocusedStatefulTestSuite" using (_.focusedAsyncTestSuite) to :
+    "evaluting the FocusedStatefulTestSuite" using (_.focusedAsyncTestSuite) to:
       "should be focused" in:
         state =>
           expect(state.evaluate().isFocused).toEqual(true)
 
   def expectErrorMatching(re: scala.util.matching.Regex): TestSuiteTestCase => Expectation =
     state =>
-      whenComplete(state.runWithEventSubscriber()) :
+      whenComplete(state.runWithEventSubscriber()):
         case Left(_) => fail("unexpected Left")
         case Right(_) =>
           val maybeMsg = state.receivedEvents().collectFirst { case TestCaseResult(_, _, TestError(msg, _)) => msg }
@@ -212,7 +212,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
 /**
  * Wraps a runner for a specific test suite
  */
-case class TestSuiteTestCase(suiteClassName: String = null) given (ec: ExecutionContext) extends TestSuiteRunnerTester:
+case class TestSuiteTestCase(suiteClassName: String = null)(given ec: ExecutionContext) extends TestSuiteRunnerTester
 
   def emptyTestSuite = TestSuiteTestCase("intent.testdata.EmtpyTestSuite")
   def invalidTestSuiteClass = TestSuiteTestCase("foo.Bar")
@@ -226,7 +226,7 @@ case class TestSuiteTestCase(suiteClassName: String = null) given (ec: Execution
   def focusedStatefulTestSuite = TestSuiteTestCase("intent.runner.FocusedStatefulTestSuite")
   def focusedAsyncTestSuite = TestSuiteTestCase("intent.runner.FocusedAsyncStatefulTestSuite")
 
-class OneOfEachResultTestSuite extends Stateless :
+class OneOfEachResultTestSuite extends Stateless
   "successful" in success()
   "failed" in fail("test should fail")
   "ignored" ignore success()
@@ -234,12 +234,12 @@ class OneOfEachResultTestSuite extends Stateless :
   "error" in:
     throw new RuntimeException("test should fail")
 
-class OneOfEachResulStatefulTestSuite extends State[Unit] :
+class OneOfEachResulStatefulTestSuite extends State[Unit]
     "level" using (()) to:
       "ignored" ignore:
         _ => fail("Unexpected, test should be ignored")
 
-case class StatefulFailingTestState():
+case class StatefulFailingTestState()
     def fail: StatefulFailingTestState =
       throw new RuntimeException("intentional failure")
     def failAsync: Future[StatefulFailingTestState] =
@@ -247,38 +247,38 @@ case class StatefulFailingTestState():
     def throwFail: Future[StatefulFailingTestState] =
       throw new RuntimeException("intentional failure")
 
-class StatefulFailingTestSuite extends State[StatefulFailingTestState]:
-  "root" using (StatefulFailingTestState()) to :
-    "uh oh" using (_.fail) to :
-      "won't get here" in :
+class StatefulFailingTestSuite extends State[StatefulFailingTestState]
+  "root" using (StatefulFailingTestState()) to:
+    "uh oh" using (_.fail) to:
+      "won't get here" in:
         _ => expect(1).toEqual(2)
 
-class StatefulFailingAsyncTestSuite extends AsyncState[StatefulFailingTestState]:
-  "root" using (StatefulFailingTestState()) to :
-    "uh oh async" usingAsync (_.failAsync) to :
-      "won't get here" in :
+class StatefulFailingAsyncTestSuite extends AsyncState[StatefulFailingTestState]
+  "root" using (StatefulFailingTestState()) to:
+    "uh oh async" usingAsync (_.failAsync) to:
+      "won't get here" in:
         _ => expect(1).toEqual(2)
-    "uh oh sync" using (_.fail) to :
-      "won't get here" in :
+    "uh oh sync" using (_.fail) to:
+      "won't get here" in:
         _ => expect(1).toEqual(2)
-    "uh oh sync-fail-in-async" usingAsync (_.throwFail) to :
-      "won't get here" in :
+    "uh oh sync-fail-in-async" usingAsync (_.throwFail) to:
+      "won't get here" in:
         _ => expect(1).toEqual(2)
 
-class StatefulNoContextTestSuite extends State[StatefulFailingTestState]:
-  "won't get here" in :
+class StatefulNoContextTestSuite extends State[StatefulFailingTestState]
+  "won't get here" in:
     _ => expect(1).toEqual(2)
 
-class StatefulNoContextAsyncTestSuite extends AsyncState[StatefulFailingTestState]:
-  "won't get here" in :
+class StatefulNoContextAsyncTestSuite extends AsyncState[StatefulFailingTestState]
+  "won't get here" in:
     _ => expect(1).toEqual(2)
 
-class FocusedStatelessTestSuite extends Stateless:
+class FocusedStatelessTestSuite extends Stateless
   "should not be run" in fail("Test is not expected to run!")
   "should be run" focus success()
   "should also be run" focus success()
 
-class FocusedStatefulTestSuite extends State[Unit]:
+class FocusedStatefulTestSuite extends State[Unit]
   "with state" using (()) to:
     "should not be run" in:
       _ => fail("Test is not expected to run!")
@@ -287,7 +287,7 @@ class FocusedStatefulTestSuite extends State[Unit]:
     "should also be run" focus:
       _ => success()
 
-class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]:
+class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]
   "with state" usingAsync (Future.successful(())) to:
     "should not be run" in:
       _ => fail("Test is not expected to run!")

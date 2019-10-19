@@ -22,7 +22,7 @@ case class TestSuiteError(ex: Throwable) extends Throwable
  * @param errors The number of tests that caused error (exception, not failed assertion)
  * @param ignored The number of tests that are ignored (not run)
  */
-case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0, errors: Int = 0, ignored: Int = 0):
+case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0, errors: Int = 0, ignored: Int = 0)
   def incSuccess(): TestSuiteResult = this.copy(
       total = total + 1,
       successful = successful + 1)
@@ -47,7 +47,7 @@ case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0,
  *
  * @param classLoader The class loader used to load and instantiate the test suite
  */
-class TestSuiteRunner(classLoader: ClassLoader):
+class TestSuiteRunner(classLoader: ClassLoader)
   /**
    * Instantiate and run the given test suite.
    *
@@ -57,7 +57,7 @@ class TestSuiteRunner(classLoader: ClassLoader):
    * Until the full suite is executed a subscriber can be given to receive events during the test-run. A custom
    * subscriber is also recommended if more details than the successful result is needed.
    */
-  def runSuite(className: String, eventSubscriber: Option[Subscriber[TestCaseResult]] = None) given(ec: ExecutionContext): Future[Either[TestSuiteError, TestSuiteResult]] =
+  def runSuite(className: String, eventSubscriber: Option[Subscriber[TestCaseResult]] = None)(given ec: ExecutionContext): Future[Either[TestSuiteError, TestSuiteResult]] =
     instantiateSuite(className) match
       case Success(instance) => runTestsForSuite(instance, eventSubscriber).map(res => Right(res))
       case Failure(ex: Throwable) => Future.successful(Left(TestSuiteError(ex)))
@@ -70,7 +70,7 @@ class TestSuiteRunner(classLoader: ClassLoader):
       case Success(instance) => Right(instance)
       case Failure(ex: Throwable) => Left(TestSuiteError(ex))
 
-  private def runTestsForSuite(suite: IntentStructure, eventSubscriber: Option[Subscriber[TestCaseResult]]) given(ec: ExecutionContext): Future[TestSuiteResult] =
+  private def runTestsForSuite(suite: IntentStructure, eventSubscriber: Option[Subscriber[TestCaseResult]])(given ec: ExecutionContext): Future[TestSuiteResult] =
     // TODO: We should measure Suite time as well. Might be good to find expensive setup or scheduling problems.
     val futureTestResults = suite.allTestCases.map(tc =>
       eventSubscriber match {
