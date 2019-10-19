@@ -55,6 +55,6 @@ object Position {
     val filePath: String = file.toString
     val lineNo: Int = rootPosition.startLine
     val colNo: Int = rootPosition.startColumn
-    '{ Position(${filePath.toExpr}, ${lineNo.toExpr}, ${colNo.toExpr}) }
+    '{ Position(${Expr(filePath)}, ${Expr(lineNo)}, ${Expr(colNo)}) }
   }
 }
