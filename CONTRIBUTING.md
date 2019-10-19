@@ -1,6 +1,6 @@
 # Contributing to Intent
 
-The design of Intent and the structure of tests is still a moving target.
+The design of Intent and the structure of tests are still moving targets.
 Therefore, if you wish to contribute, please open an issue or comment on an
 existing issue so that we can have a discussion first.
 
