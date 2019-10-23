@@ -14,7 +14,10 @@ class ToThrowTest extends TestSuite with Stateless with Meta
         runExpectation(expect(throwIllegalState).toThrow[IllegalArgumentException](),
           "Expected the code to throw java.lang.IllegalArgumentException, but it threw java.lang.IllegalStateException")
 
-
+      "should detect wrong exception when negated" in:
+        runExpectation(expect(throwIllegalState).not.toThrow[IllegalStateException](),
+          "Expected the code not to throw java.lang.IllegalStateException, but it did")
+  
   def throwIllegalArg = throw new IllegalArgumentException("arg error")
   def throwIllegalState = throw new IllegalStateException("state error")
 
