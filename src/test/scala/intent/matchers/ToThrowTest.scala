@@ -21,7 +21,10 @@ class ToThrowTest extends TestSuite with Stateless with Meta
       "should detect absence of exception" in:
         runExpectation(expect(dontThrow).toThrow[IllegalArgumentException](),
           "Expected the code to throw java.lang.IllegalArgumentException, but it did not throw anything")
-    
+
+      "should detect absence of exception when negated" in:
+        expect(dontThrow).not.toThrow[IllegalArgumentException]()
+      
   def throwIllegalArg = throw new IllegalArgumentException("arg error")
   def throwIllegalState = throw new IllegalStateException("state error")
   def dontThrow = "tada"
