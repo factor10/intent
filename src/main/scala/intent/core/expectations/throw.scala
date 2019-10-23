@@ -21,6 +21,6 @@ class ThrowExpectation[TEx : ClassTag](expect: Expect[_]) extends Expectation
         expect.fail(msg)
       case Failure(t) =>
         val msg = s"Expected the code to throw ${expectedClass.getName}, but it threw ${t.getClass.getName}"
-        expect.fail(msg)
+        expect.fail(msg, t)
 
     Future.successful(r)

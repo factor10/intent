@@ -37,8 +37,9 @@ class Expect[T](blk: => T, position: Position, negated: Boolean = false)
   def isNegated: Boolean = negated
   def negate(): Expect[T] = new Expect(blk, position, !negated)
 
-  def fail(desc: String): ExpectationResult = TestFailed(position.contextualize(desc), None)
-  def pass: ExpectationResult               = TestPassed()
+  def fail(desc: String): ExpectationResult               = TestFailed(position.contextualize(desc), None)
+  def fail(desc: String, t: Throwable): ExpectationResult = TestFailed(position.contextualize(desc), Some(t))
+  def pass: ExpectationResult                             = TestPassed()
 
 trait ExpectGivens
 
