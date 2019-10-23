@@ -9,7 +9,7 @@ private def evalToContain[T](actual: IterableOnce[T],
                               expected: T,
                               expect: Expect[_],
                               listTypeName: String)
-    given (
+   (given
       eqq: Eq[T],
       fmt: Formatter[T],
       cutoff: ListCutoff
@@ -49,24 +49,24 @@ private def evalToContain[T](actual: IterableOnce[T],
     expect.fail(desc)
   else expect.pass
   Future.successful(r)
-  
-class IterableContainExpectation[T](expect: Expect[IterableOnce[T]], expected: T) 
-  given (
+
+class IterableContainExpectation[T](expect: Expect[IterableOnce[T]], expected: T)
+ (given
     eqq: Eq[T],
     fmt: Formatter[T],
     cutoff: ListCutoff
-  ) extends Expectation:
+  ) extends Expectation
 
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()
     evalToContain(actual, expected, expect, listTypeName(actual))
 
-class ArrayContainExpectation[T](expect: Expect[Array[T]], expected: T) 
-  given (
+class ArrayContainExpectation[T](expect: Expect[Array[T]], expected: T)
+ (given
     eqq: Eq[T],
     fmt: Formatter[T],
     cutoff: ListCutoff
-  ) extends Expectation:
+  ) extends Expectation
 
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()

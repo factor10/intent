@@ -10,9 +10,9 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Success, Try}
 
-class DelayedFutureTestState :
+class DelayedFutureTestState
   val executorService = Executors.newFixedThreadPool(1)
-  given executionContext as ExecutionContext = ExecutionContext.fromExecutorService(executorService)
+  given executionContext: ExecutionContext = ExecutionContext.fromExecutorService(executorService)
 
   val executorThreadId =
     // Determine the thread ID of the execution context, so we can compare with that in the tests.
@@ -20,31 +20,30 @@ class DelayedFutureTestState :
     executionContext.execute(() => p.success(Thread.currentThread().getId))
     Await.result(p.future, 2 seconds)
 
-  def run(f: given (ExecutionContext) => Expectation): Expectation = f
+  def run(f:(given ExecutionContext) => Expectation): Expectation = f
 
-object DelayedFutureTestState:
+object DelayedFutureTestState
   val instance = DelayedFutureTestState()
 
-class DelayedFutureTest extends TestSuite with State[DelayedFutureTestState] :
+class DelayedFutureTest extends TestSuite with State[DelayedFutureTestState]
 
-  "A DelayedFuture" using (DelayedFutureTestState.instance) to :
+  "A DelayedFuture" using (DelayedFutureTestState.instance) to:
 
-    "should run the callback in the supplied execution context" in :
+    "should run the callback in the supplied execution context" in:
       s =>
-        s.run :
+        s.run:
           val f = DelayedFuture(10 milliseconds)(Thread.currentThread().getId)
-          whenComplete(f) :
+          whenComplete(f):
             tid => expect(tid).toEqual(s.executorThreadId)
 
     "should be cancellable" in:
       s =>
         s.run:
           var hasRun = false
-          val f = DelayedFuture(100 milliseconds) {
+          val f = DelayedFuture(100 milliseconds):
             hasRun = true
-          }
           f.cancel()
-          whenComplete(f) :
+          whenComplete(f):
             _ => expect(hasRun).toEqual(false)
 
     "should have a default result after being cancelled" in:

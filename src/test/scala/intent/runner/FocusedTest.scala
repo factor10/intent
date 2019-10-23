@@ -8,7 +8,7 @@ import intent.helpers.TestSuiteRunnerTester
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FocusedTest extends TestSuite with State[FocusedTestCase]:
+class FocusedTest extends TestSuite with State[FocusedTestCase]
   "FocusedTest" usingTable (focusedSuites) to:
     "should be focused" in:
       state =>
@@ -54,9 +54,9 @@ case class FocusedTestCase(
   suiteClassName: String = null,
   expectedSuccessful:Int = 0,
   expectedIgnored:Int = 0,
-  focused: Boolean = false) given (ec: ExecutionContext) extends TestSuiteRunnerTester
+  focused: Boolean = false)(given ec: ExecutionContext) extends TestSuiteRunnerTester
 
-class NestedFocusedStatelessTestSuite extends Stateless:
+class NestedFocusedStatelessTestSuite extends Stateless
   "some suite" focused:
     "nested suite":
       "should be run" in success()
@@ -71,7 +71,7 @@ class NestedFocusedStatelessTestSuite extends Stateless:
   "should also *not* be run" in fail("should not happen")
   "should be run" focus success()
 
-class MidBranchFocusedStatelessTestSuite extends Stateless:
+class MidBranchFocusedStatelessTestSuite extends Stateless
   "some suite":
     "another suite":
       "should *not* be run A" in fail("should not happen")
@@ -84,7 +84,7 @@ class MidBranchFocusedStatelessTestSuite extends Stateless:
     "a third suite":
       "should include single focus" focus success()
 
-class NestedFocusedStatefulTestSuite extends State[Unit]:
+class NestedFocusedStatefulTestSuite extends State[Unit]
   "focused suite" using (()) focused:
     "nested suite" using (()) to:
       "should be run 1" in:
@@ -104,7 +104,7 @@ class NestedFocusedStatefulTestSuite extends State[Unit]:
     "should include single focus" focus:
       _ => success()
 
-class MidBranchFocusedStatefulTestSuite extends State[Unit]:
+class MidBranchFocusedStatefulTestSuite extends State[Unit]
   "some suite" using (()) to:
     "another suite" using (()) to:
       "should *not* be run" in:
@@ -124,7 +124,7 @@ class MidBranchFocusedStatefulTestSuite extends State[Unit]:
       "should include single focus" focus:
         _ => success()
 
-class FocusedTableDrivenTestSuite extends State[Unit]:
+class FocusedTableDrivenTestSuite extends State[Unit]
   "top level" using (()) to:
     "nested level" using (()) to:
       "should not be run" in:
@@ -139,12 +139,12 @@ class FocusedTableDrivenTestSuite extends State[Unit]:
 
   def tableTests = Seq((), (), ())
 
-class FocusedStatelessTestSuite extends Stateless:
+class FocusedStatelessTestSuite extends Stateless
   "should not be run" in fail("Test is not expected to run!")
   "should be run" focus success()
   "should also be run" focus success()
 
-class FocusedStatefulTestSuite extends State[Unit]:
+class FocusedStatefulTestSuite extends State[Unit]
   "with state" using (()) to:
     "should not be run" in:
       _ => fail("Test is not expected to run!")
@@ -153,7 +153,7 @@ class FocusedStatefulTestSuite extends State[Unit]:
     "should also be run" focus:
       _ => success()
 
-class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]:
+class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]
   "with state" usingAsync (Future.successful(())) to:
     "should not be run" in:
       _ => fail("Test is not expected to run!")
@@ -169,7 +169,7 @@ class FocusedAsyncStatefulTestSuite extends AsyncState[Unit]:
     "should be run" in:
        _ => success()
 
-class IgnoredStatelessTestSuite extends Stateless:
+class IgnoredStatelessTestSuite extends Stateless
   "top":
     "child" ignored:
       "should not be run" in fail("should not happen")
@@ -180,7 +180,7 @@ class IgnoredStatelessTestSuite extends Stateless:
         "should also not be run" in fail("should not happen")
     "should be run" in success()
 
-class IgnoredTableDrivenTestSuite extends State[Unit]:
+class IgnoredTableDrivenTestSuite extends State[Unit]
   "top level" using (()) to:
     "nested level" using (()) to:
       "should be run" in:
@@ -195,7 +195,7 @@ class IgnoredTableDrivenTestSuite extends State[Unit]:
 
   def tableTests = Seq((), (), ())
 
-class IgnoredStatefulTestSuite extends State[Unit]:
+class IgnoredStatefulTestSuite extends State[Unit]
   "some suite" using (()) ignored:
     "nested suite" using (()) to:
       "should not be run" in:
@@ -211,7 +211,7 @@ class IgnoredStatefulTestSuite extends State[Unit]:
     "should be run" in:
       _ => success()
 
-class IgnoredAsyncStatefulTestSuite extends AsyncState[Unit]:
+class IgnoredAsyncStatefulTestSuite extends AsyncState[Unit]
   "with state" usingAsync (Future.successful(())) ignored:
     "should not be run" in:
       _ => fail("Test is not expected to run!")

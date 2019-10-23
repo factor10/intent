@@ -10,7 +10,7 @@ private def evalToEqual[T](actual: Iterable[T],
                             expect: Expect[_],
                             actualListTypeName: String,
                             expectedListTypeName: String)
-    given (
+   (given
       eqq: Eq[T],
       fmt: Formatter[T]
     ): Future[ExpectationResult] =
@@ -34,7 +34,7 @@ private def evalToEqual[T](actual: Iterable[T],
     expectedFormatted += fmt.format(expectedNext)
     if !eqq.areEqual(actualNext, expectedNext) then
       mismatch = true
-  
+
   val hasDiff = mismatch || actualIterator.hasNext || expectedIterator.hasNext
   val allGood = if expect.isNegated then hasDiff else !hasDiff
 
@@ -57,7 +57,7 @@ private def evalToEqual[T](actual: Iterable[T],
   Future.successful(r)
 
 class EqualExpectation[T](expect: Expect[T], expected: T)
-    given (eqq: Eq[T], fmt: Formatter[T]) extends Expectation:
+   (given eqq: Eq[T], fmt: Formatter[T]) extends Expectation
 
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()
@@ -78,10 +78,10 @@ class EqualExpectation[T](expect: Expect[T], expected: T)
     Future.successful(r)
 
 class IterableEqualExpectation[T](expect: Expect[Iterable[T]], expected: Iterable[T])
-  given (
+ (given
     eqq: Eq[T],
     fmt: Formatter[T]
-  ) extends Expectation:
+  ) extends Expectation
 
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()
@@ -89,10 +89,10 @@ class IterableEqualExpectation[T](expect: Expect[Iterable[T]], expected: Iterabl
 
 
 class ArrayEqualExpectation[T](expect: Expect[Array[T]], expected: Iterable[T])
-  given (
+ (given
     eqq: Eq[T],
     fmt: Formatter[T]
-  ) extends Expectation:
+  ) extends Expectation
 
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()

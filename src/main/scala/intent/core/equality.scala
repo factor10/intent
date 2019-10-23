@@ -3,86 +3,86 @@ package intent.core
 import scala.reflect.ClassTag
 import scala.util.{Try, Success, Failure}
 
-trait Eq[T]:
+trait Eq[T]
   def areEqual(a: T, b: T): Boolean
 
-trait FloatingPointPrecision[T]:
+trait FloatingPointPrecision[T]
   def numberOfDecimals: Int
 
-object DefaultDoubleFloatingPointPrecision extends FloatingPointPrecision[Double]:
+object DefaultDoubleFloatingPointPrecision extends FloatingPointPrecision[Double]
   def numberOfDecimals: Int = 12
 
-object DefaultFloatFloatingPointPrecision extends FloatingPointPrecision[Float]:
+object DefaultFloatFloatingPointPrecision extends FloatingPointPrecision[Float]
   def numberOfDecimals: Int = 6
 
-private def compareFPs[T : Numeric](a: T, b: T) given (prec: FloatingPointPrecision[T]): Boolean =
+private def compareFPs[T : Numeric](a: T, b: T)(given prec: FloatingPointPrecision[T]): Boolean =
   if a == b then
     return true
-  val num = the[Numeric[T]]
+  val num = summon[Numeric[T]]
   val mul = math.pow(10, prec.numberOfDecimals.asInstanceOf[Double])
   val am = math.floor(num.toDouble(a) * mul)
   val bm = math.floor(num.toDouble(b) * mul)
   am == bm
 
-object IntEq extends Eq[Int]:
+object IntEq extends Eq[Int]
   def areEqual(a: Int, b: Int): Boolean = a == b
 
-object LongEq extends Eq[Long]:
+object LongEq extends Eq[Long]
   def areEqual(a: Long, b: Long): Boolean = a == b
 
-class DoubleEq given (prec: FloatingPointPrecision[Double]) extends Eq[Double]:
+class DoubleEq(given prec: FloatingPointPrecision[Double]) extends Eq[Double]
   def areEqual(a: Double, b: Double): Boolean = compareFPs(a, b)
 
-class FloatEq given (prec: FloatingPointPrecision[Float]) extends Eq[Float]:
+class FloatEq(given prec: FloatingPointPrecision[Float]) extends Eq[Float]
   def areEqual(a: Float, b: Float): Boolean = compareFPs(a, b)
 
-object BooleanEq extends Eq[Boolean]:
+object BooleanEq extends Eq[Boolean]
   def areEqual(a: Boolean, b: Boolean): Boolean = a == b
 
-object StringEq extends Eq[String]:
+object StringEq extends Eq[String]
   def areEqual(a: String, b: String): Boolean = a == b
 
-object CharEq extends Eq[Char]:
+object CharEq extends Eq[Char]
   def areEqual(a: Char, b: Char): Boolean = a == b
 
-class ThrowableEq[T <: Throwable] extends Eq[T]:
+class ThrowableEq[T <: Throwable] extends Eq[T]
   def areEqual(a: T, b: T): Boolean = a == b
 
-object AnyEq extends Eq[Any]:
+object AnyEq extends Eq[Any]
   def areEqual(a: Any, b: Any): Boolean = a == b
 
-object NothingEq extends Eq[Nothing]:
+object NothingEq extends Eq[Nothing]
   def areEqual(a: Nothing, b: Nothing): Boolean = a == b
 
-class OptionEq[TInner, T <: Option[TInner]] given (innerEq: Eq[TInner]) extends Eq[T]:
+class OptionEq[TInner, T <: Option[TInner]](given innerEq: Eq[TInner]) extends Eq[T]
   def areEqual(a: T, b: T): Boolean =
     (a, b) match
       case (Some(aa), Some(bb)) => innerEq.areEqual(aa, bb)
       case (None, None) => true
       case _ => false
-      
-class TryEq[TInner, T <: Try[TInner]] given (innerEq: Eq[TInner], throwableEq: Eq[Throwable]) extends Eq[T]:
+
+class TryEq[TInner, T <: Try[TInner]](given innerEq: Eq[TInner], throwableEq: Eq[Throwable]) extends Eq[T]
   def areEqual(a: T, b: T): Boolean =
     (a, b) match
       case (Success(aa), Success(bb)) => innerEq.areEqual(aa, bb)
       case (Failure(ta), Failure(tb)) => throwableEq.areEqual(ta, tb)
       case _ => false
 
-trait EqGivens:
+trait EqGivens
 
-  given as FloatingPointPrecision[Double] = DefaultDoubleFloatingPointPrecision
-  given as FloatingPointPrecision[Float] = DefaultFloatFloatingPointPrecision
+  given FloatingPointPrecision[Double] = DefaultDoubleFloatingPointPrecision
+  given FloatingPointPrecision[Float] = DefaultFloatFloatingPointPrecision
 
-  given as Eq[Int] = IntEq
-  given as Eq[Long] = LongEq
-  given as Eq[Boolean] = BooleanEq
-  given as Eq[String] = StringEq
-  given as Eq[Char] = CharEq
-  given as Eq[Double] given FloatingPointPrecision[Double] = DoubleEq()
-  given as Eq[Float] given FloatingPointPrecision[Float] = FloatEq()
-  given throwableEq[T <: Throwable] as Eq[T] = ThrowableEq[T]
+  given Eq[Int] = IntEq
+  given Eq[Long] = LongEq
+  given Eq[Boolean] = BooleanEq
+  given Eq[String] = StringEq
+  given Eq[Char] = CharEq
+  given (given FloatingPointPrecision[Double]): Eq[Double] = DoubleEq()
+  given (given FloatingPointPrecision[Float]): Eq[Float] = FloatEq()
+  given throwableEq[T <: Throwable]: Eq[T] = ThrowableEq[T]
 
-  given [TInner, T <: Option[TInner]] as Eq[T] given Eq[TInner] = OptionEq[TInner, T]
+  given [TInner, T <: Option[TInner]](given Eq[TInner]): Eq[T] = OptionEq[TInner, T]
 
   // The use of ClassTag here prevents "double definition" error due to type erasure
-  given [TInner, T <: Try[TInner] : ClassTag] as Eq[T] given Eq[TInner] = TryEq[TInner, T]
+  given [TInner, T <: Try[TInner] : ClassTag](given Eq[TInner]): Eq[T] = TryEq[TInner, T]
