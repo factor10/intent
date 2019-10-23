@@ -10,7 +10,9 @@ class ThrowExpectation[TEx : ClassTag](expect: Expect[_]) extends Expectation
     val expectedClass = implicitly[ClassTag[TEx]].runtimeClass
     def isExpected(clazz: Class[_]) = if expect.isNegated then expectedClass ne clazz else expectedClass eq clazz
     val r = Try(expect.evaluate()) match
-      case Success(_) => ???
+      case Success(_) =>
+        val msg = s"Expected the code to throw ${expectedClass.getName}, but it did not throw anything"
+        expect.fail(msg)
       case Failure(t) if isExpected(t.getClass) => expect.pass
       case Failure(t) if expect.isNegated =>
         val msg = s"Expected the code not to throw ${expectedClass.getName}, but it did"
