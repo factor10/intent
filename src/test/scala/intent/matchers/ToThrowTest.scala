@@ -30,8 +30,8 @@ class ToThrowTest extends TestSuite with Stateless with Meta
           case t: IllegalStateException => t.getMessage == "state error"
         })
 
+      "should find when a sub class is thrown" in expect(throwIllegalArg).toThrow[RuntimeException]()
+
   def throwIllegalArg = throw new IllegalArgumentException("arg error")
   def throwIllegalState = throw new IllegalStateException("state error")
   def dontThrow = "tada"
-
-  // TODO: Test sub class also.. 

@@ -8,7 +8,7 @@ import scala.util.{Try, Success, Failure}
 class ThrowExpectation[TEx : ClassTag](expect: Expect[_]) extends Expectation
   def evaluate(): Future[ExpectationResult] =
     val expectedClass = implicitly[ClassTag[TEx]].runtimeClass
-    def isExpected(clazz: Class[_]) = if expect.isNegated then expectedClass ne clazz else expectedClass eq clazz
+    def isExpected(clazz: Class[_]) = if expect.isNegated then expectedClass ne clazz else expectedClass.isAssignableFrom(clazz)
     val r = Try(expect.evaluate()) match
       case Success(_) if expect.isNegated =>
         expect.pass
