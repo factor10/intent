@@ -32,6 +32,11 @@ class ToThrowTest extends TestSuite with Stateless with Meta
 
       "should find when a sub class is thrown" in expect(throwIllegalArg).toThrow[RuntimeException]()
 
+      "should find when a sub class is thrown, when negated" in:
+        runExpectation(expect(throwIllegalState).not.toThrow[RuntimeException](),
+          "Expected the code not to throw java.lang.RuntimeException, but it threw java.lang.IllegalStateException")
+
+
   def throwIllegalArg = throw new IllegalArgumentException("arg error")
   def throwIllegalState = throw new IllegalStateException("state error")
   def dontThrow = "tada"
