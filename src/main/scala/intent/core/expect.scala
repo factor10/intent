@@ -102,7 +102,9 @@ trait ExpectGivens
   def (expect: Expect[IterableOnce[T]]) toHaveLength[T] (expected: Int)(given ec: ExecutionContext): Expectation =
     new LengthExpectation(expect, expected)
 
-
+  def (expect: Expect[_]) toThrow[TEx : ClassTag] ()(given ec: ExecutionContext): Expectation =
+    new ThrowExpectation[TEx](expect)
+  
   // TODO:
   // - toContain i lista (massa varianter, IterableOnce-ish)
   // - toContain i Map (immutable + mutable)
