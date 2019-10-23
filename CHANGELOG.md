@@ -8,6 +8,8 @@
 * Make it possible to ignore on a hierarchy / tree of tests using `ignored` instead of `to` on context level.
   See [Focusing tests](docs/running-tests.md#Focusing-tests) for more details.
 
+* Upgrade to Dotty 0.19.0-RC1
+
 ## 0.1.0 (2019-10-17)
 
 * Initial public release
