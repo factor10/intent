@@ -31,13 +31,9 @@ class ThrowExpectation[TEx : ClassTag](expect: Expect[_], expectedMessage: Expec
   def evaluate(): Future[ExpectationResult] =
     val expectedClass = implicitly[ClassTag[TEx]].runtimeClass
 
-    def messageMatches(t: Throwable) = expectedMessage.matches(t.getMessage)
-    def hasRightType(t: Throwable) = expectedClass.isAssignableFrom(t.getClass)
-
-    def matchOn(t: Throwable): ExceptionMatch =
-      ExceptionMatch(hasRightType(t), messageMatches(t))
-      // val ok = hasRightType(t) && messageMatches(t)
-      // if expect.isNegated then !ok else ok
+    def messageMatches(t: Throwable)          = expectedMessage.matches(t.getMessage)
+    def hasRightType(t: Throwable)            = expectedClass.isAssignableFrom(t.getClass)
+    def matchOn(t: Throwable): ExceptionMatch = ExceptionMatch(hasRightType(t), messageMatches(t))
 
     val r = Try(expect.evaluate()) match
       case Success(_) if expect.isNegated =>
