@@ -43,11 +43,19 @@ class ToThrowTest extends TestSuite with Stateless with Meta
       "should find negated match" in expect(throwIllegalArg).not.toThrow[IllegalArgumentException]("wrong text")
       "should handle NPE" in expect(throwNPE).toThrow[NullPointerException](null.asInstanceOf[String])
 
+      "should describe when type is correct but message is not" in:
+        runExpectation(expect(throwIllegalArg).toThrow[IllegalArgumentException]("something else"),
+          "Expected the code to throw java.lang.IllegalArgumentException with message \"something else\", but the message was \"arg error\"")
+
+      "should describe when type is correct but message is not in the RegExp case" in:
+        runExpectation(expect(throwIllegalArg).toThrow[IllegalArgumentException]("^x".r),
+          "Expected the code to throw java.lang.IllegalArgumentException with message matching /^x/, but the message was \"arg error\"")
+  
     "with exception type and expected RegExp message":
       "should find match" in expect(throwIllegalArg).toThrow[IllegalArgumentException]("er+".r)
       "should find negated match" in expect(throwIllegalArg).not.toThrow[IllegalArgumentException]("er[^r]")
     
-  def throwIllegalArg = throw new IllegalArgumentException("arg error")
-  def throwIllegalState = throw new IllegalStateException("state error")
-  def throwNPE = throw new NullPointerException()
+  def throwIllegalArg = throw IllegalArgumentException("arg error")
+  def throwIllegalState = throw IllegalStateException("state error")
+  def throwNPE = throw NullPointerException()
   def dontThrow = "tada"
