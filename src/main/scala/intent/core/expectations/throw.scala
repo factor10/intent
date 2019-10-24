@@ -16,11 +16,11 @@ object AnyExpectedMessage extends ExpectedMessage
 
 class ExactExpectedMessage(expected: String)(given stringFmt: Formatter[String]) extends ExpectedMessage
   def matches(msg: String) = msg == expected
-  def describe() = s"with message ${stringFmt.format(expected)}"
+  def describe() = s" with message ${stringFmt.format(expected)}"
 
 class RegexExpectedMessage(re: Regex) extends ExpectedMessage
   def matches(msg: String) = re.findFirstMatchIn(msg).isDefined
-  def describe() = s"with message matching /${re}/"
+  def describe() = s" with message matching /${re}/"
 
 private case class ExceptionMatch(typeOk: Boolean, messageOk: Boolean)
   def successful(isNegated: Boolean) =
@@ -51,11 +51,11 @@ class ThrowExpectation[TEx : ClassTag](expect: Expect[_], expectedMessage: Expec
           expect.pass
         else if expect.isNegated then
           val details = if t.getClass == expectedClass then "did" else s"threw ${t.getClass.getName}"
-          val msg = s"Expected the code not to throw ${expectedClass.getName}, but it ${details}"
+          val msg = s"Expected the code not to throw ${expectedClass.getName}${expectedMessage.describe()}, but it ${details}"
           expect.fail(msg)
         else
           val msg = if exceptionMatch.typeOk then
-            s"Expected the code to throw ${expectedClass.getName} ${expectedMessage.describe()}, but the message was ${stringFmt.format(t.getMessage)}"
+            s"Expected the code to throw ${expectedClass.getName}${expectedMessage.describe()}, but the message was ${stringFmt.format(t.getMessage)}"
           else
             s"Expected the code to throw ${expectedClass.getName}, but it threw ${t.getClass.getName}"
           expect.fail(msg, t)

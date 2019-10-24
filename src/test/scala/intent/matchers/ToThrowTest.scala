@@ -47,6 +47,10 @@ class ToThrowTest extends TestSuite with Stateless with Meta
         runExpectation(expect(throwIllegalArg).toThrow[IllegalArgumentException]("something else"),
           "Expected the code to throw java.lang.IllegalArgumentException with message \"something else\", but the message was \"arg error\"")
 
+      "should describe wrong exception+message when negated" in:
+        runExpectation(expect(throwIllegalState).not.toThrow[IllegalStateException]("state error"),
+          "Expected the code not to throw java.lang.IllegalStateException with message \"state error\", but it did")
+  
   
     "with exception type and expected RegExp message":
       "should find match" in expect(throwIllegalArg).toThrow[IllegalArgumentException]("er+".r)
