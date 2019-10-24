@@ -14,9 +14,14 @@ private def evalToContain[T](actual: IterableOnce[T],
       fmt: Formatter[T],
       cutoff: ListCutoff
     ): Future[ExpectationResult] =
+
+  def emptyIterator: Iterator[T] = Seq.empty[T].iterator
+  def printContents(lb: ListBuffer[String]) =
+    if actual == null then "" else lb.mkString("(", ", ", ")")
+
   val seen = ListBuffer[String]()
   var found = false
-  val iterator = actual.iterator
+  val iterator = Option(actual).map(_.iterator).getOrElse(emptyIterator)
   val shouldNotFind = expect.isNegated
   var breakEarly = false
   var itemsChecked = 0
@@ -39,7 +44,7 @@ private def evalToContain[T](actual: IterableOnce[T],
   val r = if !allGood then
     if iterator.hasNext then
       seen += "..."
-    val actualStr = listTypeName + seen.mkString("(", ", ", ")")
+    val actualStr = listTypeName + printContents(seen)
     val expectedStr = fmt.format(expected)
 
     val desc = if expect.isNegated then
