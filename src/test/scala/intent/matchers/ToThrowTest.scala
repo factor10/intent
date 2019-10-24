@@ -39,6 +39,10 @@ class ToThrowTest extends TestSuite with Stateless with Meta
     "with exception type and expected message":
       "should find match" in expect(throwIllegalArg).toThrow[IllegalArgumentException]("arg error")
       "should find negated match" in expect(throwIllegalArg).not.toThrow[IllegalArgumentException]("wrong text")
+
+    "with exception type and expected RegExp message":
+      "should find match" in expect(throwIllegalArg).toThrow[IllegalArgumentException]("er+".r)
+      "should find negated match" in expect(throwIllegalArg).not.toThrow[IllegalArgumentException]("er[^r]")
     
   def throwIllegalArg = throw new IllegalArgumentException("arg error")
   def throwIllegalState = throw new IllegalStateException("state error")

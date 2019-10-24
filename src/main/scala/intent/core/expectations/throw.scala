@@ -4,14 +4,25 @@ import intent.core._
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.util.{Try, Success, Failure}
+import scala.util.matching.Regex
 
-class ThrowExpectation[TEx : ClassTag](expect: Expect[_], expectedMessage: Option[String]) extends Expectation
+sealed trait ExpectedMessage
+  def matches(msg: String): Boolean
+
+object AnyExpectedMessage extends ExpectedMessage
+  def matches(msg: String) = true
+
+class ExactExpectedMessage(expected: String) extends ExpectedMessage
+  def matches(msg: String) = msg == expected
+
+class RegexExpectedMessage(re: Regex) extends ExpectedMessage
+  def matches(msg: String) = re.findFirstMatchIn(msg).isDefined
+
+class ThrowExpectation[TEx : ClassTag](expect: Expect[_], expectedMessage: ExpectedMessage) extends Expectation
   def evaluate(): Future[ExpectationResult] =
     val expectedClass = implicitly[ClassTag[TEx]].runtimeClass
 
-    def messageMatches(t: Throwable) = expectedMessage match
-      case Some(exp) => exp == t.getMessage
-      case None      => true // message is irrelevant
+    def messageMatches(t: Throwable) = expectedMessage.matches(t.getMessage)
     def hasRightType(t: Throwable) = expectedClass.isAssignableFrom(t.getClass)
 
     def isExpected(t: Throwable) =

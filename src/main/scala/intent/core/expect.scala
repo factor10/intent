@@ -105,11 +105,15 @@ trait ExpectGivens
 
   // toThrow with only exception type
   def (expect: Expect[_]) toThrow[TEx : ClassTag] ()(given ec: ExecutionContext): Expectation =
-    new ThrowExpectation[TEx](expect, None)
+    new ThrowExpectation[TEx](expect, AnyExpectedMessage)
 
   // toThrow with exception type + message (string, so full match)
   def (expect: Expect[_]) toThrow[TEx : ClassTag] (expectedMessage: String)(given ec: ExecutionContext): Expectation =
-    new ThrowExpectation[TEx](expect, Some(expectedMessage))
+    new ThrowExpectation[TEx](expect, ExactExpectedMessage(expectedMessage))
+
+    // toThrow with exception type + regexp (partial match, like toMatch)
+  def (expect: Expect[_]) toThrow[TEx : ClassTag] (re: Regex)(given ec: ExecutionContext): Expectation =
+    new ThrowExpectation[TEx](expect, RegexExpectedMessage(re))
     
   // TODO:
   // - toContain i lista (massa varianter, IterableOnce-ish)
