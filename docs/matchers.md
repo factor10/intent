@@ -119,6 +119,48 @@ this will fail:
 expect("foo").toMatch("^o+$".r)
 ```
 
+### .toThrow
+
+Test that a piece of code throws an exception, optionally with a particular message.
+
+```scala
+def div(n: Int, d: Int) =
+  require(d != 0, "Division by zero")
+  n / d
+expect(div(5, 0)).toThrow[IllegalArgumentException]("requirement failed: Division by zero")
+```
+
+This matcher can be used in three different ways:
+
+1. With no expected message:
+
+```scala
+expect(div(5, 0)).toThrow[IllegalArgumentException]()
+```
+
+2. With an exact expected message:
+
+```scala
+expect(div(5, 0)).toThrow[IllegalArgumentException]("requirement failed: Division by zero")
+```
+
+3. With a regular expression, which is applied as a partial match:
+
+```scala
+expect(div(5, 0)).toThrow[IllegalArgumentException]("failed.*zero".r)
+```
+
+Note that since the argument to `expect` is a block, testing of a more complex piece of 
+potentially-throwing code can be written as follows:
+
+```scala
+expect:
+  val numerator = 5
+  val denominator = 0
+  div(numerator, denominator)
+.toThrow[IllegalArgumentException]()
+```
+
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToMatchTest.scala)
 
 ## Manually fail or succeed a test
