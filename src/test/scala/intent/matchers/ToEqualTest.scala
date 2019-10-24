@@ -2,8 +2,9 @@ package intent.matchers
 
 import intent.{Stateless, TestSuite}
 import scala.util.{Success, Failure, Try}
+import intent.helpers.Meta
 
-class ToEqualTest extends TestSuite with Stateless
+class ToEqualTest extends TestSuite with Stateless with Meta
   "toEqual":
 
     "for Boolean":
@@ -91,6 +92,22 @@ class ToEqualTest extends TestSuite with Stateless
         val list = LazyList.from(1)
         expect(list).toEqual(list)
 
+      "handles <null> as expected" in expect(Seq.empty[Int]).not.toEqual(null.asInstanceOf[Seq[Int]])
+
+      "handles <null> as actual" in expect(null.asInstanceOf[Seq[Int]]).not.toEqual(Seq.empty[Int])
+
+      "is described properly when actual is null" in:
+        runExpectation(expect(null.asInstanceOf[Seq[Int]]).toEqual(Seq(1, 2, 3)),
+          "Expected <null> to equal List(1, 2, 3)")
+
+      "is described properly when expected is null" in:
+        runExpectation(expect(Seq(1, 2, 3)).toEqual(null.asInstanceOf[Seq[Int]]),
+          "Expected List(1, 2, 3) to equal <null>")
+
+      "is described properly when both are null" in:
+        runExpectation(expect(null.asInstanceOf[Seq[Int]]).not.toEqual(null.asInstanceOf[Seq[Int]]),
+          "Expected <null> to not equal <null>")
+    
     "for array":
       "supports equality test" in expect(Array(1, 2)).toEqual(Array(1, 2))
       "detects inquality in item" in expect(Array(1, 2)).not.toEqual(Array(1, 3))

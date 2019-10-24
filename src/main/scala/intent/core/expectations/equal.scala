@@ -15,6 +15,10 @@ private def evalToEqual[T](actual: Iterable[T],
       fmt: Formatter[T]
     ): Future[ExpectationResult] =
 
+  def emptyIterator: Iterator[T] = Seq.empty[T].iterator
+  def printContents(lb: ListBuffer[String], it: Iterable[T]) =
+    if it eq null then "" else lb.mkString("(", ", ", ")")
+
   val areSameOk = (actual eq expected) && !expect.isNegated
   if areSameOk then
     // Shortcut the logic below. This allows us to test that an infinite list is
@@ -23,8 +27,8 @@ private def evalToEqual[T](actual: Iterable[T],
 
   val actualFormatted = ListBuffer[String]()
   val expectedFormatted = ListBuffer[String]()
-  val actualIterator = actual.iterator
-  val expectedIterator = expected.iterator
+  val actualIterator = Option(actual).map(_.iterator).getOrElse(emptyIterator)
+  val expectedIterator = Option(expected).map(_.iterator).getOrElse(emptyIterator)
   var mismatch = false
   // TODO: Handle very long / infinite collections
   while !mismatch && actualIterator.hasNext && expectedIterator.hasNext do
@@ -35,7 +39,10 @@ private def evalToEqual[T](actual: Iterable[T],
     if !eqq.areEqual(actualNext, expectedNext) then
       mismatch = true
 
-  val hasDiff = mismatch || actualIterator.hasNext || expectedIterator.hasNext
+  // Must check if one (but not the other) is null, since we use an empty-iterator
+  // fallback above (so null gets treated as empty list above).
+  val oneIsNull = (actual eq null) ^ (expected eq null)
+  val hasDiff = mismatch || actualIterator.hasNext || expectedIterator.hasNext || oneIsNull
   val allGood = if expect.isNegated then hasDiff else !hasDiff
 
   val r = if !allGood then
@@ -45,8 +52,8 @@ private def evalToEqual[T](actual: Iterable[T],
       if actualIterator.hasNext then actualFormatted += fmt.format(actualIterator.next())
       if expectedIterator.hasNext then expectedFormatted += fmt.format(expectedIterator.next())
 
-    val actualStr = actualListTypeName + actualFormatted.mkString("(", ", ", ")")
-    val expectedStr = expectedListTypeName + expectedFormatted.mkString("(", ", ", ")")
+    val actualStr = actualListTypeName + printContents(actualFormatted, actual)
+    val expectedStr = expectedListTypeName + printContents(expectedFormatted, expected)
 
     val desc = if expect.isNegated then
       s"Expected $actualStr to not equal $expectedStr"
