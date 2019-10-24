@@ -161,6 +161,14 @@ expect:
 .toThrow[IllegalArgumentException]()
 ```
 
+`toMatch` is satisified when the actual exception is of the same type as or a sub type of the
+expected exception. Thus, the following test passes:
+
+```scala
+expect(div(5, 0)).toThrow[RuntimeException]()
+```
+
+
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToMatchTest.scala)
 
 ## Manually fail or succeed a test
