@@ -37,8 +37,9 @@ class Expect[T](blk: => T, position: Position, negated: Boolean = false)
   def isNegated: Boolean = negated
   def negate(): Expect[T] = new Expect(blk, position, !negated)
 
-  def fail(desc: String): ExpectationResult = TestFailed(position.contextualize(desc), None)
-  def pass: ExpectationResult               = TestPassed()
+  def fail(desc: String): ExpectationResult               = TestFailed(position.contextualize(desc), None)
+  def fail(desc: String, t: Throwable): ExpectationResult = TestFailed(position.contextualize(desc), Some(t))
+  def pass: ExpectationResult                             = TestPassed()
 
 trait ExpectGivens
 
@@ -102,7 +103,18 @@ trait ExpectGivens
   def (expect: Expect[IterableOnce[T]]) toHaveLength[T] (expected: Int)(given ec: ExecutionContext): Expectation =
     new LengthExpectation(expect, expected)
 
+  // toThrow with only exception type
+  def (expect: Expect[_]) toThrow[TEx : ClassTag] ()(given fmt: Formatter[String]): Expectation =
+    new ThrowExpectation[TEx](expect, AnyExpectedMessage)
 
+  // toThrow with exception type + message (string, so full match)
+  def (expect: Expect[_]) toThrow[TEx : ClassTag] (expectedMessage: String)(given fmt: Formatter[String]): Expectation =
+    new ThrowExpectation[TEx](expect, ExactExpectedMessage(expectedMessage))
+
+    // toThrow with exception type + regexp (partial match, like toMatch)
+  def (expect: Expect[_]) toThrow[TEx : ClassTag] (re: Regex)(given fmt: Formatter[String]): Expectation =
+    new ThrowExpectation[TEx](expect, RegexExpectedMessage(re))
+    
   // TODO:
   // - toContain i lista (massa varianter, IterableOnce-ish)
   // - toContain i Map (immutable + mutable)

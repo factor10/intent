@@ -7,7 +7,6 @@ import java.util.regex.Pattern
 trait Meta
   self: TestLanguage with TestSupport =>
     def runExpectation(e: => Expectation, expected: String)(given ExecutionContext): Expectation =
-      val expectedFileName = getClass.getSimpleName // Assume class X is in X.scala
       new Expectation:
         def evaluate(): Future[ExpectationResult] =
           e.evaluate().flatMap:
@@ -18,3 +17,19 @@ trait Meta
             case TestPassed()   => Future.successful(TestFailed("Expected a test failure", None))
             case TestIgnored()  => Future.successful(TestFailed("Expected a test failure", None))
             case t: TestError   => Future.successful(t)
+
+    def runExpectation(e: => Expectation, exMatcher: PartialFunction[Throwable, Boolean])(given ExecutionContext): Expectation =
+      new Expectation:
+        def evaluate(): Future[ExpectationResult] =
+          e.evaluate().flatMap:
+            case TestFailed(_, Some(t)) =>
+              val isOk = exMatcher.applyOrElse(t, _ => false)
+              val result = if isOk then TestPassed() else TestFailed("Unexpected exception", Some(t))
+              Future.successful(result)
+
+            case TestFailed(s, _) => Future.successful(TestFailed(s"Expected a test exception, but got: $s", None))
+            case TestPassed()     => Future.successful(TestFailed("Expected a test failure", None))
+            case TestIgnored()    => Future.successful(TestFailed("Expected a test failure", None))
+            case t: TestError     => Future.successful(t)
+
+    private def expectedFileName = getClass.getSimpleName // Assume class X is in X.scala
