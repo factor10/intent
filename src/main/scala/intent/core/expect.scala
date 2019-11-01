@@ -22,7 +22,7 @@ import intent.core.expectations._
   */
 case class ListCutoff(maxItems: Int = 1000, printItems: Int = 5)
 
-class CompoundExpectation(inner: Seq[Expectation])(given ec: ExecutionContext) extends Expectation
+class CompoundExpectation(inner: Seq[Expectation])(given ec: ExecutionContext) extends Expectation with
   def evaluate(): Future[ExpectationResult] =
     val innerFutures = inner.map(_.evaluate())
     Future.sequence(innerFutures).map { results =>
@@ -30,7 +30,7 @@ class CompoundExpectation(inner: Seq[Expectation])(given ec: ExecutionContext) e
       ???
     }
 
-class Expect[T](blk: => T, position: Position, negated: Boolean = false)
+class Expect[T](blk: => T, position: Position, negated: Boolean = false) with
   import PositionDescription._
 
   def evaluate(): T = blk
@@ -41,7 +41,7 @@ class Expect[T](blk: => T, position: Position, negated: Boolean = false)
   def fail(desc: String, t: Throwable): ExpectationResult = TestFailed(position.contextualize(desc), Some(t))
   def pass: ExpectationResult                             = TestPassed()
 
-trait ExpectGivens
+trait ExpectGivens with
 
   given defaultListCutoff: ListCutoff = ListCutoff()
 

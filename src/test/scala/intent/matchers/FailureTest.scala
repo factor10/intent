@@ -7,7 +7,7 @@ import intent.core.TestTimeout
 import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._
 
-class FailureTest extends TestSuite with Stateless with Meta
+class FailureTest extends TestSuite with Stateless with Meta with
   "a toEqual failure":
     "is described properly" in:
       runExpectation(expect(1).toEqual(2), "Expected 2 but found 1")

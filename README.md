@@ -14,7 +14,7 @@ the following principles:
 Here is an example on how the tests look:
 
 ```scala
-class StatefulTest extends TestSuite with State[Cart] :
+class StatefulTest extends TestSuite with State[Cart] with
   "an empty cart" using Cart() to :
     "with two items" using (_.add(CartItem("beach-chair", 2))) to :
       "and another three items" using (_.add(CartItem("sunscreen", 3))) to :
@@ -22,7 +22,7 @@ class StatefulTest extends TestSuite with State[Cart] :
           cart => expect(cart.totalQuantity).toEqual(5)
 
 case class CartItem(artNo: String, qty: Int)
-case class Cart(items: Seq[CartItem] = Seq.empty):
+case class Cart(items: Seq[CartItem] = Seq.empty) with
   def add(item: CartItem): Cart = copy(items = items :+ item)
   def totalQuantity = items.map(_.qty).sum
 ```

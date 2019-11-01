@@ -3,7 +3,7 @@ package intent.matchers
 import intent.{Stateless, TestSuite}
 import intent.helpers.Meta
 
-class ToContainTest extends TestSuite with Stateless with Meta
+class ToContainTest extends TestSuite with Stateless with Meta with
   "toContain":
     "a list of Int":
       "should contain element" in expect(Seq(1, 2, 3)).toContain(2)

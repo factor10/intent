@@ -4,7 +4,7 @@ import intent.{Stateless, TestSuite}
 import scala.util.{Success, Failure, Try}
 import intent.helpers.Meta
 
-class ToEqualTest extends TestSuite with Stateless with Meta
+class ToEqualTest extends TestSuite with Stateless with Meta with
   "toEqual":
 
     "for Boolean":
@@ -107,7 +107,7 @@ class ToEqualTest extends TestSuite with Stateless with Meta
       "is described properly when both are null" in:
         runExpectation(expect(null.asInstanceOf[Seq[Int]]).not.toEqual(null.asInstanceOf[Seq[Int]]),
           "Expected <null> to not equal <null>")
-    
+
     "for array":
       "supports equality test" in expect(Array(1, 2)).toEqual(Array(1, 2))
       "detects inquality in item" in expect(Array(1, 2)).not.toEqual(Array(1, 3))

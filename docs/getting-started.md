@@ -22,7 +22,7 @@ Let's have a look at how tests should be written.
 ```scala
 import intent.{Stateless, TestSuite}
 
-class ToEqualTest extends TestSuite with Stateless:
+class ToEqualTest extends TestSuite with Stateless with
   "toEqual" :
     "for Boolean" :
       "true should equal true" in expect(true).toEqual(true)
@@ -64,4 +64,3 @@ _Currently there are no reports other than the SBT output._
 
 Consult [Test styles](./test-styles.md) for more information about how to write
 tests.
-
