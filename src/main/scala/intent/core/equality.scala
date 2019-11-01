@@ -81,8 +81,5 @@ trait EqGivens
   given (given FloatingPointPrecision[Double]): Eq[Double] = DoubleEq()
   given (given FloatingPointPrecision[Float]): Eq[Float] = FloatEq()
   given throwableEq[T <: Throwable]: Eq[T] = ThrowableEq[T]
-
-  given [TInner, T <: Option[TInner]](given Eq[TInner]): Eq[T] = OptionEq[TInner, T]
-
-  // The use of ClassTag here prevents "double definition" error due to type erasure
-  given [TInner, T <: Try[TInner] : ClassTag](given Eq[TInner]): Eq[T] = TryEq[TInner, T]
+  given optEq[TInner, T <: Option[TInner]](given Eq[TInner]): Eq[T] = OptionEq[TInner, T]
+  given tryEq[TInner, T <: Try[TInner]](given Eq[TInner]): Eq[T] = TryEq[TInner, T]
