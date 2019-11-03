@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 (2019-11-03)
+
+* Upgrade to Dotty 0.20.0-RC1
+
 ## 0.2.0 (2019-11-03)
 
 * Make it possible to focus on a hierarchy / tree of tests using `focused` instead of `to` on context level.
