@@ -15,7 +15,7 @@ Consider the following example:
 ```scala
 import intent.{Stateless, TestSuite}
 
-class CalculatorTest extends TestSuite with Stateless:
+class CalculatorTest extends TestSuite with Stateless with
   "A calculator" :
     "can add" :
       "plain numbers" in expect(Calculator().add(2, 4)).toEqual(6)
@@ -37,7 +37,7 @@ on a expressive way to assert expectations. For `Intent` state management is fro
 Lets go straight to the code:
 
 ```scala
-class StatefulTest extends TestSuite with State[Cart] :
+class StatefulTest extends TestSuite with State[Cart] with
   "an empty cart" using Cart() to :
     "with two items" using (_.add(CartItem("beach-chair", 2))) to :
       "and another three items" using (_.add(CartItem("sunscreen", 3))) to :
@@ -45,7 +45,7 @@ class StatefulTest extends TestSuite with State[Cart] :
           cart => expect(cart.totalQuantity).toEqual(5)
 
 case class CartItem(artNo: String, qty: Int)
-case class Cart(items: Seq[CartItem] = Seq.empty):
+case class Cart(items: Seq[CartItem] = Seq.empty) with
   def add(item: CartItem): Cart = copy(items = items :+ item)
   def totalQuantity = items.map(_.qty).sum
 ```
@@ -79,7 +79,7 @@ There are a few conventions or recommendations on how to use state:
 Intent supports stateful tests where the state is produced asynchronously. An example:
 
 ```scala
-class AsyncStatefulTest extends TestSuite with AsyncState[AsyncStatefulState] :
+class AsyncStatefulTest extends TestSuite with AsyncState[AsyncStatefulState] with
   "an empty cart" using Cart() to :
     "with two items" usingAsync (_.add(CartItem("beach-chair", 2))) to :
       "and another three items" usingAsync (_.add(CartItem("sunscreen", 3))) to :
@@ -87,16 +87,16 @@ class AsyncStatefulTest extends TestSuite with AsyncState[AsyncStatefulState] :
           cart => expect(cart.totalPrice).toEqual(275.0d)
 
 case class CartItem(artNo: String, qty: Int)
-case class PricedCartItem(item: CartItem, price: Double)
+case class PricedCartItem(item: CartItem, price: Double) with
   def totalPrice = item.qty * price
-case class Cart(items: Seq[PricedCartItem] = Seq.empty):
+case class Cart(items: Seq[PricedCartItem] = Seq.empty) with
   def lookupPrice(artNo: String): Future[Double] = ... // e.g. using a test fake here
   def add(item: CartItem): Future[Cart] =
     lookupPrice(item.artNo).map:
       price =>
         pricedItem = PricedCartItem(item, price)
         copy(items = items :+ pricedItem)
-        
+
   def totalPrice = items.map(_.totalPrice).sum
 ```
 
@@ -120,7 +120,7 @@ test many different variations of some feature with as little boilerplate as pos
 For example, consider the following test suite that tests a [Fibonacci](https://en.wikipedia.org/wiki/Fibonacci_number) function:
 
 ```scala
-class FibonacciTest extends TestSuite with State[TableState]:
+class FibonacciTest extends TestSuite with State[TableState] with
   "The Fibonacci function" usingTable (examples) to :
     "works" in :
       example =>
@@ -136,7 +136,7 @@ class FibonacciTest extends TestSuite with State[TableState]:
 
   def F(n: Int): Int = ... // implemented elsewhere
 
-case class FibonacciExample(n: Int, expected: Int):
+case class FibonacciExample(n: Int, expected: Int) with
   override def toString = s"Fn($n) = $expected"
 ```
 

@@ -3,7 +3,7 @@ package intent.core.expectations
 import intent.core._
 import scala.concurrent.Future
 
-class LengthExpectation[T](expect: Expect[IterableOnce[T]], expected: Int) extends Expectation
+class LengthExpectation[T](expect: Expect[IterableOnce[T]], expected: Int) extends Expectation with
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()
     val actualLength = actual.iterator.size

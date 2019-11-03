@@ -1,4 +1,4 @@
-val dottyVersion = "0.19.0-RC1"
+val dottyVersion = "0.20.0-RC1"
 
 ThisBuild / name := "consume"
 ThisBuild / version := "0.0.1"

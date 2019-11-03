@@ -22,7 +22,7 @@ import intent.core.expectations._
   */
 case class ListCutoff(maxItems: Int = 1000, printItems: Int = 5)
 
-class CompoundExpectation(inner: Seq[Expectation])(given ec: ExecutionContext) extends Expectation
+class CompoundExpectation(inner: Seq[Expectation])(given ec: ExecutionContext) extends Expectation with
   def evaluate(): Future[ExpectationResult] =
     val innerFutures = inner.map(_.evaluate())
     Future.sequence(innerFutures).map { results =>
@@ -30,7 +30,7 @@ class CompoundExpectation(inner: Seq[Expectation])(given ec: ExecutionContext) e
       ???
     }
 
-class Expect[T](blk: => T, position: Position, negated: Boolean = false)
+class Expect[T](blk: => T, position: Position, negated: Boolean = false) with
   import PositionDescription._
 
   def evaluate(): T = blk
@@ -41,20 +41,20 @@ class Expect[T](blk: => T, position: Position, negated: Boolean = false)
   def fail(desc: String, t: Throwable): ExpectationResult = TestFailed(position.contextualize(desc), Some(t))
   def pass: ExpectationResult                             = TestPassed()
 
-trait ExpectGivens
+trait ExpectGivens with
 
   given defaultListCutoff: ListCutoff = ListCutoff()
 
-  def (expect: Expect[T]) not[T]: Expect[T] = expect.negate()
+  def [T](expect: Expect[T]) not: Expect[T] = expect.negate()
 
-  def (expect: Expect[T]) toEqual[T] (expected: T)(given eqq: Eq[T], fmt: Formatter[T]): Expectation =
+  def [T](expect: Expect[T]) toEqual (expected: T)(given eqq: Eq[T], fmt: Formatter[T]): Expectation =
     new EqualExpectation(expect, expected)
 
   // toMatch is partial
-  def (expect: Expect[String]) toMatch[T] (re: Regex)(given fmt: Formatter[String]): Expectation =
+  def [T](expect: Expect[String]) toMatch (re: Regex)(given fmt: Formatter[String]): Expectation =
     new MatchExpectation(expect, re)
 
-  def (expect: Expect[Future[T]]) toCompleteWith[T] (expected: T)
+  def [T](expect: Expect[Future[T]]) toCompleteWith (expected: T)
      (given
         eqq: Eq[T],
         fmt: Formatter[T],
@@ -65,7 +65,7 @@ trait ExpectGivens
     new ToCompleteWithExpectation(expect, expected)
 
   // We use ClassTag here to avoid "double definition error" wrt Expect[IterableOnce[T]]
-  def (expect: Expect[Array[T]]) toContain[T : ClassTag] (expected: T)
+  def [T : ClassTag](expect: Expect[Array[T]]) toContain (expected: T)
      (given
         eqq: Eq[T],
         fmt: Formatter[T],
@@ -73,7 +73,7 @@ trait ExpectGivens
       ): Expectation =
     new ArrayContainExpectation(expect, expected)
 
-  def (expect: Expect[IterableOnce[T]]) toContain[T] (expected: T)
+  def [T](expect: Expect[IterableOnce[T]]) toContain (expected: T)
      (given
         eqq: Eq[T],
         fmt: Formatter[T],
@@ -82,7 +82,7 @@ trait ExpectGivens
     new IterableContainExpectation(expect, expected)
 
   // Note: Not using IterableOnce here as it matches Option and we don't want that.
-  def (expect: Expect[Iterable[T]]) toEqual[T] (expected: Iterable[T])
+  def [T](expect: Expect[Iterable[T]]) toEqual (expected: Iterable[T])
      (given
         eqq: Eq[T],
         fmt: Formatter[T]
@@ -90,7 +90,7 @@ trait ExpectGivens
     new IterableEqualExpectation(expect, expected)
 
   // We use ClassTag here to avoid "double definition error" wrt Expect[Iterable[T]]
-  def (expect: Expect[Array[T]]) toEqual[T : ClassTag] (expected: Iterable[T])
+  def [T : ClassTag](expect: Expect[Array[T]]) toEqual (expected: Iterable[T])
      (given
         eqq: Eq[T],
         fmt: Formatter[T]
@@ -100,21 +100,21 @@ trait ExpectGivens
   /**
    * (1, 2, 3) toHaveLength 3
    */
-  def (expect: Expect[IterableOnce[T]]) toHaveLength[T] (expected: Int)(given ec: ExecutionContext): Expectation =
+  def [T](expect: Expect[IterableOnce[T]]) toHaveLength (expected: Int)(given ec: ExecutionContext): Expectation =
     new LengthExpectation(expect, expected)
 
   // toThrow with only exception type
-  def (expect: Expect[_]) toThrow[TEx : ClassTag] ()(given fmt: Formatter[String]): Expectation =
+  def [TEx : ClassTag](expect: Expect[_]) toThrow ()(given fmt: Formatter[String]): Expectation =
     new ThrowExpectation[TEx](expect, AnyExpectedMessage)
 
   // toThrow with exception type + message (string, so full match)
-  def (expect: Expect[_]) toThrow[TEx : ClassTag] (expectedMessage: String)(given fmt: Formatter[String]): Expectation =
+  def [TEx : ClassTag](expect: Expect[_]) toThrow (expectedMessage: String)(given fmt: Formatter[String]): Expectation =
     new ThrowExpectation[TEx](expect, ExactExpectedMessage(expectedMessage))
 
     // toThrow with exception type + regexp (partial match, like toMatch)
-  def (expect: Expect[_]) toThrow[TEx : ClassTag] (re: Regex)(given fmt: Formatter[String]): Expectation =
+  def [TEx : ClassTag](expect: Expect[_]) toThrow (re: Regex)(given fmt: Formatter[String]): Expectation =
     new ThrowExpectation[TEx](expect, RegexExpectedMessage(re))
-    
+
   // TODO:
   // - toContain i lista (massa varianter, IterableOnce-ish)
   // - toContain i Map (immutable + mutable)

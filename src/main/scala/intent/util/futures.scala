@@ -7,11 +7,11 @@ import scala.concurrent.duration.Duration
 import scala.concurrent._
 import scala.util.Try
 
-trait DelayedFuture[T] extends Future[T]
+trait DelayedFuture[T] extends Future[T] with
   def cancel(): Unit
 
 // From: http://stackoverflow.com/questions/16359849/scala-scheduledfuture
-object DelayedFuture
+object DelayedFuture with
   private val timer = new Timer
 
   private def makeTask[T](body: => T)(schedule: TimerTask => Unit)(given ctx: ExecutionContext): Future[T] =
@@ -34,7 +34,7 @@ object DelayedFuture
     })(timer.schedule(_, duration.toMillis))
     DelayedFutureImpl(f, () => isCancelled.set(true))
 
-  private class DelayedFutureImpl[T](val inner: Future[T], cancelFun: () => Unit) extends DelayedFuture[T]
+  private class DelayedFutureImpl[T](val inner: Future[T], cancelFun: () => Unit) extends DelayedFuture[T] with
     override def cancel(): Unit = cancelFun()
 
     override def onComplete[U](f: (Try[T]) => U)(implicit executor: ExecutionContext): Unit = inner.onComplete(f)

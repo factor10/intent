@@ -6,28 +6,28 @@ import scala.reflect.ClassTag
 import scala.util.{Try, Success, Failure}
 import scala.util.matching.Regex
 
-sealed trait ExpectedMessage
+sealed trait ExpectedMessage with
   def matches(msg: String): Boolean
   def describe(): String
 
-object AnyExpectedMessage extends ExpectedMessage
+object AnyExpectedMessage extends ExpectedMessage with
   def matches(msg: String) = true
   def describe() = ""
 
-class ExactExpectedMessage(expected: String)(given stringFmt: Formatter[String]) extends ExpectedMessage
+class ExactExpectedMessage(expected: String)(given stringFmt: Formatter[String]) extends ExpectedMessage with
   def matches(msg: String) = msg == expected
   def describe() = s" with message ${stringFmt.format(expected)}"
 
-class RegexExpectedMessage(re: Regex) extends ExpectedMessage
+class RegexExpectedMessage(re: Regex) extends ExpectedMessage with
   def matches(msg: String) = re.findFirstMatchIn(msg).isDefined
   def describe() = s" with message matching /${re}/"
 
-private case class ExceptionMatch(typeOk: Boolean, messageOk: Boolean)
+private case class ExceptionMatch(typeOk: Boolean, messageOk: Boolean) with
   def successful(isNegated: Boolean) =
     val ok = typeOk && messageOk
     if isNegated then !ok else ok
 
-class ThrowExpectation[TEx : ClassTag](expect: Expect[_], expectedMessage: ExpectedMessage)(given stringFmt: Formatter[String]) extends Expectation
+class ThrowExpectation[TEx : ClassTag](expect: Expect[_], expectedMessage: ExpectedMessage)(given stringFmt: Formatter[String]) extends Expectation with
   def evaluate(): Future[ExpectationResult] =
     val expectedClass = implicitly[ClassTag[TEx]].runtimeClass
 

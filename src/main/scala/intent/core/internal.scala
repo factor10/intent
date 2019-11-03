@@ -19,7 +19,7 @@ private class ShouldNotHappenException(msg: String) extends RuntimeException(msg
 
 trait TestSupport extends FormatterGivens with EqGivens with ExpectGivens
 
-trait IntentStructure
+trait IntentStructure with
   private[intent] def allTestCases: Seq[ITestCase]
 
   /**
@@ -27,7 +27,7 @@ trait IntentStructure
    */
   private[intent] def isFocused: Boolean
 
-case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase
+case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase with
   def run(): Future[TestCaseResult] =
     Future.successful(TestCaseResult(Duration.Zero, nameParts, TestIgnored()))
 
@@ -35,7 +35,7 @@ case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase
 // TODO: to Eq/Formatting as well... we need a good strategy here!
 case class TestTimeout(timeout: FiniteDuration)
 
-trait TestLanguage
+trait TestLanguage with
   def expect[T](expr: => T)(given pos: Position): Expect[T] = new Expect[T](expr, pos)
 
   def whenComplete[T](expr: => Future[T])(impl: T => Expectation)(given pos: Position, timeout: TestTimeout): Expectation =
@@ -69,13 +69,13 @@ trait TestLanguage
   * The structure is based on asynchronous execution, since it's possible to fit sync in async,
   * but not vice versa.
   */
-trait IntentStateBase[TState] extends IntentStructure with TestLanguage
+trait IntentStateBase[TState] extends IntentStructure with TestLanguage with
   type Map = TState => TState
   type FlatMap = TState => Future[TState]
 
   private[intent] def isStateful: Boolean
 
-  private[intent] sealed trait Context
+  private[intent] sealed trait Context with
     def name: String
     def transform(f: Future[Option[TState]]): Future[Option[TState]]
     def position: Position
@@ -90,21 +90,24 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage
     def withIgnore(): Context
 
   private[intent] sealed case class ContextInit(name: String, init: () => Future[TState], position: Position,
-    hasFocus: Boolean = false, isIgnored: Boolean = false) extends Context
+    hasFocus: Boolean = false, isIgnored: Boolean = false)
+  extends Context with
 
     def transform(f: Future[Option[TState]]) = init().map(Some.apply)
     def withFocus() = copy(hasFocus = true)
     def withIgnore() = copy(isIgnored = true, hasFocus = false)
 
   private[intent] sealed case class ContextMap(name: String, tx: Map, position: Position,
-    hasFocus: Boolean = false, isIgnored: Boolean = false) extends Context
+    hasFocus: Boolean = false, isIgnored: Boolean = false)
+  extends Context with
 
     def transform(f: Future[Option[TState]]) = f.map(_.map(tx))
     def withFocus() = copy(hasFocus = true)
     def withIgnore() = copy(isIgnored = true, hasFocus = false)
 
   private[intent] sealed case class ContextFlatMap(name: String, tx: FlatMap, position: Position,
-    hasFocus: Boolean = false, isIgnored: Boolean = false) extends Context
+    hasFocus: Boolean = false, isIgnored: Boolean = false)
+  extends Context with
 
     def transform(f: Future[Option[TState]]) =
       f.flatMap:
@@ -114,7 +117,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage
     def withFocus() = copy(hasFocus = true)
     def withIgnore() = copy(isIgnored = true, hasFocus = false)
 
-  case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase
+  case class TestCase(contexts: Seq[Context], name: String, impl: TState => Expectation, tcPosition: Position) extends ITestCase with
     def nameParts: Seq[String] = contexts.map(_.name) :+ name
     def run(): Future[TestCaseResult] =
       import PositionDescription._
@@ -211,7 +214,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage
   * Provides the Intent stateful test syntax, i.e. where contexts arrange state and
   * test cases act and assert on the state.
   */
-trait IntentStateSyntax[TState] extends IntentStateBase[TState]
+trait IntentStateSyntax[TState] extends IntentStateBase[TState] with
   private[intent] override def isStateful = true
 
   def (context: String) using (init: => TState)(given pos: Position) : Context =
@@ -258,7 +261,8 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]
         testName ignore testImpl
 
   private case class TableDriveContext(name: String, generator: () => Iterable[TState], position: Position,
-    hasFocus: Boolean = false, isIgnored: Boolean = false) extends Context
+    hasFocus: Boolean = false, isIgnored: Boolean = false)
+  extends Context with
 
     def transform(f: Future[Option[TState]]): Future[Option[TState]] =
       Future.failed(new ShouldNotHappenException("TableDriveContext should not be used directly"))
@@ -278,7 +282,7 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]
   * Provides the Intent stateless test syntax, i.e. where contexts are merely structural
   * and test cases are entirely responsible for arrange-act-assert.
   */
-trait IntentStatelessSyntax extends IntentStateBase[Unit]
+trait IntentStatelessSyntax extends IntentStateBase[Unit] with
 
   private[intent] override def isStateful = false
 
@@ -314,7 +318,7 @@ trait IntentStatelessSyntax extends IntentStateBase[Unit]
       enableFocusedMode()
       addTestCase(TestCase(contextsInOrder, testName, _ => testImpl, pos))
 
-trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]
+trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState] with
 
   private[intent] override def isStateful = true
 

@@ -4,7 +4,7 @@ import intent._
 import helpers.Meta
 import scala.concurrent.{Future, ExecutionContext}
 
-class AsyncTest extends TestSuite with Stateless with Meta
+class AsyncTest extends TestSuite with Stateless with Meta with
 
   "an async test":
     "can use whenComplete" in:
@@ -19,7 +19,7 @@ class AsyncTest extends TestSuite with Stateless with Meta
           result => expect(result).toEqual(42)
       }, "The Future passed to 'whenComplete' failed")
 
-class AsyncStateTest extends TestSuite with AsyncState[MyAsyncState] with Meta
+class AsyncStateTest extends TestSuite with AsyncState[MyAsyncState] with Meta with
 
   "a test with async state" usingAsync Future{MyAsyncState("Hello")} to:
     "can map on the state" using (_.map(" world")) to:
@@ -35,6 +35,6 @@ class AsyncStateTest extends TestSuite with AsyncState[MyAsyncState] with Meta
       "sees the appropriate state" in:
         state => expect(state.s).toEqual("Hello async world")
 
-case class MyAsyncState(s: String)(given ExecutionContext)
+case class MyAsyncState(s: String)(given ExecutionContext) with
   def map(s2: String) = copy(s = s + s2)
   def asyncMap(s2: String) = Future { copy(s = s + s2) }

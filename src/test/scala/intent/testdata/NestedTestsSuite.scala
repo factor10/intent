@@ -2,7 +2,7 @@ package intent.testdata
 
 import intent.Stateless
 
-class NestedTestsSuite extends Stateless
+class NestedTestsSuite extends Stateless with
   "root suite":
     "child suite":
       "grand child suite":

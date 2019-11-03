@@ -4,7 +4,7 @@ import intent.core._
 import scala.concurrent.{Future, ExecutionContext}
 import java.util.regex.Pattern
 
-trait Meta
+trait Meta with
   self: TestLanguage with TestSupport =>
     def runExpectation(e: => Expectation, expected: String)(given ExecutionContext): Expectation =
       new Expectation:
