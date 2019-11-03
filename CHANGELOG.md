@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 0.2.0 (2019-11-03)
 
 * Make it possible to focus on a hierarchy / tree of tests using `focused` instead of `to` on context level.
   See [Focusing tests](docs/running-tests.md#Focusing-tests) for more details.
