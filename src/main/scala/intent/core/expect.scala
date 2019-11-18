@@ -84,7 +84,7 @@ trait ExpectGivens with
   /**
    * Expect that a key-value tuple exists in the given map
    */
-  def [K, V](expect: Expect[Map[K, V]]) toContain (expected: (K, V))
+  def [K, V](expect: Expect[Map[K, V]]) toContain (expected: (K, V)*)
     (given
        eqq: Eq[V],
        fmt: Formatter[V]
