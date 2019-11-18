@@ -1,5 +1,10 @@
 # Changelog
 
+## PR
+
+* Add `.toContain` for `Map` objects
+  See [toContain](docs/matchers.md#.toContain)
+
 ## 0.3.0 (2019-11-03)
 
 * Upgrade to Dotty 0.20.0-RC1
