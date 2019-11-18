@@ -81,6 +81,15 @@ trait ExpectGivens with
       ): Expectation =
     new IterableContainExpectation(expect, expected)
 
+  /**
+   * Expect that a key-value tuple exists in the given map
+   */
+  def [K, V](expect: Expect[Map[K, V]]) toContain (expected: (K, V))
+    (given
+       eqq: Eq[V],
+       fmt: Formatter[V]
+    ): Expectation = new MapContainExpectation(expect, expected)
+
   // Note: Not using IterableOnce here as it matches Option and we don't want that.
   def [T](expect: Expect[Iterable[T]]) toEqual (expected: Iterable[T])
      (given

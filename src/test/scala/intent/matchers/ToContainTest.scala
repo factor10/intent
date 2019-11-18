@@ -33,3 +33,8 @@ class ToContainTest extends TestSuite with Stateless with Meta with
         given cutoff: intent.core.ListCutoff = intent.core.ListCutoff(5)
         val list = LazyList.from(1)
         expect(list).not.toContain(10)
+
+    "for Map":
+      "of String -> Int":
+        "does not contain element" in expect(Map("one" -> 1, "two" -> 2)).not.toContain("three" -> 3)
+        "should contain element" in expect(Map("one" -> 1, "two" -> 2)).toContain("two" -> 2)

@@ -76,3 +76,21 @@ class ArrayContainExpectation[T](expect: Expect[Array[T]], expected: T)(
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()
     evalToContain(actual, expected, expect, "Array")
+
+class MapContainExpectation[K, V](expect: Expect[Map[K, V]], expected: Tuple2[K, V])(
+  given
+    eqq: Eq[V],
+    fmt: Formatter[V] // TODO: Should there be a separate formatter maybe?
+) extends Expectation with
+
+  def evaluate(): Future[ExpectationResult] =
+    val actual = expect.evaluate()
+    val key = expected._1
+    Future.successful:
+      actual.get(key) match
+        case None =>
+          if !expect.isNegated then expect.fail(s"Key $key was not found in Map") // TODO: Add some context
+          expect.pass
+        case Some(v) =>
+          if expect.isNegated then expect.fail(s"Key $key was unexpectedly found in Map")
+          expect.pass
