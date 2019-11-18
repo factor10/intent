@@ -72,10 +72,9 @@ Match a `Seq`/`List` (in fact, any `IterableOnce`) to have the expected length.
 
 ```scala
 expect(Seq("one")).toHaveLength(1)
-````
+```
 
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToHaveLengthTest.scala)
-
 
 ### .toContain
 
