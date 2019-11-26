@@ -46,13 +46,6 @@ class ToContainTest extends TestSuite with Stateless with Meta with
               """Expected Map(...) to not contain:
               |  one -> 1""".stripMargin)
 
-          "error is described properly also for multiple elements" in:
-            runExpectation(
-              expect(Map("one" -> 1, "two" -> 2)).not.toContain("one" -> 1, "two" -> 2),
-              """Expected Map(...) to not contain:
-              |  one -> 1
-              |  two -> 2""".stripMargin)
-
         "with invalid key":
           "error is described properly" in:
             runExpectation(
@@ -70,6 +63,3 @@ class ToContainTest extends TestSuite with Stateless with Meta with
         "with correct key and value":
           "should contain element" in:
             expect(Map("one" -> 1, "two" -> 2)).toContain("two" -> 2)
-
-        "should contain multiple elements" in:
-          expect(Map("one" -> 1, "two" -> 2)).toContain("two" -> 2, "one" -> 1)
