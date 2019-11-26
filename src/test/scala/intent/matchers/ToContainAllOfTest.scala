@@ -4,7 +4,7 @@ import intent.{Stateless, TestSuite}
 import intent.helpers.Meta
 
 class ToContainAllOfTest extends TestSuite with Stateless with Meta with
-  "toContainAllOf" focused:
+  "toContainAllOf":
     "for Map":
       "of String -> Int":
         "when negated":
