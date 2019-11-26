@@ -87,7 +87,8 @@ expect(Seq(1, 2, 3)).toContain(2)
 It can also be used with a `Map` to match if the given Map contains the expected key-value elements(s).
 
 ```scala
-expect(Map("one" -> 1, "two" -> 2, "three" -> 3)).toContain("two" -> 2, "one" -> 1)
+expect(Map("one" -> 1, "two" -> 2, "three" -> 3)).toContain("two" -> 2)
+expect(Map("one" -> 1, "two" -> 2, "three" -> 3)).toContainAllOf("two" -> 2, "one" -> 1)
 ```
 
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToContainTest.scala)
