@@ -1,9 +1,9 @@
 package intent.core.expectations
 
 import intent.core._
+import intent.core.MapLike
 import scala.concurrent.Future
 import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.{ Map => MMap }
 import scala.Array
 
 private def evalToContain[T](actual: IterableOnce[T],
@@ -78,7 +78,7 @@ class ArrayContainExpectation[T](expect: Expect[Array[T]], expected: T)(
     val actual = expect.evaluate()
     evalToContain(actual, expected, expect, "Array")
 
-class MapContainExpectation[K, V](expect: Expect[Map[K, V] | MMap[K, V]], expected: Seq[Tuple2[K, V]])(
+class MapContainExpectation[K, V](expect: Expect[MapLike[K, V]], expected: Seq[Tuple2[K, V]])(
   given
     eqq: Eq[V],
     fmt: Formatter[V]
@@ -107,11 +107,10 @@ class MapContainExpectation[K, V](expect: Expect[Map[K, V] | MMap[K, V]], expect
         expect.pass
       else
         var message = s"Expected ${describeActualWithContext(actual)} to "
-        // var message = s"Expected Map(...) to "
         if (expect.isNegated) message += "not "
         message += "contain:\n  "
         message += failingKeys.map(p => s"${p._1} -> ${p._2}").mkString("\n  ")
         message += failingValues.map(p => s"${p._1} -> ${p._2} but found ${p._1} -> ${p._3}").mkString("\n  ")
         expect.fail(message)
 
-  private def describeActualWithContext(actual: Map[K, V] | MMap[K, V]): String = "Map(...)"
+  private def describeActualWithContext(actual: MapLike[K, V]): String = "Map(...)"

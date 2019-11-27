@@ -26,7 +26,12 @@ class ToContainAllOfTest extends TestSuite with Stateless with Meta with
           "should contain multiple elements" in:
             expect(Map("one" -> 1, "two" -> 2)).toContainAllOf("two" -> 2, "one" -> 1)
 
-      "for mutable map":
+      "for scala.collection.mutable.Map":
         "with correct key and values":
           "should contain multiple elements" in:
             expect(scala.collection.mutable.Map("one" -> 1, "two" -> 2)).toContainAllOf("two" -> 2, "one" -> 1)
+
+      "for scala.collection.immutable.Map":
+            "with correct key and values":
+              "should contain multiple elements" in:
+                expect(scala.collection.immutable.Map("one" -> 1, "two" -> 2)).toContainAllOf("two" -> 2, "one" -> 1)

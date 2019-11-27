@@ -4,12 +4,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Failure}
 import scala.collection.IterableOnce
 import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.{Map  => MMap}
 import scala.language.implicitConversions
 import scala.util.matching.Regex
 import scala.reflect.ClassTag
 
-import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed, PositionDescription}
+import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed, PositionDescription, MapLike}
 import intent.macros.Position
 import intent.util.DelayedFuture
 import intent.core.expectations._
@@ -85,7 +84,7 @@ trait ExpectGivens with
   /**
    * Expect that a key-value tuple exists in the given map
    */
-  def [K, V](expect: Expect[Map[K, V] | MMap[K, V]]) toContain (expected: (K, V))
+  def [K, V](expect: Expect[MapLike[K, V]]) toContain (expected: (K, V))
     (given
        eqq: Eq[V],
        fmt: Formatter[V]
@@ -94,7 +93,7 @@ trait ExpectGivens with
   /**
    * Expect that multiple key-value tuple exists in the given map
    */
-  def [K, V](expect: Expect[Map[K, V] | MMap[K, V]]) toContainAllOf (expected: (K, V)*)
+  def [K, V](expect: Expect[MapLike[K, V]]) toContainAllOf (expected: (K, V)*)
   (given
      eqq: Eq[V],
      fmt: Formatter[V]
