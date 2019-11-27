@@ -76,11 +76,9 @@ expect(coll).toContain(4)
 ```
 
 **TIP:**
-> Avoid matching a collection on its length, as a failure will not give any details on the element(s) that were
-> missing or extra. An alternative is to filter a larger list and match on a smaller inline list
-> ```scala
-> Example?
-> ```
+* Testing length may be brittle if the producer is modified to create more items - testing that the list
+  contains some and not others (two tests) is likely more stable.
+
 
 ## General recommendations
 
