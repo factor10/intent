@@ -55,7 +55,7 @@ we inline the precision to two digits:
 
 ## A sequence
 
-Asserting some condition for a sequence is a very common scenarion.
+Asserting some condition for a sequence is a very common scenario.
 
 When the collection is small, the expected value can be expressed inline such as:
 
