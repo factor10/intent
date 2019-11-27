@@ -63,3 +63,8 @@ class ToContainTest extends TestSuite with Stateless with Meta with
         "with correct key and value":
           "should contain element" in:
             expect(Map("one" -> 1, "two" -> 2)).toContain("two" -> 2)
+
+      "for mutable Map":
+        "with correct key and value":
+          "should contain element" in:
+            expect(scala.collection.mutable.Map("one" -> 1, "two" -> 2)).toContain("two" -> 2)
