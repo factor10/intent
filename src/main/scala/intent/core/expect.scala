@@ -87,7 +87,8 @@ trait ExpectGivens with
   def [K, V](expect: Expect[MapLike[K, V]]) toContain (expected: (K, V))
     (given
        eqq: Eq[V],
-       fmt: Formatter[V]
+       keyFmt: Formatter[K],
+       valueFmt: Formatter[V]
     ): Expectation = new MapContainExpectation(expect, Seq(expected))
 
   /**
@@ -96,7 +97,8 @@ trait ExpectGivens with
   def [K, V](expect: Expect[MapLike[K, V]]) toContainAllOf (expected: (K, V)*)
   (given
      eqq: Eq[V],
-     fmt: Formatter[V]
+     keyFmt: Formatter[K],
+     valueFmt: Formatter[V]
   ): Expectation = new MapContainExpectation(expect, expected)
 
   // Note: Not using IterableOnce here as it matches Option and we don't want that.

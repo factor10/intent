@@ -81,7 +81,8 @@ class ArrayContainExpectation[T](expect: Expect[Array[T]], expected: T)(
 class MapContainExpectation[K, V](expect: Expect[MapLike[K, V]], expected: Seq[Tuple2[K, V]])(
   given
     eqq: Eq[V],
-    fmt: Formatter[V]
+    keyFmt: Formatter[K],
+    valueFmt: Formatter[V],
 ) extends Expectation with
 
   def evaluate(): Future[ExpectationResult] =
@@ -109,8 +110,8 @@ class MapContainExpectation[K, V](expect: Expect[MapLike[K, V]], expected: Seq[T
         var message = s"Expected ${describeActualWithContext(actual)} to "
         if (expect.isNegated) message += "not "
         message += "contain:\n  "
-        message += failingKeys.map(p => s"${p._1} -> ${p._2}").mkString("\n  ")
-        message += failingValues.map(p => s"${p._1} -> ${p._2} but found ${p._1} -> ${p._3}").mkString("\n  ")
+        message += failingKeys.map(p => s"${keyFmt.format(p._1)} -> ${valueFmt.format(p._2)}").mkString("\n  ")
+        message += failingValues.map(p => s"${keyFmt.format(p._1)} -> ${valueFmt.format(p._2)} but found ${keyFmt.format(p._1)} -> ${valueFmt.format(p._3)}").mkString("\n  ")
         expect.fail(message)
 
   private def describeActualWithContext(actual: MapLike[K, V]): String = "Map(...)"
