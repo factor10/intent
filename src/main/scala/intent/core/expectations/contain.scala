@@ -93,11 +93,11 @@ class MapContainExpectation[K, V](expect: Expect[MapLike[K, V]], expected: Seq[T
       actual.get(expectedPair._1) match {
         case None if expect.isNegated =>
           () // OK = NOOP
-        case None if !expect.isNegated =>
+        case None =>
           failingKeys :+= expectedPair
         case Some(v) if expect.isNegated =>
           failingKeys :+= expectedPair
-        case Some(v) if !expect.isNegated   =>
+        case Some(v)   =>
           if !eqq.areEqual(v, expectedPair._2) then failingValues :+= (expectedPair._1, expectedPair._2, v)
       }
     }
