@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0 (2019-12-21)
+
+* Upgrade to Dotty 0.21.0-RC1
+
 ## 0.3.0 (2019-11-03)
 
 * Upgrade to Dotty 0.20.0-RC1
