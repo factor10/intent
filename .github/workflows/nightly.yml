@@ -2,7 +2,7 @@ name: Nightly build
 
 # Build nightly at 0100 UTC
 on:
-   schedule:
+  schedule:
   - cron: "0 1 * * *"
 
 jobs:
