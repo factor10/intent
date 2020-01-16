@@ -106,6 +106,10 @@ class MapContainExpectation[K, V](expect: Expect[MapLike[K, V]], expected: Seq[T
     Future.successful:
       if failingKeys.isEmpty && failingValues.isEmpty then
         expect.pass
+      else if expect.isNegated && failingKeys.length < expected.length then
+        // If only some of the pairs were missing, the negated expect is fulfilled, i.e. actual does not, not.containAllOf
+        // This type of negation should be avoided in tests though, as the intention is not clear
+        expect.pass
       else
         var message = s"Expected ${describeActualWithContext(actual)} to "
         if (expect.isNegated) message += "not "

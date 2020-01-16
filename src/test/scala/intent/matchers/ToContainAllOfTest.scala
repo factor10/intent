@@ -15,6 +15,16 @@ class ToContainAllOfTest extends TestSuite with Stateless with Meta with
               |  "one" -> 1
               |  "two" -> 2""".stripMargin)
 
+        "when partially matching":
+          "error is described properly" in:
+            runExpectation(
+              expect(Map("one" -> 1, "two" -> 2)).toContainAllOf("one" -> 1, "three" -> 3),
+              """Expected Map(...) to contain:
+              |  "three" -> 3""".stripMargin)
+          "and negating":
+            "should pass since Map is not missing both pairs" in:
+              expect(Map("one" -> 1, "two" -> 2)).not.toContainAllOf("one" -> 1, "three" -> 3)
+
         "error is described properly" in:
           runExpectation(
             expect(Map("one" -> 11, "two" -> 22)).toContainAllOf("one" -> 1, "two" -> 2),
