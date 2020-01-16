@@ -20,6 +20,8 @@ expect( <actual value> ).<matcher>( <expected value> )
 > The documentation for each matcher contains a reference to Intent's own unit-tests for that specific matcher to
 > serve as additional examples.
 
+If you are new to Intent or even new to testing there is also a use-case oriented document,
+see [How to assert when I have a ...](how-to-assert.md).
 
 ## Types
 

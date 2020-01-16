@@ -67,3 +67,5 @@ case class Cart(items: Seq[CartItem] = Seq.empty) with
 ```
 
 Want to know more? Continue with [getting started](getting-started.md)
+
+Do you have a specific type you need to match on, see [how-to-assert](how-to-assert.md)
