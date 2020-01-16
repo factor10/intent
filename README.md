@@ -5,7 +5,7 @@
 Intent is an opinionated test framework for [Dotty](https://dotty.epfl.ch). It builds on
 the following principles:
 
-* Low cermony test code
+* Low ceremony test code
 * Uniform test declaration
 * Futures and async testing
 * Arranging test state
