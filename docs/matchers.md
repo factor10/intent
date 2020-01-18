@@ -74,10 +74,9 @@ Match a `Seq`/`List` (in fact, any `IterableOnce`) to have the expected length.
 
 ```scala
 expect(Seq("one")).toHaveLength(1)
-````
+```
 
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToHaveLengthTest.scala)
-
 
 ### .toContain
 
@@ -87,7 +86,23 @@ Match if a given sequence (either `IterableOnce` or `Array`) contains the expect
 expect(Seq(1, 2, 3)).toContain(2)
 ```
 
+It can also be used with a `Map` to match if the given Map contains the expected key-value pair.
+
+```scala
+expect(Map("one" -> 1, "two" -> 2, "three" -> 3)).toContain("two" -> 2)
+```
+
 [Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToContainTest.scala)
+
+### .toContainAllOf
+
+Match if a given `Map` contains *all* of the expected key-value pairs.
+
+```scala
+expect(Map("one" -> 1, "two" -> 2, "three" -> 3)).toContainAllOf("two" -> 2, "one" -> 1)
+```
+
+[Additional examples](https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToContainAllOfTest.scala)
 
 ### .toCompleteWith
 

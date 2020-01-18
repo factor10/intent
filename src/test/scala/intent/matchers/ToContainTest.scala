@@ -33,3 +33,43 @@ class ToContainTest extends TestSuite with Stateless with Meta with
         given cutoff: intent.core.ListCutoff = intent.core.ListCutoff(5)
         val list = LazyList.from(1)
         expect(list).not.toContain(10)
+
+    "for Map":
+      "of String -> Int":
+        "when negated":
+          "does not contain element" in:
+            expect(Map("one" -> 1, "two" -> 2)).not.toContain("three" -> 3)
+
+          "error is described properly" in:
+            runExpectation(
+              expect(Map("one" -> 1, "two" -> 2)).not.toContain("one" -> 1),
+              """Expected Map(...) to not contain:
+              |  "one" -> 1""".stripMargin)
+
+        "with invalid key":
+          "error is described properly" in:
+            runExpectation(
+              expect(Map("one" -> 1, "two" -> 2)).toContain("three" -> 3),
+                """Expected Map(...) to contain:
+                |  "three" -> 3""".stripMargin)
+
+        "with correct key but invalid value":
+          "error is described properly" in:
+          runExpectation(
+            expect(Map("one" -> 1, "two" -> 2)).toContain("two" -> 3),
+            """Expected Map(...) to contain:
+            |  "two" -> 3 but found "two" -> 2""".stripMargin)
+
+        "with correct key and value":
+          "should contain element" in:
+            expect(Map("one" -> 1, "two" -> 2)).toContain("two" -> 2)
+
+      "for mutable scala.collection.mutable.Map":
+        "with correct key and value":
+          "should contain element" in:
+            expect(scala.collection.mutable.Map("one" -> 1, "two" -> 2)).toContain("two" -> 2)
+
+      "for scala.collection.immutable.Map":
+        "with correct key and value":
+          "should contain element" in:
+            expect(scala.collection.immutable.Map("one" -> 1, "two" -> 2)).toContain("two" -> 2)

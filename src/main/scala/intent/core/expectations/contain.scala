@@ -1,6 +1,7 @@
 package intent.core.expectations
 
 import intent.core._
+import intent.core.MapLike
 import scala.concurrent.Future
 import scala.collection.mutable.ListBuffer
 import scala.Array
@@ -76,3 +77,45 @@ class ArrayContainExpectation[T](expect: Expect[Array[T]], expected: T)(
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()
     evalToContain(actual, expected, expect, "Array")
+
+class MapContainExpectation[K, V](expect: Expect[MapLike[K, V]], expected: Seq[Tuple2[K, V]])(
+  given
+    eqq: Eq[V],
+    keyFmt: Formatter[K],
+    valueFmt: Formatter[V],
+) extends Expectation with
+
+  def evaluate(): Future[ExpectationResult] =
+    val actual = expect.evaluate()
+    var failingKeys = Seq[Tuple2[K, V]]()       // When the key failing (missing or present when negated)
+    var failingValues = Seq[Tuple3[K, V, V]]()  // When the key is OK but the value does not match
+
+    expected.foreach { expectedPair =>
+      actual.get(expectedPair._1) match {
+        case None if expect.isNegated =>
+          () // OK = NOOP
+        case None =>
+          failingKeys :+= expectedPair
+        case Some(v) if expect.isNegated =>
+          failingKeys :+= expectedPair
+        case Some(v)   =>
+          if !eqq.areEqual(v, expectedPair._2) then failingValues :+= (expectedPair._1, expectedPair._2, v)
+      }
+    }
+
+    Future.successful:
+      if failingKeys.isEmpty && failingValues.isEmpty then
+        expect.pass
+      else if expect.isNegated && failingKeys.length < expected.length then
+        // If only some of the pairs were missing, the negated expect is fulfilled, i.e. actual does not, not.containAllOf
+        // This type of negation should be avoided in tests though, as the intention is not clear
+        expect.pass
+      else
+        var message = s"Expected ${describeActualWithContext(actual)} to "
+        if (expect.isNegated) message += "not "
+        message += "contain:\n  "
+        message += failingKeys.map(p => s"${keyFmt.format(p._1)} -> ${valueFmt.format(p._2)}").mkString("\n  ")
+        message += failingValues.map(p => s"${keyFmt.format(p._1)} -> ${valueFmt.format(p._2)} but found ${keyFmt.format(p._1)} -> ${valueFmt.format(p._3)}").mkString("\n  ")
+        expect.fail(message)
+
+  private def describeActualWithContext(actual: MapLike[K, V]): String = "Map(...)"

@@ -8,7 +8,7 @@ import scala.language.implicitConversions
 import scala.util.matching.Regex
 import scala.reflect.ClassTag
 
-import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed, PositionDescription}
+import intent.core.{Expectation, ExpectationResult, TestPassed, TestFailed, PositionDescription, MapLike}
 import intent.macros.Position
 import intent.util.DelayedFuture
 import intent.core.expectations._
@@ -80,6 +80,26 @@ trait ExpectGivens with
         cutoff: ListCutoff
       ): Expectation =
     new IterableContainExpectation(expect, expected)
+
+  /**
+   * Expect that a key-value tuple exists in the given map
+   */
+  def [K, V](expect: Expect[MapLike[K, V]]) toContain (expected: (K, V))
+    (given
+       eqq: Eq[V],
+       keyFmt: Formatter[K],
+       valueFmt: Formatter[V]
+    ): Expectation = new MapContainExpectation(expect, Seq(expected))
+
+  /**
+   * Expect that multiple key-value tuple exists in the given map
+   */
+  def [K, V](expect: Expect[MapLike[K, V]]) toContainAllOf (expected: (K, V)*)
+  (given
+     eqq: Eq[V],
+     keyFmt: Formatter[K],
+     valueFmt: Formatter[V]
+  ): Expectation = new MapContainExpectation(expect, expected)
 
   // Note: Not using IterableOnce here as it matches Option and we don't want that.
   def [T](expect: Expect[Iterable[T]]) toEqual (expected: Iterable[T])
