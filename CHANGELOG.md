@@ -1,6 +1,6 @@
 # Changelog
 
-## PR
+## Pending release
 
 * Add `.toContain` for `Map` objects
   See [toContain](docs/matchers.md#.toContain)
