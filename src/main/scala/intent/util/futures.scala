@@ -14,7 +14,7 @@ trait DelayedFuture[T] extends Future[T] with
 object DelayedFuture with
   private val timer = new Timer
 
-  private def makeTask[T](body: => T)(schedule: TimerTask => Unit)(given ctx: ExecutionContext): Future[T] =
+  private def makeTask[T](body: => T)(schedule: TimerTask => Unit)(using ctx: ExecutionContext): Future[T] =
     val prom = Promise[T]()
     schedule(
       new TimerTask {
@@ -27,7 +27,7 @@ object DelayedFuture with
     )
     prom.future
 
-  def apply[T](duration: Duration)(body: => T)(given ctx: ExecutionContext): DelayedFuture[T] =
+  def apply[T](duration: Duration)(body: => T)(using ctx: ExecutionContext): DelayedFuture[T] =
     val isCancelled = new AtomicBoolean(false)
     val f = makeTask({
       if (!isCancelled.get()) body else null.asInstanceOf[T]

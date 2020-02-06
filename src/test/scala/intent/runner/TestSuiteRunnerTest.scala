@@ -152,7 +152,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase] with
 /**
  * Wraps a runner for a specific test suite
  */
-case class TestSuiteTestCase(suiteClassName: String = null)(given ec: ExecutionContext) extends TestSuiteRunnerTester with
+case class TestSuiteTestCase(suiteClassName: String = null)(using ec: ExecutionContext) extends TestSuiteRunnerTester with
 
   def emptyTestSuite = TestSuiteTestCase("intent.testdata.EmtpyTestSuite")
   def invalidTestSuiteClass = TestSuiteTestCase("foo.Bar")

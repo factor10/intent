@@ -35,6 +35,6 @@ class AsyncStateTest extends TestSuite with AsyncState[MyAsyncState] with Meta w
       "sees the appropriate state" in:
         state => expect(state.s).toEqual("Hello async world")
 
-case class MyAsyncState(s: String)(given ExecutionContext) with
+case class MyAsyncState(s: String)(using ExecutionContext) with
   def map(s2: String) = copy(s = s + s2)
   def asyncMap(s2: String) = Future { copy(s = s + s2) }

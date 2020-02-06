@@ -90,7 +90,7 @@ class SbtTask(td: TaskDef, suit: IntentStructure, runner: TestSuiteRunner, focus
     // Hmm, do we need really to block here? Does SBT come with something included to be async
     Await.result(executeSuite(handler, loggers), Duration.Inf)
 
-  private def executeSuite(handler: EventHandler, loggers: Array[Logger])(given ec: ExecutionContext): Future[Array[Task]] =
+  private def executeSuite(handler: EventHandler, loggers: Array[Logger])(using ec: ExecutionContext): Future[Array[Task]] =
     object lock
     val eventSubscriber = new Subscriber[TestCaseResult]:
       override def onNext(event: TestCaseResult): Unit =

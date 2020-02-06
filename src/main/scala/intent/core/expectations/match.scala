@@ -5,7 +5,7 @@ import scala.concurrent.Future
 import scala.util.matching.Regex
 
 class MatchExpectation[T](expect: Expect[String], re: Regex)(
-  given fmt: Formatter[String]
+  using fmt: Formatter[String]
 ) extends Expectation with
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()

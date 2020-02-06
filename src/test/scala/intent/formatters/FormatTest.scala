@@ -20,5 +20,5 @@ class FormatTest extends TestSuite with Stateless with
       val t = RuntimeException("oops")
       expect(format(t)).toEqual("java.lang.RuntimeException: oops")
 
-  def format[T](x: T)(given fmt: core.Formatter[T]): String =
+  def format[T](x: T)(using fmt: core.Formatter[T]): String =
     fmt.format(x)
