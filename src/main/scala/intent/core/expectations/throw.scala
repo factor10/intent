@@ -14,7 +14,7 @@ object AnyExpectedMessage extends ExpectedMessage with
   def matches(msg: String) = true
   def describe() = ""
 
-class ExactExpectedMessage(expected: String)(given stringFmt: Formatter[String]) extends ExpectedMessage with
+class ExactExpectedMessage(expected: String)(using stringFmt: Formatter[String]) extends ExpectedMessage with
   def matches(msg: String) = msg == expected
   def describe() = s" with message ${stringFmt.format(expected)}"
 
@@ -27,7 +27,7 @@ private case class ExceptionMatch(typeOk: Boolean, messageOk: Boolean) with
     val ok = typeOk && messageOk
     if isNegated then !ok else ok
 
-class ThrowExpectation[TEx : ClassTag](expect: Expect[_], expectedMessage: ExpectedMessage)(given stringFmt: Formatter[String]) extends Expectation with
+class ThrowExpectation[TEx : ClassTag](expect: Expect[_], expectedMessage: ExpectedMessage)(using stringFmt: Formatter[String]) extends Expectation with
   def evaluate(): Future[ExpectationResult] =
     val expectedClass = implicitly[ClassTag[TEx]].runtimeClass
 

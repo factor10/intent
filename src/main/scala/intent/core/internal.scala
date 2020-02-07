@@ -36,9 +36,9 @@ case class IgnoredTestCase(nameParts: Seq[String]) extends ITestCase with
 case class TestTimeout(timeout: FiniteDuration)
 
 trait TestLanguage with
-  def expect[T](expr: => T)(given pos: Position): Expect[T] = new Expect[T](expr, pos)
+  def expect[T](expr: => T)(using pos: Position): Expect[T] = new Expect[T](expr, pos)
 
-  def whenComplete[T](expr: => Future[T])(impl: T => Expectation)(given pos: Position, timeout: TestTimeout): Expectation =
+  def whenComplete[T](expr: => Future[T])(impl: T => Expectation)(using pos: Position, timeout: TestTimeout): Expectation =
     import PositionDescription._
     new Expectation:
       def evaluate(): Future[ExpectationResult] =
@@ -51,11 +51,11 @@ trait TestLanguage with
           case Failure(t) => Future.successful(
             TestFailed(pos.contextualize("The Future passed to 'whenComplete' failed"), Some(t)))
 
-  def fail(reason: String)(given pos: Position): Expectation =
+  def fail(reason: String)(using pos: Position): Expectation =
     import PositionDescription._
     new { def evaluate() = Future.successful(TestFailed(pos.contextualize(reason), None)) }
 
-  def success()(given pos: Position): Expectation =
+  def success()(using pos: Position): Expectation =
     import PositionDescription._
     new { def evaluate() = Future.successful(TestPassed()) }
 
@@ -217,48 +217,50 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage with
 trait IntentStateSyntax[TState] extends IntentStateBase[TState] with
   private[intent] override def isStateful = true
 
-  def (context: String) using (init: => TState)(given pos: Position) : Context =
-    ContextInit(context, () => Future.successful(init), pos)
+  extension contextExt on (context: Context):
+    def to (block: => Unit): Unit =
+      val ctxToUse = isParentIgnored() match
+        case true => context.withIgnore()
+        case false => isParentFocused() match
+          case true => context.withFocus()
+          case _ => context
+      withContext(ctxToUse)(block)
 
-  def (context: String) using (tx: Map)(given pos: Position) : Context =
-    ContextMap(context, tx, pos)
+    def focused (block: => Unit): Unit =
+      val ctxToUse = doesParentAllowFocus() match
+        case true =>
+          enableFocusedMode()
+          context.withFocus()
+        case false =>
+          context.withIgnore()
+      withContext(ctxToUse)(block)
 
-  def (ctx: Context) to (block: => Unit): Unit =
-    val ctxToUse = isParentIgnored() match
-      case true => ctx.withIgnore()
-      case false => isParentFocused() match
-        case true => ctx.withFocus()
-        case _ => ctx
-    withContext(ctxToUse)(block)
+    def ignored (block: => Unit): Unit =
+      withContext(context.withIgnore())(block)
 
-  def (ctx: Context) focused (block: => Unit): Unit =
-    val ctxToUse = doesParentAllowFocus() match
-      case true =>
-        enableFocusedMode()
-        ctx.withFocus()
-      case false =>
-        ctx.withIgnore()
-    withContext(ctxToUse)(block)
+  extension stringExt on (context: String):
+    def using (init: => TState)(using pos: Position) : Context =
+      ContextInit(context, () => Future.successful(init), pos)
 
-  def (ctx: Context) ignored (block: => Unit): Unit =
-    withContext(ctx.withIgnore())(block)
+    def using (tx: Map)(using pos: Position) : Context =
+      ContextMap(context, tx, pos)
 
-  def (testName: String) in (testImpl: TState => Expectation)(given pos: Position): Unit =
-    if inFocusedMode && !isParentFocused() || isParentIgnored() then
-      testName ignore testImpl
-    else
-      addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
+    def in (testImpl: TState => Expectation)(using pos: Position): Unit =
+      if inFocusedMode && !isParentFocused() || isParentIgnored() then
+        context ignore testImpl
+      else
+        addTestCase(TestCase(contextsInOrder, context, testImpl, pos))
 
-  def (testName: String) ignore (testImpl: TState => Expectation): Unit =
-    addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
+    def ignore (testImpl: TState => Expectation): Unit =
+      addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ context))
 
-  def (testName: String) focus (testImpl: TState => Expectation)(given pos: Position): Unit =
-    doesParentAllowFocus() match
-      case true =>
-        enableFocusedMode()
-        addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
-      case false =>
-        testName ignore testImpl
+    def focus (testImpl: TState => Expectation)(using pos: Position): Unit =
+      doesParentAllowFocus() match
+        case true =>
+          enableFocusedMode()
+          addTestCase(TestCase(contextsInOrder, context, testImpl, pos))
+        case false =>
+          context ignore testImpl
 
   private case class TableDriveContext(name: String, generator: () => Iterable[TState], position: Position,
     hasFocus: Boolean = false, isIgnored: Boolean = false)
@@ -275,7 +277,7 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState] with
 
   // TODO: Move to separate trait?
   // TODO: Only works on root level currently...
-  def (context: String) usingTable (generator: => Iterable[TState])(given pos: Position): Context =
+  def (context: String) usingTable (generator: => Iterable[TState])(using pos: Position): Context =
     TableDriveContext(context, () => generator, pos)
 
 /**
@@ -286,73 +288,79 @@ trait IntentStatelessSyntax extends IntentStateBase[Unit] with
 
   private[intent] override def isStateful = false
 
-  def (testName: String) in (testImpl: => Expectation)(given pos: Position): Unit =
-    if inFocusedMode && !isParentFocused() || isParentIgnored() then
-      testName ignore testImpl
-    else
-      addTestCase(TestCase(contextsInOrder, testName, _ => testImpl, pos))
+  extension stringExt on (context: String):
+    def in (testImpl: => Expectation)(using pos: Position): Unit =
+      if inFocusedMode && !isParentFocused() || isParentIgnored() then
+        context ignore testImpl
+      else
+        addTestCase(TestCase(contextsInOrder, context, _ => testImpl, pos))
 
-  def (blockName: String) focused (block: => Unit)(given pos: Position): Unit =
-    val ctx = doesParentAllowFocus() match
-      case true =>
+    def focused (block: => Unit)(using pos: Position): Unit =
+      val ctx = doesParentAllowFocus() match
+        case true =>
+          enableFocusedMode()
+          ContextInit(context, () => Future.successful(()), pos , hasFocus = true)
+        case false => ContextInit(context, () => Future.successful(()), pos , isIgnored = true)
+      withContext(ctx)(block)
+
+    def ignored (block: => Unit)(using pos: Position): Unit =
+      val ctx = ContextInit(context, () => Future.successful(()), pos , hasFocus = false, isIgnored = true)
+      withContext(ctx)(block)
+
+    def apply (block: => Unit)(using pos: Position): Unit =
+      val ctx = ContextInit(context, () => Future.successful(()), pos, hasFocus = isParentFocused(), isIgnored = isParentIgnored())
+      withContext(ctx)(block)
+
+    def ignore (testImpl: => Expectation): Unit =
+      addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ context))
+
+    def focus (testImpl: => Expectation)(using pos: Position): Unit =
+      if isParentIgnored() then
+        context ignore testImpl
+      else
         enableFocusedMode()
-        ContextInit(blockName, () => Future.successful(()), pos , hasFocus = true)
-      case false => ContextInit(blockName, () => Future.successful(()), pos , isIgnored = true)
-    withContext(ctx)(block)
-
-  def (blockName: String) ignored (block: => Unit)(given pos: Position): Unit =
-    val ctx = ContextInit(blockName, () => Future.successful(()), pos , hasFocus = false, isIgnored = true)
-    withContext(ctx)(block)
-
-  def (blockName: String) apply (block: => Unit)(given pos: Position): Unit =
-    val ctx = ContextInit(blockName, () => Future.successful(()), pos, hasFocus = isParentFocused(), isIgnored = isParentIgnored())
-    withContext(ctx)(block)
-
-  def (testName: String) ignore (testImpl: => Expectation): Unit =
-    addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
-
-  def (testName: String) focus (testImpl: => Expectation)(given pos: Position): Unit =
-    if isParentIgnored() then
-      testName ignore testImpl
-    else
-      enableFocusedMode()
-      addTestCase(TestCase(contextsInOrder, testName, _ => testImpl, pos))
+        addTestCase(TestCase(contextsInOrder, context, _ => testImpl, pos))
 
 trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState] with
 
   private[intent] override def isStateful = true
 
-  def (context: String) using (init: => TState)(given pos: Position): Context = ContextInit(context, () => Future.successful(init), pos)
-  def (context: String) usingAsync (init: => Future[TState])(given pos: Position): Context = ContextInit(context, () => init, pos)
-  def (context: String) using (tx: Map)(given pos: Position): Context = ContextMap(context, tx, pos)
-  def (context: String) usingAsync (fmc: FlatMap)(given pos: Position): Context = ContextFlatMap(context, fmc, pos)
+  extension stringExt on (context: String):
+    def using (init: => TState)(using pos: Position): Context = ContextInit(context, () => Future.successful(init), pos)
 
-  def (ctx: Context) to (block: => Unit): Unit =
-    val ctxToUse = isParentIgnored() match
-      case true => ctx.withIgnore()
-      case false => isParentFocused() match
-        case true => ctx.withFocus()
-        case _ => ctx
-    withContext(ctxToUse)(block)
+    def usingAsync (init: => Future[TState])(using pos: Position): Context = ContextInit(context, () => init, pos)
 
-  def (ctx: Context) focused (block: => Unit): Unit =
-    withContext(ctx.withFocus())(block)
+    def using (tx: Map)(using pos: Position): Context = ContextMap(context, tx, pos)
 
-  def (ctx: Context) ignored (block: => Unit): Unit =
-    withContext(ctx.withIgnore())(block)
+    def usingAsync (fmc: FlatMap)(using pos: Position): Context = ContextFlatMap(context, fmc, pos)
 
-  def (testName: String) in (testImpl: TState => Expectation)(given pos: Position): Unit =
-    if inFocusedMode && !isParentFocused() || isParentIgnored() then
-      testName ignore testImpl
-    else
-      addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
+    def in (testImpl: TState => Expectation)(using pos: Position): Unit =
+      if inFocusedMode && !isParentFocused() || isParentIgnored() then
+        context ignore testImpl
+      else
+        addTestCase(TestCase(contextsInOrder, context, testImpl, pos))
 
-  def (testName: String) ignore (testImpl: TState => Expectation): Unit =
-      addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ testName))
+    def ignore (testImpl: TState => Expectation): Unit =
+      addTestCase(IgnoredTestCase(contextsInOrder.map(_.name) :+ context))
 
-  def (testName: String) focus (testImpl: TState => Expectation)(given pos: Position): Unit =
-    if isParentIgnored() then
-      testName ignore testImpl
-    else
-      enableFocusedMode()
-      addTestCase(TestCase(contextsInOrder, testName, testImpl, pos))
+    def focus (testImpl: TState => Expectation)(using pos: Position): Unit =
+      if isParentIgnored() then
+        context ignore testImpl
+      else
+        enableFocusedMode()
+        addTestCase(TestCase(contextsInOrder, context, testImpl, pos))
+
+  extension contextExt on (context: Context):
+    def focused (block: => Unit): Unit =
+      withContext(context.withFocus())(block)
+
+    def ignored (block: => Unit): Unit =
+      withContext(context.withIgnore())(block)
+
+    def to (block: => Unit): Unit =
+      val ctxToUse = isParentIgnored() match
+        case true => context.withIgnore()
+        case false => isParentFocused() match
+          case true => context.withFocus()
+          case _ => context
+      withContext(ctxToUse)(block)

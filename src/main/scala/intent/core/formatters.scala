@@ -32,12 +32,12 @@ class ThrowableFmt[T <: Throwable] extends Formatter[T] with
     // TODO: stack trace??
     s"${t.getClass.getName}: ${t.getMessage}"
 
-class OptionFmt[TInner, T <: Option[TInner]](given innerFmt: Formatter[TInner]) extends Formatter[T] with
+class OptionFmt[TInner, T <: Option[TInner]](using innerFmt: Formatter[TInner]) extends Formatter[T] with
   def format(value: T): String = value match
     case Some(x) => s"Some(${innerFmt.format(x)})"
     case None => "None"
 
-class TryFmt[TInner, T <: Try[TInner]](given innerFmt: Formatter[TInner], throwableFmt: Formatter[Throwable]) extends Formatter[T] with
+class TryFmt[TInner, T <: Try[TInner]](using innerFmt: Formatter[TInner], throwableFmt: Formatter[Throwable]) extends Formatter[T] with
   def format(value: T): String = value match
     case Success(x) => s"Success(${innerFmt.format(x)})"
     case Failure(t) => s"Failure(${throwableFmt.format(t)})"
@@ -52,5 +52,5 @@ trait FormatterGivens with
   given Formatter[Double] = DoubleFmt
   given Formatter[Float] = FloatFmt
 
-  given optFmt[TInner, T <: Option[TInner]](given Formatter[TInner]): Formatter[T] = OptionFmt[TInner, T]
-  given tryFmt[TInner, T <: Try[TInner]](given Formatter[TInner]): Formatter[T] = TryFmt[TInner, T]
+  given optFmt[TInner, T <: Option[TInner]](using Formatter[TInner]): Formatter[T] = OptionFmt[TInner, T]
+  given tryFmt[TInner, T <: Try[TInner]](using Formatter[TInner]): Formatter[T] = TryFmt[TInner, T]

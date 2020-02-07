@@ -7,7 +7,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Failure}
 
 class ToCompleteWithExpectation[T](expect: Expect[Future[T]], expected: T)(
-  given
+  using
     eqq: Eq[T],
     fmt: Formatter[T],
     errFmt: Formatter[Throwable],

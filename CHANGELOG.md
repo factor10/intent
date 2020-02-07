@@ -1,12 +1,14 @@
 # Changelog
 
-## Pending release
+## 0.5.0 (2020-02-06)
 
 * Add `.toContain` for `Map` objects
   See [toContain](docs/matchers.md#.toContain)
 
 * Add `.toContainAllOf` for `Map` objects
   See [toContain](docs/matchers.md#.toContainAllOf)
+
+* Upgrade to Dotty 0.22.0-RC1
 
 ## 0.4.0 (2019-12-21)
 

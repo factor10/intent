@@ -6,7 +6,7 @@ import java.util.regex.Pattern
 
 trait Meta with
   self: TestLanguage with TestSupport =>
-    def runExpectation(e: => Expectation, expected: String)(given ExecutionContext): Expectation =
+    def runExpectation(e: => Expectation, expected: String)(using ExecutionContext): Expectation =
       new Expectation:
         def evaluate(): Future[ExpectationResult] =
           e.evaluate().flatMap:
@@ -18,7 +18,7 @@ trait Meta with
             case TestIgnored()  => Future.successful(TestFailed("Expected a test failure", None))
             case t: TestError   => Future.successful(t)
 
-    def runExpectation(e: => Expectation, exMatcher: PartialFunction[Throwable, Boolean])(given ExecutionContext): Expectation =
+    def runExpectation(e: => Expectation, exMatcher: PartialFunction[Throwable, Boolean])(using ExecutionContext): Expectation =
       new Expectation:
         def evaluate(): Future[ExpectationResult] =
           e.evaluate().flatMap:

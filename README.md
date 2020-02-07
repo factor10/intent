@@ -35,7 +35,7 @@ how to use Intent to write tests, see [User documentation](docs/index.md).
 Add Intent to your SBT project with the following lines to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.factor10" %% "intent" % "0.4.0",
+libraryDependencies += "com.factor10" %% "intent" % "0.5.0",
 testFrameworks += new TestFramework("intent.sbt.Framework")
 ```
 

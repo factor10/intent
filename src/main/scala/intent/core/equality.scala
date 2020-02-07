@@ -15,7 +15,7 @@ object DefaultDoubleFloatingPointPrecision extends FloatingPointPrecision[Double
 object DefaultFloatFloatingPointPrecision extends FloatingPointPrecision[Float] with
   def numberOfDecimals: Int = 6
 
-private def compareFPs[T : Numeric](a: T, b: T)(given prec: FloatingPointPrecision[T]): Boolean =
+private def compareFPs[T : Numeric](a: T, b: T)(using prec: FloatingPointPrecision[T]): Boolean =
   if a == b then
     return true
   val num = summon[Numeric[T]]
@@ -30,10 +30,10 @@ object IntEq extends Eq[Int] with
 object LongEq extends Eq[Long] with
   def areEqual(a: Long, b: Long): Boolean = a == b
 
-class DoubleEq(given prec: FloatingPointPrecision[Double]) extends Eq[Double] with
+class DoubleEq(using prec: FloatingPointPrecision[Double]) extends Eq[Double] with
   def areEqual(a: Double, b: Double): Boolean = compareFPs(a, b)
 
-class FloatEq(given prec: FloatingPointPrecision[Float]) extends Eq[Float] with
+class FloatEq(using prec: FloatingPointPrecision[Float]) extends Eq[Float] with
   def areEqual(a: Float, b: Float): Boolean = compareFPs(a, b)
 
 object BooleanEq extends Eq[Boolean] with
@@ -54,14 +54,14 @@ object AnyEq extends Eq[Any] with
 object NothingEq extends Eq[Nothing] with
   def areEqual(a: Nothing, b: Nothing): Boolean = a == b
 
-class OptionEq[TInner, T <: Option[TInner]](given innerEq: Eq[TInner]) extends Eq[T] with
+class OptionEq[TInner, T <: Option[TInner]](using innerEq: Eq[TInner]) extends Eq[T] with
   def areEqual(a: T, b: T): Boolean =
     (a, b) match
       case (Some(aa), Some(bb)) => innerEq.areEqual(aa, bb)
       case (None, None) => true
       case _ => false
 
-class TryEq[TInner, T <: Try[TInner]](given innerEq: Eq[TInner], throwableEq: Eq[Throwable]) extends Eq[T] with
+class TryEq[TInner, T <: Try[TInner]](using innerEq: Eq[TInner], throwableEq: Eq[Throwable]) extends Eq[T] with
   def areEqual(a: T, b: T): Boolean =
     (a, b) match
       case (Success(aa), Success(bb)) => innerEq.areEqual(aa, bb)
@@ -78,8 +78,8 @@ trait EqGivens with
   given Eq[Boolean] = BooleanEq
   given Eq[String] = StringEq
   given Eq[Char] = CharEq
-  given (given FloatingPointPrecision[Double]): Eq[Double] = DoubleEq()
-  given (given FloatingPointPrecision[Float]): Eq[Float] = FloatEq()
+  given (using FloatingPointPrecision[Double]): Eq[Double] = DoubleEq()
+  given (using FloatingPointPrecision[Float]): Eq[Float] = FloatEq()
   given throwableEq[T <: Throwable]: Eq[T] = ThrowableEq[T]
-  given optEq[TInner, T <: Option[TInner]](given Eq[TInner]): Eq[T] = OptionEq[TInner, T]
-  given tryEq[TInner, T <: Try[TInner]](given Eq[TInner]): Eq[T] = TryEq[TInner, T]
+  given optEq[TInner, T <: Option[TInner]](using Eq[TInner]): Eq[T] = OptionEq[TInner, T]
+  given tryEq[TInner, T <: Try[TInner]](using Eq[TInner]): Eq[T] = TryEq[TInner, T]

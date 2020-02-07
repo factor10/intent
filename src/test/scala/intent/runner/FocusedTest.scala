@@ -54,7 +54,7 @@ case class FocusedTestCase(
   suiteClassName: String = null,
   expectedSuccessful:Int = 0,
   expectedIgnored:Int = 0,
-  focused: Boolean = false)(given ec: ExecutionContext) extends TestSuiteRunnerTester
+  focused: Boolean = false)(using ec: ExecutionContext) extends TestSuiteRunnerTester
 
 class NestedFocusedStatelessTestSuite extends Stateless with
   "some suite" focused:

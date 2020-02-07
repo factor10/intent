@@ -10,7 +10,7 @@ private def evalToEqual[T](actual: Iterable[T],
                             expect: Expect[_],
                             actualListTypeName: String,
                             expectedListTypeName: String)
-   (given
+   (using
       eqq: Eq[T],
       fmt: Formatter[T]
     ): Future[ExpectationResult] =
@@ -64,7 +64,7 @@ private def evalToEqual[T](actual: Iterable[T],
   Future.successful(r)
 
 class EqualExpectation[T](expect: Expect[T], expected: T)(
-  given eqq: Eq[T], fmt: Formatter[T]
+  using eqq: Eq[T], fmt: Formatter[T]
 ) extends Expectation with
 
   def evaluate(): Future[ExpectationResult] =
@@ -86,7 +86,7 @@ class EqualExpectation[T](expect: Expect[T], expected: T)(
     Future.successful(r)
 
 class IterableEqualExpectation[T](expect: Expect[Iterable[T]], expected: Iterable[T])(
-  given eqq: Eq[T], fmt: Formatter[T]
+  using eqq: Eq[T], fmt: Formatter[T]
 ) extends Expectation with
 
   def evaluate(): Future[ExpectationResult] =
@@ -95,7 +95,7 @@ class IterableEqualExpectation[T](expect: Expect[Iterable[T]], expected: Iterabl
 
 
 class ArrayEqualExpectation[T](expect: Expect[Array[T]], expected: Iterable[T])(
-  given eqq: Eq[T], fmt: Formatter[T]
+  using eqq: Eq[T], fmt: Formatter[T]
 ) extends Expectation with
 
   def evaluate(): Future[ExpectationResult] =
