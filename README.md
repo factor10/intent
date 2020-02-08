@@ -43,8 +43,7 @@ testFrameworks += new TestFramework("intent.sbt.Framework")
 
 Intent is an early adopter of Dotty features, which means:
 
-* You need a recent Dotty (>= `0.21.0-RC1`) since Intent use the new Scala 3 syntax
- and significant whitespace.
+* You need a recent Dotty (>= `0.22.0-RC1`) since Intent use the latest Scala 3 syntax.
 
 * Visual Studio Code seems to be the best supported editor (although not perfect)
 
