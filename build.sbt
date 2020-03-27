@@ -16,6 +16,21 @@ lazy val macros = (project in file("macros"))
     publishLocal := {}
   )
 
+lazy val site = (project in file("sitebuilder"))
+  .settings(
+    name := "intent-site",
+    organization := "com.factor10",
+
+    publish := {},
+    publishLocal := {},
+
+    scalacOptions += "-Yindent-colons",
+
+    libraryDependencies += ("com.lihaoyi" %% "scalatags" % "0.8.2").withDottyCompat(scalaVersion.value),
+
+    mainClass in (Compile, run) := Some("intent.site.Main")
+  )
+
 lazy val root = project
   .in(file("."))
   .settings(

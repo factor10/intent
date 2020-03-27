@@ -27,8 +27,10 @@ case class Cart(items: Seq[CartItem] = Seq.empty) with
   def totalQuantity = items.map(_.qty).sum
 ```
 
-This readme is focused on building and testing Intent, for documentation on
-how to use Intent to write tests, see [User documentation](docs/index.md).
+This readme is focused on building and testing Intent, for documentation on how to use
+Intent to write tests.
+
+See [User documentation](ttp://factor10.github.com/intent).
 
 ## Getting started
 
@@ -46,6 +48,20 @@ Intent is an early adopter of Dotty features, which means:
 * You need a recent Dotty (>= `0.22.0-RC1`) since Intent use the latest Scala 3 syntax.
 
 * Visual Studio Code seems to be the best supported editor (although not perfect)
+
+
+## Documentation
+
+Intent is documented using a custom site generator included in intent as a separate SBT
+project.
+
+`sbt site/run` will generate the entire documentation structure in the `./docs` folder.
+
+GitHub pages will automatically serve files in the docs folder at http://factor10.github.com/intent
+no furhter action is needed.
+
+**NOTE:** Static assets, such as CSS, JavaScript and images used by the page is stored directly under
+the `docs/` directory - do not remove these.
 
 
 ## Contributing
