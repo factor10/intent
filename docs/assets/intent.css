@@ -1,6 +1,7 @@
 :root {
     --violet-color: #7b70b0;
     --text-color: #252525;
+    --fine-color: #a1a1a1;
     --link-color: #252525;
     --green-color: #5B9940;
 }
@@ -27,6 +28,18 @@ header .intent-logo {
 header .intent-logo h1 {
     font-weight: 200;
     margin-top: 10px;
+}
+
+header a.intent-version,
+header a.intent-version:active,
+header a.intent-version:link
+header a.intent-version:focus,
+header a.intent-version:hover {
+    color: var(--fine-color);
+    font-size: smaller;
+    font-weight: 300;
+    text-decoration: none;
+    border: none;
 }
 
 a,

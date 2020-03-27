@@ -35,6 +35,7 @@ trait Page with
         div(cls := "intent-logo",
           img(src := "assets/intent-logo.png"),
           h1("Intent"),
+          version(),
         ),
       ),
       div(cls := "intent-page-toc-chapter",
@@ -47,3 +48,5 @@ trait Page with
         ),
       ),
     )
+  private def version() =
+    a(href := s"https://index.scala-lang.org/factor10/intent/intent/${getClass.getPackage.getImplementationVersion}", cls := "intent-version", s"v${getClass.getPackage.getImplementationVersion}")
