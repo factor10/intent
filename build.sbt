@@ -16,21 +16,6 @@ lazy val macros = (project in file("macros"))
     publishLocal := {}
   )
 
-lazy val site = (project in file("sitebuilder"))
-  .settings(
-    name := "intent-site",
-    organization := "com.factor10",
-
-    publish := {},
-    publishLocal := {},
-
-    scalacOptions += "-Yindent-colons",
-
-    libraryDependencies += ("com.lihaoyi" %% "scalatags" % "0.8.2").withDottyCompat(scalaVersion.value),
-
-    mainClass in (Compile, run) := Some("intent.site.Main")
-  )
-
 lazy val root = project
   .in(file("."))
   .settings(
@@ -48,3 +33,20 @@ lazy val root = project
     mappings in (Compile, packageSrc) ++= mappings.in(macros, Compile, packageSrc).value,
   )
   .dependsOn(macros % "compile-internal, test-internal")
+
+lazy val site = (project in file("sitebuilder"))
+  .settings(
+    name := "intent-site",
+    organization := "com.factor10",
+
+    publish := {},
+    publishLocal := {},
+
+    scalacOptions += "-Yindent-colons",
+    testFrameworks += new TestFramework("intent.sbt.Framework"),
+    libraryDependencies += ("com.lihaoyi" %% "scalatags" % "0.8.2").withDottyCompat(scalaVersion.value),
+
+    mainClass in (Compile, run) := Some("intent.site.Main")
+  )
+  .dependsOn(macros % "compile-internal, test-internal")
+  .dependsOn(root % "test")

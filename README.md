@@ -56,6 +56,7 @@ Intent is documented using a custom site generator included in intent as a separ
 project.
 
 `sbt site/run` will generate the entire documentation structure in the `./docs` folder.
+`sbt site/test` will run the unit-test for the documentation generator.
 
 GitHub pages will automatically serve files in the docs folder at http://factor10.github.com/intent
 no furhter action is needed.
