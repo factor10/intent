@@ -28,9 +28,7 @@ case class Cart(items: Seq[CartItem] = Seq.empty) with
 ```
 
 This readme is focused on building and testing Intent, for documentation on how to use
-Intent to write tests.
-
-See [User documentation](https://factor10.github.com/intent).
+Intent to write tests, see [User documentation](https://factor10.github.com/intent).
 
 ## Getting started
 
