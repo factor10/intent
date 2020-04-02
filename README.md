@@ -30,7 +30,7 @@ case class Cart(items: Seq[CartItem] = Seq.empty) with
 This readme is focused on building and testing Intent, for documentation on how to use
 Intent to write tests.
 
-See [User documentation](ttp://factor10.github.com/intent).
+See [User documentation](https://factor10.github.com/intent).
 
 ## Getting started
 
@@ -58,7 +58,7 @@ project.
 `sbt site/run` will generate the entire documentation structure in the `./docs` folder.
 `sbt site/test` will run the unit-test for the documentation generator.
 
-GitHub pages will automatically serve files in the docs folder at http://factor10.github.com/intent
+GitHub pages will automatically serve files in the docs folder at https://factor10.github.com/intent
 no further action is needed.
 
 **NOTE:** Static assets, such as CSS, JavaScript and images used by the page are stored directly under
