@@ -52,16 +52,16 @@ Intent is an early adopter of Dotty features, which means:
 
 ## Documentation
 
-Intent is documented using a custom site generator included in intent as a separate SBT
+Intent is documented using a custom site generator included in Intent as a separate SBT
 project.
 
 `sbt site/run` will generate the entire documentation structure in the `./docs` folder.
 `sbt site/test` will run the unit-test for the documentation generator.
 
 GitHub pages will automatically serve files in the docs folder at http://factor10.github.com/intent
-no furhter action is needed.
+no further action is needed.
 
-**NOTE:** Static assets, such as CSS, JavaScript and images used by the page is stored directly under
+**NOTE:** Static assets, such as CSS, JavaScript and images used by the page are stored directly under
 the `docs/` directory - do not remove these.
 
 
