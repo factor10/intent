@@ -1,11 +1,9 @@
-Intent site and documentation is generated using Hugo as the
-static site generator.
+Intent site and documentation is generated using Hugo as the static site generator.
 
 To run and view the content of the files locally:
 
-    hugo serve
+    hugo server
 
 To generate the documentation wich will be served:
 
     hugo --destination ../docs
-    open http://localhost:1313/intent
