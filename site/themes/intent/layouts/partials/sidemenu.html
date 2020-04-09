@@ -1,27 +1,25 @@
-<ul>
-{{ $currentPage := . }}
-    {{ range .Site.Menus.main }}
-        {{ if .HasChildren }}
-            <li class="{{ if $currentPage.HasMenuCurrent "main" . }}active{{ end }}">
-                <a href="#">
-                    {{ .Pre }}
-                    <span>{{ .Name }}</span>
-                </a>
-            </li>
-            <ul class="sub-menu">
-                {{ range .Children }}
-                    <li class="{{ if $currentPage.IsMenuCurrent "main" . }}active{{ end }}">
-                        <a href="{{ .URL }}">{{ .Name }}</a>
-                    </li>
-                {{ end }}
-            </ul>
-        {{ else }}
-            <li>
-                <a href="{{ .URL }}">
-                    {{ .Pre }}
-                    <span>{{ .Name }}</span>
-                </a>
-            </li>
+<div class="intent-page-toc">
+    <header>
+        <div class="intent-logo">
+            <img src="{{ .Site.BaseURL }}/intent-logo.png">
+            <h1>Intent</h1>
+            <a href="https://index.scala-lang.org/factor10/intent/intent/" class="intent-version">latest version</a>
+        </div>
+    </header>
+
+    <div class="intent-page-toc-chapter">
+        {{ $currentPage := . }}
+        {{ range .Site.Menus.main }}
+            {{ if .HasChildren }}
+                <h4>{{ .Name }}</h4>
+                <ul>
+                    {{ range .Children }}
+                        <li class="{{ if $currentPage.IsMenuCurrent "main" . }}active{{ end }}">
+                            <a href="{{ .URL }}">{{ .Name }}</a>
+                        </li>
+                    {{ end }}
+                </ul>
+            {{ end }}
         {{ end }}
-    {{ end }}
-</ul>
+    </div>
+</div>
