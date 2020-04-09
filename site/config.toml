@@ -72,3 +72,87 @@ pygmentsuseclasses = false
     name = "Matchers"
     url = "/matchers/"
     weight = 300
+
+  [[menu.main]]
+    parent = "matchers"
+    name = ".toEqual"
+    url = "/matchers/#toequal"
+    weight = 110
+
+  [[menu.main]]
+    parent = "matchers"
+    name = ".toHaveLength"
+    url = "/matchers/#tohavelength"
+    weight = 120
+
+  [[menu.main]]
+    parent = "matchers"
+    name = ".toContain"
+    url = "/matchers/#tocontain"
+    weight = 130
+
+  [[menu.main]]
+    parent = "matchers"
+    name = ".toContainAllOf"
+    url = "/matchers/#tocontainallof"
+    weight = 140
+
+  [[menu.main]]
+    parent = "matchers"
+    name = ".toCompleteWith"
+    url = "/matchers/#tocompletewith"
+    weight = 150
+
+  [[menu.main]]
+    parent = "matchers"
+    name = ".toMatch"
+    url = "/matchers/#tomatch"
+    weight = 160
+
+  [[menu.main]]
+    parent = "matchers"
+    name = ".toThrow"
+    url = "/matchers/#tothrow"
+    weight = 170
+
+  [[menu.main]]
+    identifier = "customization"
+    name = "Customization"
+    url = "/customization/"
+    weight = 400
+
+  [[menu.main]]
+    parent = "customization"
+    name = "Manually fail or succeed"
+    url = "/customization/#manually-fail-or-succeed"
+    weight = 100
+
+  [[menu.main]]
+    parent = "customization"
+    name = "Asyncness"
+    url = "/customization/#asyncness"
+    weight = 110
+
+  [[menu.main]]
+    parent = "customization"
+    name = "Equality"
+    url = "/customization/#equality"
+    weight = 120
+
+  [[menu.main]]
+    parent = "customization"
+    name = "Floating-point precision"
+    url = "/customization/#floating-point-precision"
+    weight = 130
+
+  [[menu.main]]
+    parent = "customization"
+    name = "Formatting"
+    url = "/customization/#formatting"
+    weight = 140
+
+  [[menu.main]]
+    parent = "customization"
+    name = "Timeout"
+    url = "/customization/#timeout"
+    weight = 150
