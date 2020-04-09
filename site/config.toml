@@ -5,6 +5,9 @@ theme = "intent"
 
 pygmentsuseclasses = false
 
+[params]
+  version = "0.5.0"
+
 [menu]
 
   [[menu.main]]
