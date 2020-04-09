@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns="//www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+        <title>Matchers &middot; Intent</title>
+        <link rel="stylesheet" type="text/css" href="https://factor10.github.com/intent/intent.css" />
+        <link href="https://factor10.github.com/intent/prism.intent.css" rel="stylesheet">
+    </head>
+    <body>
+
+<div class="intent-page">
+    <div class="intent-page-toc">
+    <header>
+        <div class="intent-logo">
+            <a href="https://factor10.github.com/intent">
+                <img src="https://factor10.github.com/intent/intent-logo.png">
+                <h1>Intent</h1>
+            </a>
+            <a href="https://index.scala-lang.org/factor10/intent/intent/" class="intent-version">latest version</a>
+        </div>
+    </header>
+
+    <div class="intent-page-toc-chapter">
+        
+        
+            
+                <h4>Introduction</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="#getting-started">Getting started</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#why-a-new-test-framework">Why a new framework</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#contributing-to-intent">Contributing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https://github.com/factor10/intent">Find us at GitHub</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Types of tests</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateless/">Stateless</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateful/">Stateful</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/asynchronous/">Asynchronous</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/table-driven/">Table-driven</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Matchers</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#toequal">.toEqual</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tohavelength">.toHaveLength</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontain">.toContain</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontainallof">.toContainAllOf</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocompletewith">.toCompleteWith</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tomatch">.toMatch</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tothrow">.toThrow</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Customization</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#manually-fail-or-succeed">Manually fail or succeed</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#asyncness">Asyncness</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#equality">Equality</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#floating-point-precision">Floating-point precision</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#formatting">Formatting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#timeout">Timeout</a>
+                        </li>
+                    
+                </ul>
+            
+        
+    </div>
+</div>
+
+
+    <article class="intent-page-article">
+        <section class="intent-page-section">
+            <div class="intent-page-section-content">
+                <p>Intent&rsquo;s philosophy is to include commonly used matchers for the Scala standard library
+(including <code>Future</code>, <code>Option</code> and <code>Either</code>) but not to go overboard. Instead Intent makes is
+quite easy to defined your own matchers where needed.</p>
+<p>In our experience, deeply nested or fluent matchers are often hard to discover and the
+tooling support (code completion) is limited by having to know each of the namespace
+identifiers until you get to the actual match.</p>
+<p>Due to this, Intent strives to keep the matcher namespace as flat as possible altough
+some prefixes exists.</p>
+<p>The convention used in the documentation is that the <em>actual value</em> is what is used as
+parameter to expect and the <em>expected value</em> value is what is used in the matcher
+paramter.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span> <span style="color:#f92672">&lt;</span>actual value<span style="color:#f92672">&gt;</span> <span style="color:#f92672">).&lt;</span>matcher<span style="color:#f92672">&gt;(</span> <span style="color:#f92672">&lt;</span>expected value<span style="color:#f92672">&gt;</span> <span style="color:#f92672">)</span>
+</code></pre></div><blockquote>
+<p>The documentation for each matcher contains a reference to Intent&rsquo;s own unit-tests for that specific matcher to
+serve as additional examples.</p>
+</blockquote>
+<h2 id="types">Types</h2>
+<p>The following types are currently supported:</p>
+<ul>
+<li>String</li>
+<li>Boolean</li>
+<li>Int</li>
+<li>Long</li>
+<li>Float</li>
+<li>Double</li>
+<li>Char</li>
+<li>Option</li>
+</ul>
+<h2 id="prefixes">Prefixes</h2>
+<p>All matchers (unless clearly stated) supports the following matcher prefixes.</p>
+<h3 id="not">.not</h3>
+<p>Using the <code>.not</code> prefix will cause the negated match to be expected.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">).</span>not<span style="color:#f92672">.</span>toEqual<span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">)</span>
+</code></pre></div><h2 id="matchers">Matchers</h2>
+<h3 id="toequal">.toEqual</h3>
+<p>Match the <em>actual</em> value to be equal to the <em>expected</em> value.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">).</span>not<span style="color:#f92672">.</span>toEqual<span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">)</span>
+</code></pre></div><p>To compare the values, the <code>==</code> operator is used behind the scenes.</p>
+<p>The values can also be sequences (<code>IterableOnce</code>/<code>Array</code>), in which case they must
+have the same length and elements on the same position must be equal.</p>
+<div class="intent-example-test">
+    <a href="https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToEqualTest.scala">See ToEqualTest.scala</a>
+</div>
+<h3 id="tohavelength">.toHaveLength</h3>
+<p>Match a <code>Seq</code>/<code>List</code> (in fact, any <code>IterableOnce</code>) to have the expected length.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span><span style="color:#a6e22e">Seq</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;one&#34;</span><span style="color:#f92672">)).</span>toHaveLength<span style="color:#f92672">(</span><span style="color:#ae81ff">1</span><span style="color:#f92672">)</span>
+</code></pre></div><div class="intent-example-test">
+    <a href="https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToHaveLengthTest.scala">See ToHaveLengthTest.scala</a>
+</div>
+<h3 id="tocontain">.toContain</h3>
+<p>Match if a given sequence (either <code>IterableOnce</code> or <code>Array</code>) contains the expected element.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span><span style="color:#a6e22e">Seq</span><span style="color:#f92672">(</span><span style="color:#ae81ff">1</span><span style="color:#f92672">,</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">,</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">)).</span>toContain<span style="color:#f92672">(</span><span style="color:#ae81ff">2</span><span style="color:#f92672">)</span>
+</code></pre></div><p>It can also be used with a <code>Map</code> to match if the given Map contains the expected key-value pair.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span><span style="color:#a6e22e">Map</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;one&#34;</span> <span style="color:#f92672">-&gt;</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;two&#34;</span> <span style="color:#f92672">-&gt;</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;three&#34;</span> <span style="color:#f92672">-&gt;</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">)).</span>toContain<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;two&#34;</span> <span style="color:#f92672">-&gt;</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">)</span>
+</code></pre></div><div class="intent-example-test">
+    <a href="https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToContainTest.scala">See ToContainTest.scala</a>
+</div>
+<h3 id="tocontainallof">.toContainAllOf</h3>
+<p>Match if a given <code>Map</code> contains <em>all</em> of the expected key-value pairs.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span><span style="color:#a6e22e">Map</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;one&#34;</span> <span style="color:#f92672">-&gt;</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;two&#34;</span> <span style="color:#f92672">-&gt;</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;three&#34;</span> <span style="color:#f92672">-&gt;</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">)).</span>toContainAllOf<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;two&#34;</span> <span style="color:#f92672">-&gt;</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;one&#34;</span> <span style="color:#f92672">-&gt;</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">)</span>
+</code></pre></div><div class="intent-example-test">
+    <a href="https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToContainAllOfTest.scala">See ToContainAllOfTest.scala</a>
+</div>
+<h3 id="tocompletewith">.toCompleteWith</h3>
+<p>Match the result of a <code>Future</code> to equal the expected value.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span><span style="color:#a6e22e">Future</span><span style="color:#f92672">.</span>successful<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;foo&#34;</span><span style="color:#f92672">)).</span>toCompleteWith<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;foo&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div><div class="intent-example-test">
+    <a href="https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToCompleteWithTest.scala">See ToCompleteWithTest.scala</a>
+</div>
+<h3 id="tomatch">.toMatch</h3>
+<p>Match the result of a String using a regular expression.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span>someString<span style="color:#f92672">).</span>toMatch<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;^a&#34;</span><span style="color:#f92672">.</span>r<span style="color:#f92672">)</span>
+</code></pre></div><p>Note that the regular expression only needs to partially match the actual string,
+since we reckon that is the most common use case. Thus, the following test will pass:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;foo&#34;</span><span style="color:#f92672">).</span>toMatch<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;o+&#34;</span><span style="color:#f92672">.</span>r<span style="color:#f92672">)</span>
+</code></pre></div><p>If a complete match is desired, use <code>^</code> as prefix and <code>$</code> as suffix. For example,
+this will fail:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;foo&#34;</span><span style="color:#f92672">).</span>toMatch<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;^o+$&#34;</span><span style="color:#f92672">.</span>r<span style="color:#f92672">)</span>
+</code></pre></div><div class="intent-example-test">
+    <a href="https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToMatchTest.scala">See ToMatchTest.scala</a>
+</div>
+<h3 id="tothrow">.toThrow</h3>
+<p>Test that a piece of code throws an exception, optionally with a particular message.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala"><span style="color:#66d9ef">def</span> div<span style="color:#f92672">(</span>n<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Int</span><span style="color:#f92672">,</span> d<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Int</span><span style="color:#f92672">)</span> <span style="color:#66d9ef">=</span>
+  require<span style="color:#f92672">(</span>d <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;Division by zero&#34;</span><span style="color:#f92672">)</span>
+  n <span style="color:#f92672">/</span> d
+expect<span style="color:#f92672">(</span>div<span style="color:#f92672">(</span><span style="color:#ae81ff">5</span><span style="color:#f92672">,</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">)).</span>toThrow<span style="color:#f92672">[</span><span style="color:#66d9ef">IllegalArgumentException</span><span style="color:#f92672">](</span><span style="color:#e6db74">&#34;requirement failed: Division by zero&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div><p>This matcher can be used in three different ways:</p>
+<ol>
+<li>With no expected message:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span>div<span style="color:#f92672">(</span><span style="color:#ae81ff">5</span><span style="color:#f92672">,</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">)).</span>toThrow<span style="color:#f92672">[</span><span style="color:#66d9ef">IllegalArgumentException</span><span style="color:#f92672">]()</span>
+</code></pre></div><ol start="2">
+<li>With an exact expected message:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span>div<span style="color:#f92672">(</span><span style="color:#ae81ff">5</span><span style="color:#f92672">,</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">)).</span>toThrow<span style="color:#f92672">[</span><span style="color:#66d9ef">IllegalArgumentException</span><span style="color:#f92672">](</span><span style="color:#e6db74">&#34;requirement failed: Division by zero&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div><ol start="3">
+<li>With a regular expression, which is applied as a partial match:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span>div<span style="color:#f92672">(</span><span style="color:#ae81ff">5</span><span style="color:#f92672">,</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">)).</span>toThrow<span style="color:#f92672">[</span><span style="color:#66d9ef">IllegalArgumentException</span><span style="color:#f92672">](</span><span style="color:#e6db74">&#34;failed.*zero&#34;</span><span style="color:#f92672">.</span>r<span style="color:#f92672">)</span>
+</code></pre></div><p>Note that since the argument to <code>expect</code> is a block, testing of a more complex piece of
+potentially-throwing code can be written as follows:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#66d9ef">:</span>
+  <span style="color:#66d9ef">val</span> <span style="color:#66d9ef">numerator</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>
+  <span style="color:#66d9ef">val</span> denominator <span style="color:#66d9ef">=</span> <span style="color:#ae81ff">0</span>
+  div<span style="color:#f92672">(</span>numerator<span style="color:#f92672">,</span> denominator<span style="color:#f92672">)</span>
+<span style="color:#f92672">.</span>toThrow<span style="color:#f92672">[</span><span style="color:#66d9ef">IllegalArgumentException</span><span style="color:#f92672">]()</span>
+</code></pre></div><p><code>toThrow</code> is satisified when the actual exception is of the same type as or a sub type of the
+expected exception. Thus, the following test passes:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">expect<span style="color:#f92672">(</span>div<span style="color:#f92672">(</span><span style="color:#ae81ff">5</span><span style="color:#f92672">,</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">)).</span>toThrow<span style="color:#f92672">[</span><span style="color:#66d9ef">RuntimeException</span><span style="color:#f92672">]()</span>
+</code></pre></div><div class="intent-example-test">
+    <a href="https://github.com/factor10/intent/blob/master/src/test/scala/intent/matchers/ToThrowTest.scala">See ToThrowTest.scala</a>
+</div>
+
+            </div>
+        </section>
+    </article>
+</div>
+
+        <script src="https://factor10.github.com/intent/prism.js"></script>
+    </body>
+</html>
+

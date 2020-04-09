@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns="//www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+    <head>
+	<meta name="generator" content="Hugo 0.65.3" />
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+        <title>Intent - A test framework for Dotty &middot; Intent</title>
+        <link rel="stylesheet" type="text/css" href="https://factor10.github.com/intent/intent.css" />
+        <link href="https://factor10.github.com/intent/prism.intent.css" rel="stylesheet">
+    </head>
+    <body>
+
+<div class="intent-page">
+    <div class="intent-page-toc">
+    <header>
+        <div class="intent-logo">
+            <a href="https://factor10.github.com/intent">
+                <img src="https://factor10.github.com/intent/intent-logo.png">
+                <h1>Intent</h1>
+            </a>
+            <a href="https://index.scala-lang.org/factor10/intent/intent/" class="intent-version">latest version</a>
+        </div>
+    </header>
+
+    <div class="intent-page-toc-chapter">
+        
+        
+            
+                <h4>Introduction</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="#getting-started">Getting started</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#why-a-new-test-framework">Why a new framework</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#contributing-to-intent">Contributing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https://github.com/factor10/intent">Find us at GitHub</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Types of tests</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateless/">Stateless</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateful/">Stateful</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/asynchronous/">Asynchronous</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/table-driven/">Table-driven</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Matchers</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#toequal">.toEqual</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tohavelength">.toHaveLength</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontain">.toContain</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontainallof">.toContainAllOf</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocompletewith">.toCompleteWith</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tomatch">.toMatch</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tothrow">.toThrow</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Customization</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#manually-fail-or-succeed">Manually fail or succeed</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#asyncness">Asyncness</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#equality">Equality</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#floating-point-precision">Floating-point precision</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#formatting">Formatting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#timeout">Timeout</a>
+                        </li>
+                    
+                </ul>
+            
+        
+    </div>
+</div>
+
+
+    <article class="intent-page-article">
+        <section class="intent-page-section">
+            <div class="intent-page-section-content">
+                <p>Intent is a test framework for <a href="https://dotty.epfl.ch">Dotty</a> (which is expected to become Scala 3 in year 2020).</p>
+<p>Intent is designed to give you clear and concise tests by focusing on:</p>
+<ul>
+<li>Low cermony test code</li>
+<li>Uniform test declaration</li>
+<li>Futures and async testing</li>
+<li>Arranging test state</li>
+<li>Fast to run tests</li>
+</ul>
+<p>Let us see how a test suite looks like for Intent:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">StatefulTest</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">TestSuite</span> <span style="color:#66d9ef">with</span> <span style="color:#a6e22e">State</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Cart</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">with</span>
+  <span style="color:#e6db74">&#34;an empty cart&#34;</span> using <span style="color:#a6e22e">Cart</span><span style="color:#f92672">()</span> to <span style="color:#66d9ef">:</span>
+    <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">with</span> <span style="color:#66d9ef">two</span> <span style="color:#66d9ef">items</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">using</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">_</span><span style="color:#66d9ef">.add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">CartItem</span><span style="color:#f92672">(</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">beach-chair</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#f92672">,</span> <span style="color:#960050;background-color:#1e0010">2</span><span style="color:#f92672">)))</span> to <span style="color:#66d9ef">:</span>
+      <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">and</span> <span style="color:#66d9ef">another</span> <span style="color:#66d9ef">three</span> <span style="color:#66d9ef">items</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">using</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">_</span><span style="color:#66d9ef">.add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">CartItem</span><span style="color:#f92672">(</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">sunscreen</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#f92672">,</span> <span style="color:#960050;background-color:#1e0010">3</span><span style="color:#f92672">)))</span> to <span style="color:#66d9ef">:</span>
+        <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">contains</span> <span style="color:#960050;background-color:#1e0010">5</span> <span style="color:#66d9ef">items</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">in</span> <span style="color:#66d9ef">:</span>
+          cart <span style="color:#66d9ef">=&gt;</span> expect<span style="color:#f92672">(</span>cart<span style="color:#f92672">.</span>totalQuantity<span style="color:#f92672">).</span>toEqual<span style="color:#f92672">(</span><span style="color:#ae81ff">5</span><span style="color:#f92672">)</span>
+
+<span style="color:#66d9ef">case</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CartItem</span><span style="color:#f92672">(</span>artNo<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">String</span><span style="color:#f92672">,</span> qty<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Int</span><span style="color:#f92672">)</span>
+<span style="color:#66d9ef">case</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Cart</span><span style="color:#f92672">(</span>items<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Seq</span><span style="color:#f92672">[</span><span style="color:#66d9ef">CartItem</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">=</span> <span style="color:#a6e22e">Seq</span><span style="color:#f92672">.</span>empty<span style="color:#f92672">)</span> <span style="color:#66d9ef">with</span>
+  <span style="color:#66d9ef">def</span> add<span style="color:#f92672">(</span>item<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">CartItem</span><span style="color:#f92672">)</span><span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Cart</span> <span style="color:#f92672">=</span> copy<span style="color:#f92672">(</span>items <span style="color:#66d9ef">=</span> items <span style="color:#66d9ef">:</span><span style="color:#66d9ef">+</span> <span style="color:#66d9ef">item</span><span style="color:#f92672">)</span>
+  <span style="color:#66d9ef">def</span> totalQuantity <span style="color:#66d9ef">=</span> items<span style="color:#f92672">.</span>map<span style="color:#f92672">(</span><span style="color:#66d9ef">_</span><span style="color:#f92672">.</span>qty<span style="color:#f92672">).</span>sum
+</code></pre></div><h2 id="getting-started">Getting started</h2>
+<p>Intent is built using Scala 3 (called Dotty) and is an early adopter of both new and
+experimental features. So assume that you will need a recent version of Dotty to use
+Intent.</p>
+<p>We&rsquo;ll try to state minimum requried Dotty version in <code>README.md</code> (you can also find it
+in <code>build.sbt</code>)</p>
+<h3 id="setting-up-sbt">Setting up SBT</h3>
+<p>The first thing you need to do is to add Intent to your SBT project with the following
+lines to your <code>build.sbt</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">libraryDependencies <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;com.factor10&#34;</span> <span style="color:#f92672">%%</span> <span style="color:#e6db74">&#34;intent&#34;</span> <span style="color:#f92672">%</span> <span style="color:#e6db74">&#34;0.5.0&#34;</span><span style="color:#f92672">,</span>
+testFrameworks <span style="color:#f92672">+=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">TestFramework</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;intent.sbt.Framework&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div><h3 id="our-first-test">Our first test</h3>
+<p>Let&rsquo;s have a look at how tests should be written.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala"><span style="color:#66d9ef">import</span> intent.<span style="color:#f92672">{</span><span style="color:#a6e22e">Stateless</span><span style="color:#f92672">,</span> <span style="color:#a6e22e">TestSuite</span><span style="color:#f92672">}</span>
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ToEqualTest</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">TestSuite</span> <span style="color:#66d9ef">with</span> <span style="color:#a6e22e">Stateless</span> <span style="color:#66d9ef">with</span>
+  <span style="color:#e6db74">&#34;toEqual&#34;</span> <span style="color:#66d9ef">:</span>
+    <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">for</span> <span style="color:#66d9ef">Boolean</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">:</span>
+      <span style="color:#e6db74">&#34;true should equal true&#34;</span> in expect<span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">).</span>toEqual<span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span>
+      <span style="color:#e6db74">&#34;true should *not* equal false&#34;</span> in expect<span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">).</span>not<span style="color:#f92672">.</span>toEqual<span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">)</span>
+</code></pre></div><p>All tests must belong to a test suite. A test suite is a class that extends
+<code>TestSuite</code> and in this case <code>Stateless</code> to indicate the tests do not depend
+on any state setup.</p>
+<p><em>Stateful tests will be described shortly.</em></p>
+<p>Extending <code>TestSuite</code> is required, since that is how SBT discovers your tests,
+that is its only purpose.</p>
+<h4 id="running-tests">Running tests</h4>
+<p>Intent only supports SBT for running tests (at least for now) where you run tests
+using <code>sbt test</code> command.</p>
+<p>SBT will identify all your test suites that are stored under the default Scala
+test directory: <code>src/test</code></p>
+<p>The test results are printed to STDOUT via the SBT log:</p>
+<pre><code class="language-log" data-lang="log"> [info] [PASSED] ToEqualTest &gt;&gt; toEqual &gt;&gt; for Boolean &gt;&gt; true should *not* equal false (25 ms)
+ [info] [PASSED] ToEqualTest &gt;&gt; toEqual &gt;&gt; for Boolean &gt;&gt; true should equal true (30 ms)
+</code></pre><p><em>Currently there are no reports other than the SBT output.</em></p>
+<h2 id="why-a-new-test-framework">Why a new test framework?</h2>
+<p>The idea of a new test framework was born out of both the frustration and inspiration
+of using existing frameworks. Having written tens of thousands of tests using a variety
+of languages and frameworks there are a few challenges that keep surfacing.</p>
+<p><strong>Structure</strong> - when you have thousands of tests it is important that the ceremony to
+add a new test is as low as possible. If a test belongs to the same functionality as other
+tests, these tests should stay together.</p>
+<blockquote>
+<p>Intent&rsquo;s goal is that it should be possible to express a simple test in a single line
+and still have that line clearly express the intention of the test.</p>
+</blockquote>
+<p><strong>State</strong>, most tests are not stateless, instead they require setup code in order to get
+to the state of interest for a particular test. Setting up this state is often verbose,
+heavily imperative and worst of all repeated over and over again.</p>
+<blockquote>
+<p>Intent&rsquo;s goal is to make the dependency on state obvious for each test, and to allow
+state transformation in a hierarchical structure.</p>
+</blockquote>
+<p><strong>Expectation</strong>, when using fluent and nested matchers we feel that it increases the
+cognitive load when writing the tests. You need to know each and every one of the
+qualified behaviours until you get to the one actually performing the assert. Having too
+simple matchers on the other hand results in more test code, and therefore introduce more
+noise to achieve the same expectation.</p>
+<blockquote>
+<p>Intent&rsquo;s goal is to make assertions easy to find and use while also supporting the
+most common expectations.</p>
+</blockquote>
+<p>Intent is built, not to circumvent these challenges, but to put them front and center.
+As we believe these three attributes are the most significant for achieving good quality
+test they should be the foundation of a test framework.</p>
+<p>It deserves to be said that Intent pays homage to in particular two test frameworks that
+has inspired us greatly:</p>
+<ul>
+<li>Jasmine, supporting nested tests and the format of the expect / matchers</li>
+<li>ScalaTest, FreeSpec style and the use of test fixtures</li>
+</ul>
+<h2 id="contributing-to-intent">Contributing to Intent</h2>
+<p>The design of Intent and the structure of tests are still moving targets.
+Therefore, if you wish to contribute, please open an issue or comment on an
+existing issue so that we can have a discussion first.</p>
+<p>For any contribution, the following applies:</p>
+<ul>
+<li>Tests must be added, if relevant.</li>
+<li>Documentation must be added, if relevant.</li>
+<li>In the absence of style guidelines, please stick to the existing style.
+If unsure what the existing style is, ask! :)</li>
+</ul>
+
+            </div>
+        </section>
+    </article>
+</div>
+
+        <script src="https://factor10.github.com/intent/prism.js"></script>
+    </body>
+</html>
+
