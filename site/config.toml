@@ -1,0 +1,48 @@
+baseURL = "https://factor10.github.com/intent"
+languageCode = "en-us"
+title = "Intent"
+theme = "intent"
+
+[menu]
+
+  [[menu.main]]
+    identifier = "introduction"
+    name = "Introduction"
+    url = "/"
+    weight = 100
+
+  [[menu.main]]
+    parent = "introduction"
+    name = "Getting started"
+    url = "/"
+    weight = 100
+
+  [[menu.main]]
+    parent = "introduction"
+    name = "Why a new framework"
+    url = "/"
+    weight = 110
+
+  [[menu.main]]
+    parent = "introduction"
+    name = "Contributing"
+    url = "/"
+    weight = 120
+
+  [[menu.main]]
+    parent = "introduction"
+    name = "Find us at GitHub"
+    url = "https://github.com/factor10/intent"
+    weight = 120
+
+
+  [[menu.main]]
+    identifier = "types"
+    name = "Types of tests"
+    url = "/types-of-tests/"
+    weight = 200
+
+  [[menu.main]]
+    name = "Matchers"
+    url = "/matchers/"
+    weight = 300
