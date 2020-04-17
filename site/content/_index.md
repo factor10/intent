@@ -47,7 +47,7 @@ The first thing you need to do is to add Intent to your SBT project with the fol
 lines to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.factor10" %% "intent" % "0.5.0",
+libraryDependencies += "com.factor10" %% "intent" % "0.6.0",
 testFrameworks += new TestFramework("intent.sbt.Framework")
 ```
 

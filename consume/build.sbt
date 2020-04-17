@@ -1,4 +1,4 @@
-val dottyVersion = "0.22.0-RC1"
+val dottyVersion = "0.23.0-RC1"
 
 ThisBuild / name := "consume"
 ThisBuild / version := "0.0.1"
@@ -10,6 +10,6 @@ lazy val root = project
     name := "consume-intent",
     organization := "com.factor10",
     scalacOptions += "-Yindent-colons",
-    libraryDependencies += "com.factor10" %% "intent" % "0.5.0",
+    libraryDependencies += "com.factor10" %% "intent" % "0.6.0",
     testFrameworks += new TestFramework("intent.sbt.Framework")
   )
