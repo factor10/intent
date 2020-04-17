@@ -9,7 +9,7 @@ draft: false
 Intent supports stateful tests where the state is produced asynchronously. An example:
 
 ```scala
-class AsyncStatefulTest extends TestSuite with AsyncState[AsyncStatefulState] with
+class AsyncStatefulTest extends TestSuite with AsyncState[AsyncStatefulState]:
   "an empty cart" using Cart() to :
     "with two items" usingAsync (_.add(CartItem("beach-chair", 2))) to :
       "and another three items" usingAsync (_.add(CartItem("sunscreen", 3))) to :
@@ -18,10 +18,10 @@ class AsyncStatefulTest extends TestSuite with AsyncState[AsyncStatefulState] wi
 
 case class CartItem(artNo: String, qty: Int)
 
-case class PricedCartItem(item: CartItem, price: Double) with
+case class PricedCartItem(item: CartItem, price: Double):
   def totalPrice = item.qty * price
 
-case class Cart(items: Seq[PricedCartItem] = Seq.empty) with
+case class Cart(items: Seq[PricedCartItem] = Seq.empty):
   def lookupPrice(artNo: String): Future[Double] = ... // e.g. using a test fake here
 
   def add(item: CartItem): Future[Cart] =

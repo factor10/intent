@@ -2,7 +2,7 @@ package intent.matchers
 
 import intent.{Stateless, TestSuite}
 
-class ToHaveLengthTest extends TestSuite with Stateless with
+class ToHaveLengthTest extends TestSuite with Stateless:
   "toHaveLength":
     "empty list should have length 0" in expect(Seq()).toHaveLength(0)
 

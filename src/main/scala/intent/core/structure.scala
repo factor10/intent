@@ -5,7 +5,7 @@ import scala.concurrent.Future
 
 abstract class TestSuite {}
 
-trait Expectation with
+trait Expectation:
   private[intent] def evaluate(): Future[ExpectationResult]
 
 sealed trait ExpectationResult
@@ -35,6 +35,6 @@ case class TestIgnored() extends ExpectationResult
 
 case class TestCaseResult(duration: FiniteDuration, qualifiedName: Seq[String], expectationResult: ExpectationResult)
 
-trait ITestCase with
+trait ITestCase:
   def nameParts: Seq[String]
   def run(): Future[TestCaseResult]

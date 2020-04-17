@@ -3,7 +3,7 @@ package intent.matchers
 import intent.{Stateless, TestSuite}
 import intent.helpers.Meta
 
-class ToContainAllOfTest extends TestSuite with Stateless with Meta with
+class ToContainAllOfTest extends TestSuite with Stateless with Meta:
   "toContainAllOf":
     "for Map":
       "of String -> Int":

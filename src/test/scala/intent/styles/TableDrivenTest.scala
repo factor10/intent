@@ -2,7 +2,7 @@ package intent.styles
 
 import intent._
 
-class TableDrivenTest extends TestSuite with State[TableState] with
+class TableDrivenTest extends TestSuite with State[TableState]:
   "Table-driven test" usingTable (myTable) to:
     "uses table data" in:
       s =>
@@ -14,5 +14,5 @@ class TableDrivenTest extends TestSuite with State[TableState] with
     TableState(-1, -2, -3)
   )
 
-case class TableState(a: Int, b: Int, sum: Int) with
+case class TableState(a: Int, b: Int, sum: Int):
   override def toString = s"$a + $b should be $sum"

@@ -12,8 +12,7 @@ class ToCompleteWithExpectation[T](expect: Expect[Future[T]], expected: T)(
     fmt: Formatter[T],
     errFmt: Formatter[Throwable],
     ec: ExecutionContext,
-    timeout: TestTimeout
-) extends Expectation with
+    timeout: TestTimeout) extends Expectation:
 
   def evaluate(): Future[ExpectationResult] =
     val timeoutFuture = DelayedFuture(timeout.timeout):

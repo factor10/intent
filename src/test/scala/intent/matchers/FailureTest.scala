@@ -7,7 +7,7 @@ import intent.core.TestTimeout
 import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._
 
-class FailureTest extends TestSuite with Stateless with Meta with
+class FailureTest extends TestSuite with Stateless with Meta:
   "a toEqual failure":
     "is described properly" in:
       runExpectation(expect(1).toEqual(2), "Expected 2 but found 1")
@@ -35,7 +35,7 @@ class FailureTest extends TestSuite with Stateless with Meta with
         "Expected Array(1, 2) to equal List(1)")
 
     "with custom formatting" in:
-      given customIntFmt: core.Formatter[Int]
+      given customIntFmt as core.Formatter[Int]:
         def format(a: Int): String = a.toString.replace("4", "forty-")
       runExpectation(expect(42).toEqual(43),
         "Expected forty-3 but found forty-2")
@@ -70,7 +70,7 @@ class FailureTest extends TestSuite with Stateless with Meta with
 
   "Future timeout":
     "should abort a long-running test when whenComplete is used" in:
-      given customTimeout: TestTimeout = TestTimeout(50.millis)
+      given customTimeout as TestTimeout = TestTimeout(50.millis)
       val p = Promise[Int]()
       runExpectation({
         whenComplete(p.future):
@@ -78,7 +78,7 @@ class FailureTest extends TestSuite with Stateless with Meta with
       }, "Test timed out")
 
     "should abort a long-running test when toCompleteWith is used" in:
-      given customTimeout: TestTimeout = TestTimeout(50.millis)
+      given customTimeout as TestTimeout = TestTimeout(50.millis)
       val p = Promise[Int]()
       runExpectation({
         expect(p.future).toCompleteWith(42)

@@ -3,7 +3,7 @@ package intent.matchers
 import intent.{Stateless, TestSuite}
 import intent.helpers.Meta
 
-class ToThrowTest extends TestSuite with Stateless with Meta with
+class ToThrowTest extends TestSuite with Stateless with Meta:
   "toThrow":
     "with only exception type":
       "should find match" in expect(throwIllegalArg).toThrow[IllegalArgumentException]()

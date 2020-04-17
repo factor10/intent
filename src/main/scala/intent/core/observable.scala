@@ -5,5 +5,5 @@ package intent.core
   * Originally part of a simple Observable pattern implementation, but this
   * is all we need right now.
   */
-trait Subscriber[T] with
+trait Subscriber[T]:
   def onNext(event: T): Unit

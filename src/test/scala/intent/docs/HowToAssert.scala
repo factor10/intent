@@ -10,7 +10,7 @@ import intent.{TestSuite, Stateless}
 // Unfortunately are these not referenced from any documentation tool, but have
 // to be copy pasted to documentation for now.
 
-class HowToAssert extends TestSuite with Stateless
+class HowToAssert extends TestSuite with Stateless:
   "How to assert":
     "a boolean":
       "using toEqual" in:
@@ -26,7 +26,7 @@ class HowToAssert extends TestSuite with Stateless
         expect(42).toEqual(42)
 
       "using custom precision" in:
-        given customPrecision: intent.core.FloatingPointPrecision[Double]
+        given customPrecision as intent.core.FloatingPointPrecision[Double]:
           def numberOfDecimals: Int = 2
         expect(1.123456789d).toEqual(1.12d)
 

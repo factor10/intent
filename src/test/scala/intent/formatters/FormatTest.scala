@@ -3,7 +3,7 @@ package intent.formatters
 import intent._
 import scala.util.{Success, Failure, Try}
 
-class FormatTest extends TestSuite with Stateless with
+class FormatTest extends TestSuite with Stateless:
   "Formatting":
     "supports Long" in expect(format(42L)).toEqual("42")
     "surrounds Char in single quotes" in expect(format('a')).toEqual("'a'")

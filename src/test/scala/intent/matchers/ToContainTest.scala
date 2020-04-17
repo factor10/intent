@@ -3,7 +3,7 @@ package intent.matchers
 import intent.{Stateless, TestSuite}
 import intent.helpers.Meta
 
-class ToContainTest extends TestSuite with Stateless with Meta with
+class ToContainTest extends TestSuite with Stateless with Meta:
   "toContain":
     "a list of Int":
       "should contain element" in expect(Seq(1, 2, 3)).toContain(2)
@@ -30,7 +30,7 @@ class ToContainTest extends TestSuite with Stateless with Meta with
         expect(list).not.toContain(-1)
 
       "can be contains-checked, but will not detect anything beyond the limit" in:
-        given cutoff: intent.core.ListCutoff = intent.core.ListCutoff(5)
+        given cutoff as intent.core.ListCutoff = intent.core.ListCutoff(5)
         val list = LazyList.from(1)
         expect(list).not.toContain(10)
 

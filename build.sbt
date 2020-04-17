@@ -1,4 +1,4 @@
-val dottyVersion = "0.22.0-RC1"
+val dottyVersion = "0.23.0-RC1"
 
 ThisBuild / name := "intent"
 ThisBuild / version := "0.5.0"

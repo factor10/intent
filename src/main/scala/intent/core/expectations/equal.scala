@@ -63,9 +63,7 @@ private def evalToEqual[T](actual: Iterable[T],
   else expect.pass
   Future.successful(r)
 
-class EqualExpectation[T](expect: Expect[T], expected: T)(
-  using eqq: Eq[T], fmt: Formatter[T]
-) extends Expectation with
+class EqualExpectation[T](expect: Expect[T], expected: T)(using eqq: Eq[T], fmt: Formatter[T]) extends Expectation:
 
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()
@@ -85,18 +83,14 @@ class EqualExpectation[T](expect: Expect[T], expected: T)(
     else expect.pass
     Future.successful(r)
 
-class IterableEqualExpectation[T](expect: Expect[Iterable[T]], expected: Iterable[T])(
-  using eqq: Eq[T], fmt: Formatter[T]
-) extends Expectation with
+class IterableEqualExpectation[T](expect: Expect[Iterable[T]], expected: Iterable[T])(using eqq: Eq[T], fmt: Formatter[T]) extends Expectation:
 
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()
     evalToEqual(actual, expected, expect, listTypeName(actual), listTypeName(expected))
 
 
-class ArrayEqualExpectation[T](expect: Expect[Array[T]], expected: Iterable[T])(
-  using eqq: Eq[T], fmt: Formatter[T]
-) extends Expectation with
+class ArrayEqualExpectation[T](expect: Expect[Array[T]], expected: Iterable[T])(using eqq: Eq[T], fmt: Formatter[T]) extends Expectation:
 
   def evaluate(): Future[ExpectationResult] =
     val actual = expect.evaluate()

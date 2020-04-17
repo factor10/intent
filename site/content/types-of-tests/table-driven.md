@@ -12,7 +12,7 @@ test many different variations of some feature with as little boilerplate as pos
 For example, consider the following test suite that tests a [Fibonacci](https://en.wikipedia.org/wiki/Fibonacci_number) function:
 
 ```scala
-class FibonacciTest extends TestSuite with State[TableState] with
+class FibonacciTest extends TestSuite with State[TableState]:
   "The Fibonacci function" usingTable (examples) to :
     "works" in :
       example =>
@@ -28,7 +28,7 @@ class FibonacciTest extends TestSuite with State[TableState] with
 
   def F(n: Int): Int = ... // implemented elsewhere
 
-case class FibonacciExample(n: Int, expected: Int) with
+case class FibonacciExample(n: Int, expected: Int):
   override def toString = s"Fn($n) = $expected"
 ```
 
