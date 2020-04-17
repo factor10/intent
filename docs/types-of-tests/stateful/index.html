@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns="//www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+        <title>Stateful tests &middot; Intent</title>
+        <link rel="stylesheet" type="text/css" href="https://factor10.github.com/intent/intent.css" />
+        <link href="https://factor10.github.com/intent/prism.intent.css" rel="stylesheet">
+    </head>
+    <body>
+
+<div class="intent-page">
+    <div class="intent-page-toc">
+    <header>
+        <div class="intent-logo">
+            <a href="https://factor10.github.com/intent">
+                <img src="https://factor10.github.com/intent/intent-logo.png">
+                <h1>Intent</h1>
+            </a>
+            <a href="https://index.scala-lang.org/factor10/intent/intent/0.5.0" class="intent-version">0.5.0</a>
+        </div>
+    </header>
+
+    <div class="intent-page-toc-chapter">
+        
+        
+            
+                <h4>Introduction</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="#getting-started">Getting started</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#why-a-new-test-framework">Why a new framework</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#contributing-to-intent">Contributing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https://github.com/factor10/intent">Find us at GitHub</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Types of tests</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateless/">Stateless</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateful/">Stateful</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/asynchronous/">Asynchronous</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/table-driven/">Table-driven</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Matchers</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#toequal">.toEqual</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tohavelength">.toHaveLength</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontain">.toContain</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontainallof">.toContainAllOf</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocompletewith">.toCompleteWith</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tomatch">.toMatch</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tothrow">.toThrow</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Customization</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#manually-fail-or-succeed">Manually fail or succeed</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#asyncness">Asyncness</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#equality">Equality</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#floating-point-precision">Floating-point precision</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#formatting">Formatting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#timeout">Timeout</a>
+                        </li>
+                    
+                </ul>
+            
+        
+    </div>
+</div>
+
+
+    <article class="intent-page-article">
+        <section class="intent-page-section">
+            <div class="intent-page-section-content">
+                <h1 id="stateful-tests">Stateful tests</h1>
+<p>Not all tests can be implemented without setting the scene, still many test frameworks only focus
+on a expressive way to assert expectations. For <code>Intent</code> state management is front and center.</p>
+<p>Lets go straight to the code:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">StatefulTest</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">TestSuite</span> <span style="color:#66d9ef">with</span> <span style="color:#a6e22e">State</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Cart</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">with</span>
+  <span style="color:#e6db74">&#34;an empty cart&#34;</span> using <span style="color:#a6e22e">Cart</span><span style="color:#f92672">()</span> to <span style="color:#66d9ef">:</span>
+    <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">with</span> <span style="color:#66d9ef">two</span> <span style="color:#66d9ef">items</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">using</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">_</span><span style="color:#66d9ef">.add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">CartItem</span><span style="color:#f92672">(</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">beach-chair</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#f92672">,</span> <span style="color:#960050;background-color:#1e0010">2</span><span style="color:#f92672">)))</span> to <span style="color:#66d9ef">:</span>
+      <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">and</span> <span style="color:#66d9ef">another</span> <span style="color:#66d9ef">three</span> <span style="color:#66d9ef">items</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">using</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">_</span><span style="color:#66d9ef">.add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">CartItem</span><span style="color:#f92672">(</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">sunscreen</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#f92672">,</span> <span style="color:#960050;background-color:#1e0010">3</span><span style="color:#f92672">)))</span> to <span style="color:#66d9ef">:</span>
+        <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">contains</span> <span style="color:#960050;background-color:#1e0010">5</span> <span style="color:#66d9ef">items</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">in</span> <span style="color:#66d9ef">:</span>
+          cart <span style="color:#66d9ef">=&gt;</span> expect<span style="color:#f92672">(</span>cart<span style="color:#f92672">.</span>totalQuantity<span style="color:#f92672">).</span>toEqual<span style="color:#f92672">(</span><span style="color:#ae81ff">5</span><span style="color:#f92672">)</span>
+
+<span style="color:#66d9ef">case</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CartItem</span><span style="color:#f92672">(</span>artNo<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">String</span><span style="color:#f92672">,</span> qty<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Int</span><span style="color:#f92672">)</span>
+<span style="color:#66d9ef">case</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Cart</span><span style="color:#f92672">(</span>items<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Seq</span><span style="color:#f92672">[</span><span style="color:#66d9ef">CartItem</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">=</span> <span style="color:#a6e22e">Seq</span><span style="color:#f92672">.</span>empty<span style="color:#f92672">)</span> <span style="color:#66d9ef">with</span>
+  <span style="color:#66d9ef">def</span> add<span style="color:#f92672">(</span>item<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">CartItem</span><span style="color:#f92672">)</span><span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Cart</span> <span style="color:#f92672">=</span> copy<span style="color:#f92672">(</span>items <span style="color:#66d9ef">=</span> items <span style="color:#66d9ef">:</span><span style="color:#66d9ef">+</span> <span style="color:#66d9ef">item</span><span style="color:#f92672">)</span>
+  <span style="color:#66d9ef">def</span> totalQuantity <span style="color:#66d9ef">=</span> items<span style="color:#f92672">.</span>map<span style="color:#f92672">(</span><span style="color:#66d9ef">_</span><span style="color:#f92672">.</span>qty<span style="color:#f92672">).</span>sum
+</code></pre></div><p>A test suite that needs state must implement <code>State[T]</code>, where <code>T</code> is the type carrying
+the state you need. There are <em>no requirements</em> on the type <code>T</code> or its signature, you are free
+to use whatever type you want. We prefer to use <code>case class</code> as they are immutable, but any
+type will do.</p>
+<p>The <em>root state</em> gets created in the <code>&quot;root context&quot;</code> and is passed downstream to any child context.
+Each child context has the possiblity to <em>transform</em> the state before it is passed to the actual
+test as a parameter.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala"><span style="color:#e6db74">&#34;check the stuff&#34;</span> in <span style="color:#66d9ef">:</span>
+  <span style="color:#66d9ef">state</span> <span style="color:#f92672">=&gt;</span> expect<span style="color:#f92672">(</span>state<span style="color:#f92672">.</span>stuff<span style="color:#f92672">).</span>toHaveLength<span style="color:#f92672">(</span><span style="color:#ae81ff">2</span><span style="color:#f92672">)</span>
+</code></pre></div><p>A suite must <em>either</em> be stateless or stateful. There is no support in writing a test that does not
+take a state when you derive from <code>State</code> and vice versa. While not the same, it resembles how Scala
+separate a <code>class</code> and an <code>object</code>.</p>
+<p>There are a few conventions or recommendations on how to use state:</p>
+<ul>
+<li>Put the state implementation below the test</li>
+<li>Prefer to call methods on the state object over doing it in the test itself</li>
+<li>Keep state focused and create a new suite ands state class when needed (cost is low)</li>
+</ul>
+
+            </div>
+        </section>
+    </article>
+</div>
+
+        <script src="https://factor10.github.com/intent/prism.js"></script>
+    </body>
+</html>
+

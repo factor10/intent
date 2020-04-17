@@ -1,0 +1,27 @@
+<div class="intent-page-toc">
+    <header>
+        <div class="intent-logo">
+            <a href="{{ .Site.BaseURL }}">
+                <img src="{{ .Site.BaseURL }}/intent-logo.png">
+                <h1>Intent</h1>
+            </a>
+            <a href="https://index.scala-lang.org/factor10/intent/intent/{{ .Site.Params.version }}" class="intent-version">{{ .Site.Params.version }}</a>
+        </div>
+    </header>
+
+    <div class="intent-page-toc-chapter">
+        {{ $currentPage := . }}
+        {{ range .Site.Menus.main }}
+            {{ if .HasChildren }}
+                <h4>{{ .Name }}</h4>
+                <ul>
+                    {{ range .Children }}
+                        <li class="{{ if $currentPage.IsMenuCurrent "main" . }}active{{ end }}">
+                            <a href="{{ .URL }}">{{ .Name }}</a>
+                        </li>
+                    {{ end }}
+                </ul>
+            {{ end }}
+        {{ end }}
+    </div>
+</div>

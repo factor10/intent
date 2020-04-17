@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns="//www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+        <title>Customization &middot; Intent</title>
+        <link rel="stylesheet" type="text/css" href="https://factor10.github.com/intent/intent.css" />
+        <link href="https://factor10.github.com/intent/prism.intent.css" rel="stylesheet">
+    </head>
+    <body>
+
+<div class="intent-page">
+    <div class="intent-page-toc">
+    <header>
+        <div class="intent-logo">
+            <a href="https://factor10.github.com/intent">
+                <img src="https://factor10.github.com/intent/intent-logo.png">
+                <h1>Intent</h1>
+            </a>
+            <a href="https://index.scala-lang.org/factor10/intent/intent/0.5.0" class="intent-version">0.5.0</a>
+        </div>
+    </header>
+
+    <div class="intent-page-toc-chapter">
+        
+        
+            
+                <h4>Introduction</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="#getting-started">Getting started</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#why-a-new-test-framework">Why a new framework</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#contributing-to-intent">Contributing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https://github.com/factor10/intent">Find us at GitHub</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Types of tests</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateless/">Stateless</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateful/">Stateful</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/asynchronous/">Asynchronous</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/table-driven/">Table-driven</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Matchers</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#toequal">.toEqual</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tohavelength">.toHaveLength</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontain">.toContain</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontainallof">.toContainAllOf</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocompletewith">.toCompleteWith</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tomatch">.toMatch</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tothrow">.toThrow</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Customization</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#manually-fail-or-succeed">Manually fail or succeed</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#asyncness">Asyncness</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#equality">Equality</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#floating-point-precision">Floating-point precision</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#formatting">Formatting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#timeout">Timeout</a>
+                        </li>
+                    
+                </ul>
+            
+        
+    </div>
+</div>
+
+
+    <article class="intent-page-article">
+        <section class="intent-page-section">
+            <div class="intent-page-section-content">
+                <h2 id="manually-fail-or-succeed-a-test">Manually fail or succeed a test</h2>
+<p>Two convenience methods exists where you can manually provide the the test expectation:</p>
+<ul>
+<li><code>fail(&quot;Reason for failure...&quot;)</code> to fail a test</li>
+<li><code>success()</code> to pass a test</li>
+</ul>
+<h2 id="asyncness">Asyncness</h2>
+<p>If you need to await the result of a <code>Future</code> before using a matcher, you can use
+<code>whenComplete</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">whenComplete<span style="color:#f92672">(</span><span style="color:#a6e22e">Future</span><span style="color:#f92672">.</span>successful<span style="color:#f92672">(</span><span style="color:#a6e22e">Seq</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;foo&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;bar&#34;</span><span style="color:#f92672">)))</span><span style="color:#66d9ef">:</span>
+  <span style="color:#66d9ef">actual</span> <span style="color:#f92672">=&gt;</span> expect<span style="color:#f92672">(</span>actual<span style="color:#f92672">).</span>toContain<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;foo&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div><p>This allows for more complex testing compared to when using <code>toCompleteWith</code>.</p>
+<blockquote>
+<p><code>whenComplete</code> can be used regardless of the suite type, i.e. it doesn&rsquo;t need to
+be in an <code>AsyncState</code> suite. The async part of <code>AsyncState</code> allows for building the
+test state asynchronously, but has nothing to do with the expectations used.</p>
+</blockquote>
+<h2 id="equality">Equality</h2>
+<p>It is possible to define custom equality for a type. Consider the following example
+from Intent&rsquo;s own test suite:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">given customIntEq as intent<span style="color:#f92672">.</span>core<span style="color:#f92672">.</span><span style="color:#a6e22e">Eq</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Int</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">:</span>
+  <span style="color:#66d9ef">def</span> <span style="color:#66d9ef">areEqual</span><span style="color:#f92672">(</span><span style="color:#66d9ef">a:</span> <span style="color:#66d9ef">Int</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">b:</span> <span style="color:#66d9ef">Int</span><span style="color:#f92672">)</span> <span style="color:#66d9ef">=</span> <span style="color:#a6e22e">Math</span><span style="color:#f92672">.</span>abs<span style="color:#f92672">(</span>a <span style="color:#f92672">-</span> b<span style="color:#f92672">)</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>
+expect<span style="color:#f92672">(</span><span style="color:#a6e22e">Some</span><span style="color:#f92672">(</span><span style="color:#ae81ff">42</span><span style="color:#f92672">)).</span>toEqual<span style="color:#f92672">(</span><span style="color:#a6e22e">Some</span><span style="color:#f92672">(</span><span style="color:#ae81ff">43</span><span style="color:#f92672">))</span>
+</code></pre></div><p>In this case, a custom equality definition for <code>Int</code> says that two values
+are equal if they diff by 1. This causes the <code>toEqual</code> matcher to succeed.</p>
+<h2 id="floating-point-precision">Floating-point precision</h2>
+<p>When floating-point values (<code>Float</code> and <code>Double</code>) are compared, Intent compares up
+to a certain precision, defined as the number of decimals that must match.</p>
+<p>Here&rsquo;s an example where a custom precision is used:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">given customPrecision as intent<span style="color:#f92672">.</span>core<span style="color:#f92672">.</span><span style="color:#a6e22e">FloatingPointPrecision</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Float</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">:</span>
+  <span style="color:#66d9ef">def</span> <span style="color:#66d9ef">numberOfDecimals:</span> <span style="color:#66d9ef">Int</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+expect<span style="color:#f92672">(</span><span style="color:#ae81ff">1.234f</span><span style="color:#f92672">).</span>toEqual<span style="color:#f92672">(</span><span style="color:#ae81ff">1.235f</span><span style="color:#f92672">)</span>
+</code></pre></div><p>The test passes because we say that two <code>Float</code>s are equal to the precision of
+2 decimals. In other words, the equality check actually compares 1.23 and 1.23.</p>
+<p>The default precision is 12 decimals for <code>Double</code> and 6 decimals for <code>Float</code>.</p>
+<h2 id="formatting">Formatting</h2>
+<p>It is possible to customize how a value is printed in a test failure message.
+Here&rsquo;s an example from Intent&rsquo;s test suite that shows how:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">given customIntFmt as core<span style="color:#f92672">.</span><span style="color:#a6e22e">Formatter</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Int</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">:</span>
+  <span style="color:#66d9ef">def</span> <span style="color:#66d9ef">format</span><span style="color:#f92672">(</span><span style="color:#66d9ef">a:</span> <span style="color:#66d9ef">Int</span><span style="color:#f92672">)</span><span style="color:#66d9ef">:</span> <span style="color:#66d9ef">String</span> <span style="color:#f92672">=</span> a<span style="color:#f92672">.</span>toString<span style="color:#f92672">.</span>replace<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;4&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;forty-&#34;</span><span style="color:#f92672">)</span>
+runExpectation<span style="color:#f92672">(</span>expect<span style="color:#f92672">(</span><span style="color:#ae81ff">42</span><span style="color:#f92672">).</span>toEqual<span style="color:#f92672">(</span><span style="color:#ae81ff">43</span><span style="color:#f92672">),</span>
+  <span style="color:#e6db74">&#34;Expected forty-3 but found forty-2&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div><h2 id="timeout">Timeout</h2>
+<p>The default timeout for <code>whenComplete</code> and <code>toCompleteWith</code> is 5 seconds.
+It is possible to use a custom timeout:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala">given customTimeout as <span style="color:#a6e22e">TestTimeout</span> <span style="color:#66d9ef">=</span> <span style="color:#a6e22e">TestTimeout</span><span style="color:#f92672">(</span><span style="color:#ae81ff">500.</span>millis<span style="color:#f92672">)</span>
+expect<span style="color:#f92672">(</span>someFuture<span style="color:#f92672">).</span>toCompleteWith<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;fast&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div>
+            </div>
+        </section>
+    </article>
+</div>
+
+        <script src="https://factor10.github.com/intent/prism.js"></script>
+    </body>
+</html>
+

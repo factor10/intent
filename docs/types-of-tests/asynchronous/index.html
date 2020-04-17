@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns="//www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+        <title>Asynchronous tests &middot; Intent</title>
+        <link rel="stylesheet" type="text/css" href="https://factor10.github.com/intent/intent.css" />
+        <link href="https://factor10.github.com/intent/prism.intent.css" rel="stylesheet">
+    </head>
+    <body>
+
+<div class="intent-page">
+    <div class="intent-page-toc">
+    <header>
+        <div class="intent-logo">
+            <a href="https://factor10.github.com/intent">
+                <img src="https://factor10.github.com/intent/intent-logo.png">
+                <h1>Intent</h1>
+            </a>
+            <a href="https://index.scala-lang.org/factor10/intent/intent/0.5.0" class="intent-version">0.5.0</a>
+        </div>
+    </header>
+
+    <div class="intent-page-toc-chapter">
+        
+        
+            
+                <h4>Introduction</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="#getting-started">Getting started</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#why-a-new-test-framework">Why a new framework</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="#contributing-to-intent">Contributing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https://github.com/factor10/intent">Find us at GitHub</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Types of tests</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateless/">Stateless</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/stateful/">Stateful</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/asynchronous/">Asynchronous</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/types-of-tests/table-driven/">Table-driven</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Matchers</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#toequal">.toEqual</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tohavelength">.toHaveLength</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontain">.toContain</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocontainallof">.toContainAllOf</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tocompletewith">.toCompleteWith</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tomatch">.toMatch</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/matchers/#tothrow">.toThrow</a>
+                        </li>
+                    
+                </ul>
+            
+        
+            
+                <h4>Customization</h4>
+                <ul>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#manually-fail-or-succeed">Manually fail or succeed</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#asyncness">Asyncness</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#equality">Equality</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#floating-point-precision">Floating-point precision</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#formatting">Formatting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="/intent/customization/#timeout">Timeout</a>
+                        </li>
+                    
+                </ul>
+            
+        
+    </div>
+</div>
+
+
+    <article class="intent-page-article">
+        <section class="intent-page-section">
+            <div class="intent-page-section-content">
+                <h1 id="asynchronous-tests">Asynchronous tests</h1>
+<p>Intent supports stateful tests where the state is produced asynchronously. An example:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AsyncStatefulTest</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">TestSuite</span> <span style="color:#66d9ef">with</span> <span style="color:#a6e22e">AsyncState</span><span style="color:#f92672">[</span><span style="color:#66d9ef">AsyncStatefulState</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">with</span>
+  <span style="color:#e6db74">&#34;an empty cart&#34;</span> using <span style="color:#a6e22e">Cart</span><span style="color:#f92672">()</span> to <span style="color:#66d9ef">:</span>
+    <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">with</span> <span style="color:#66d9ef">two</span> <span style="color:#66d9ef">items</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">usingAsync</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">_</span><span style="color:#66d9ef">.add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">CartItem</span><span style="color:#f92672">(</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">beach-chair</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#f92672">,</span> <span style="color:#960050;background-color:#1e0010">2</span><span style="color:#f92672">)))</span> to <span style="color:#66d9ef">:</span>
+      <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">and</span> <span style="color:#66d9ef">another</span> <span style="color:#66d9ef">three</span> <span style="color:#66d9ef">items</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">usingAsync</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">_</span><span style="color:#66d9ef">.add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">CartItem</span><span style="color:#f92672">(</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">sunscreen</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#f92672">,</span> <span style="color:#960050;background-color:#1e0010">3</span><span style="color:#f92672">)))</span> to <span style="color:#66d9ef">:</span>
+        <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">calculates</span> <span style="color:#66d9ef">total</span> <span style="color:#66d9ef">price</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#66d9ef">in</span> <span style="color:#66d9ef">:</span>
+          cart <span style="color:#66d9ef">=&gt;</span> expect<span style="color:#f92672">(</span>cart<span style="color:#f92672">.</span>totalPrice<span style="color:#f92672">).</span>toEqual<span style="color:#f92672">(</span><span style="color:#ae81ff">275.0d</span><span style="color:#f92672">)</span>
+
+<span style="color:#66d9ef">case</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CartItem</span><span style="color:#f92672">(</span>artNo<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">String</span><span style="color:#f92672">,</span> qty<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Int</span><span style="color:#f92672">)</span>
+
+<span style="color:#66d9ef">case</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PricedCartItem</span><span style="color:#f92672">(</span>item<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">CartItem</span><span style="color:#f92672">,</span> price<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Double</span><span style="color:#f92672">)</span> <span style="color:#66d9ef">with</span>
+  <span style="color:#66d9ef">def</span> totalPrice <span style="color:#66d9ef">=</span> item<span style="color:#f92672">.</span>qty <span style="color:#f92672">*</span> price
+
+<span style="color:#66d9ef">case</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Cart</span><span style="color:#f92672">(</span>items<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Seq</span><span style="color:#f92672">[</span><span style="color:#66d9ef">PricedCartItem</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">=</span> <span style="color:#a6e22e">Seq</span><span style="color:#f92672">.</span>empty<span style="color:#f92672">)</span> <span style="color:#66d9ef">with</span>
+  <span style="color:#66d9ef">def</span> lookupPrice<span style="color:#f92672">(</span>artNo<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">String</span><span style="color:#f92672">)</span><span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Future</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Double</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">=</span> <span style="color:#f92672">...</span> <span style="color:#75715e">// e.g. using a test fake here
+</span><span style="color:#75715e"></span>
+  <span style="color:#66d9ef">def</span> add<span style="color:#f92672">(</span>item<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">CartItem</span><span style="color:#f92672">)</span><span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Future</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Cart</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">=</span>
+    lookupPrice<span style="color:#f92672">(</span>item<span style="color:#f92672">.</span>artNo<span style="color:#f92672">).</span>map<span style="color:#66d9ef">:</span>
+      <span style="color:#66d9ef">price</span> <span style="color:#f92672">=&gt;</span>
+        pricedItem <span style="color:#66d9ef">=</span> <span style="color:#a6e22e">PricedCartItem</span><span style="color:#f92672">(</span>item<span style="color:#f92672">,</span> price<span style="color:#f92672">)</span>
+        copy<span style="color:#f92672">(</span>items <span style="color:#66d9ef">=</span> items <span style="color:#66d9ef">:</span><span style="color:#66d9ef">+</span> <span style="color:#66d9ef">pricedItem</span><span style="color:#f92672">)</span>
+
+  <span style="color:#66d9ef">def</span> totalPrice <span style="color:#66d9ef">=</span> items<span style="color:#f92672">.</span>map<span style="color:#f92672">(</span><span style="color:#66d9ef">_</span><span style="color:#f92672">.</span>totalPrice<span style="color:#f92672">).</span>sum
+</code></pre></div><p>Some notes here:</p>
+<ul>
+<li>The initial state (<code>Cart()</code>) is not produced asynchronously (but could have been).</li>
+<li>Asynchronous state production uses <code>usingAsync</code>.</li>
+<li>The test itself is not asynchronous.</li>
+</ul>
+<p>The last point is worth expanding on. A test in an async-stateful test suite can be synchronous.
+Similarly, a test in a regular (non-async) stateful test suite can be asynchronous. Whether to choose
+<code>State</code> or <code>AsyncState</code> for a test suite depends on how the <em>state</em> is produced.</p>
+
+            </div>
+        </section>
+    </article>
+</div>
+
+        <script src="https://factor10.github.com/intent/prism.js"></script>
+    </body>
+</html>
+

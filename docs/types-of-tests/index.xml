@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Types-of-tests on Intent</title>
+    <link>https://factor10.github.com/intent/types-of-tests/</link>
+    <description>Recent content in Types-of-tests on Intent</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 09 Apr 2020 13:44:39 +0200</lastBuildDate>
+    
+	<atom:link href="https://factor10.github.com/intent/types-of-tests/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Asynchronous tests</title>
+      <link>https://factor10.github.com/intent/types-of-tests/asynchronous/</link>
+      <pubDate>Thu, 09 Apr 2020 13:44:39 +0200</pubDate>
+      
+      <guid>https://factor10.github.com/intent/types-of-tests/asynchronous/</guid>
+      <description>Asynchronous tests Intent supports stateful tests where the state is produced asynchronously. An example:
+class AsyncStatefulTest extends TestSuite with AsyncState[AsyncStatefulState] with &amp;#34;an empty cart&amp;#34; using Cart() to : &amp;#34;with two items&amp;#34; usingAsync (_.add(CartItem(&amp;#34;beach-chair&amp;#34;, 2))) to : &amp;#34;and another three items&amp;#34; usingAsync (_.add(CartItem(&amp;#34;sunscreen&amp;#34;, 3))) to : &amp;#34;calculates total price&amp;#34; in : cart =&amp;gt; expect(cart.totalPrice).toEqual(275.0d) case class CartItem(artNo: String, qty: Int) case class PricedCartItem(item: CartItem, price: Double) with def totalPrice = item.qty * price case class Cart(items: Seq[PricedCartItem] = Seq.</description>
+    </item>
+    
+    <item>
+      <title>Stateful tests</title>
+      <link>https://factor10.github.com/intent/types-of-tests/stateful/</link>
+      <pubDate>Thu, 09 Apr 2020 13:44:39 +0200</pubDate>
+      
+      <guid>https://factor10.github.com/intent/types-of-tests/stateful/</guid>
+      <description>Stateful tests Not all tests can be implemented without setting the scene, still many test frameworks only focus on a expressive way to assert expectations. For Intent state management is front and center.
+Lets go straight to the code:
+class StatefulTest extends TestSuite with State[Cart] with &amp;#34;an empty cart&amp;#34; using Cart() to : &amp;#34;with two items&amp;#34; using (_.add(CartItem(&amp;#34;beach-chair&amp;#34;, 2))) to : &amp;#34;and another three items&amp;#34; using (_.add(CartItem(&amp;#34;sunscreen&amp;#34;, 3))) to : &amp;#34;contains 5 items&amp;#34; in : cart =&amp;gt; expect(cart.</description>
+    </item>
+    
+    <item>
+      <title>Table-driven tests</title>
+      <link>https://factor10.github.com/intent/types-of-tests/stateless/</link>
+      <pubDate>Thu, 09 Apr 2020 13:44:39 +0200</pubDate>
+      
+      <guid>https://factor10.github.com/intent/types-of-tests/stateless/</guid>
+      <description>Table-driven tests A stateless test suite extends the Statesless suite. Contexts in this style serve no other purpose than grouping tests into logical units.
+Consider the following example:
+import intent.{Stateless, TestSuite} class CalculatorTest extends TestSuite with Stateless with &amp;#34;A calculator&amp;#34; : &amp;#34;can add&amp;#34; : &amp;#34;plain numbers&amp;#34; in expect(Calculator().add(2, 4)).toEqual(6) &amp;#34;complex numbers&amp;#34; in: val a = Complex(2, 3) val b = Complex(3, 4) expect(Calculator().add(a, b)).toEqual(Complex(5, 7)) &amp;#34;can multiply&amp;#34; : &amp;#34;plain numbers&amp;#34; in expect(Calculator().</description>
+    </item>
+    
+    <item>
+      <title>Table-driven tests</title>
+      <link>https://factor10.github.com/intent/types-of-tests/table-driven/</link>
+      <pubDate>Thu, 09 Apr 2020 13:44:39 +0200</pubDate>
+      
+      <guid>https://factor10.github.com/intent/types-of-tests/table-driven/</guid>
+      <description>Table-driven tests Table-driven tests allow for a declarative approach to writing tests, and is useful to test many different variations of some feature with as little boilerplate as possible.
+For example, consider the following test suite that tests a Fibonacci function:
+class FibonacciTest extends TestSuite with State[TableState] with &amp;#34;The Fibonacci function&amp;#34; usingTable (examples) to : &amp;#34;works&amp;#34; in : example =&amp;gt; expect(F(example.n)).toEqual(example.expected) def examples = Seq( FibonacciExample(0, 0), FibonacciExample(1, 1), FibonacciExample(2, 1), FibonacciExample(3, 2), FibonacciExample(12, 144) ) def F(n: Int): Int = .</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://factor10.github.com/intent/types-of-tests/asynchronous/</loc>
+    <lastmod>2020-04-09T13:44:39+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://factor10.github.com/intent/customization/</loc>
+    <lastmod>2020-04-09T13:44:39+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://factor10.github.com/intent/</loc>
+    <lastmod>2020-04-09T13:44:39+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://factor10.github.com/intent/matchers/</loc>
+    <lastmod>2020-04-09T13:44:39+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://factor10.github.com/intent/types-of-tests/stateful/</loc>
+    <lastmod>2020-04-09T13:44:39+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://factor10.github.com/intent/types-of-tests/stateless/</loc>
+    <lastmod>2020-04-09T13:44:39+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://factor10.github.com/intent/types-of-tests/table-driven/</loc>
+    <lastmod>2020-04-09T13:44:39+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://factor10.github.com/intent/types-of-tests/</loc>
+    <lastmod>2020-04-09T13:44:39+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://factor10.github.com/intent/categories/</loc>
+  </url>
+  
+  <url>
+    <loc>https://factor10.github.com/intent/tags/</loc>
+  </url>
+  
+</urlset>

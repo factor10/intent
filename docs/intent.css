@@ -1,0 +1,220 @@
+:root {
+    --violet-color: #7b70b0;
+    --text-color: #252525;
+    --fine-color: #a1a1a1;
+    --link-color: #252525;
+    --green-color: #5B9940;
+}
+
+html {
+    font-family: 'Helvetica', sans-serif;
+    color: var(--text-color);
+    font-weight: 300;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 400;
+}
+
+header {
+    padding: 20px 0;
+    text-align: center;
+}
+
+header .intent-logo {
+    text-align: center;
+}
+
+header .intent-logo h1 {
+    font-weight: 200;
+    margin-top: 10px;
+}
+
+header .intent-logo a,
+header .intent-logo a:active,
+header .intent-logo a:hover,
+header .intent-logo a:focus,
+header .intent-logo a:link {
+    color: var(--text-color);
+    text-decoration: none;
+    border-bottom: none;
+}
+
+
+header a.intent-version,
+header a.intent-version:active,
+header a.intent-version:link
+header a.intent-version:focus,
+header a.intent-version:hover {
+    color: var(--fine-color);
+    font-size: smaller;
+    font-weight: 300;
+    text-decoration: none;
+    border: none;
+}
+
+a,
+a:active,
+a:link {
+    color: var(--text-color);
+    text-decoration: none;
+    border-bottom: 1px solid var(--text-color);
+}
+
+a:hover {
+    color: var(--text-color);
+    border-bottom: 2px solid var(--text-color);
+}
+
+a:focus {
+    color: var(--text-color);
+    outline: 0;
+    border-bottom: 2px solid var(--text-color);
+}
+
+h3 {
+    margin: 16px 0 8px 0;
+}
+
+code {
+    padding: 3px;
+    font-size: larger;
+}
+
+.significant {
+    font-style: italic;
+}
+
+.intent-page {
+    display: flex;
+}
+
+@media only screen and (max-width: 1200px) {
+    .intent-page {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+/*
+ * Table of contents
+ */
+.intent-page-toc {
+    flex: 1;
+    padding-left: 10px;
+}
+
+@media only screen and (max-width: 1200px) {
+    .intent-page-toc {
+        text-align: center;
+    }
+    .intent-page-toc-chapter {
+        display:inline-block;
+    }
+
+    .intent-page-toc-chapter + .intent-page-toc-chapter {
+        padding-right: 48px;
+    }
+}
+
+.intent-page-toc h4 {
+    color: var(--violet-color);
+    font-variant: small-caps;
+}
+
+.intent-page-toc ul {
+    list-style: none;
+    padding-left: 10px;
+}
+
+.intent-page-toc ul li {
+    padding: 5px 0;
+}
+
+.intent-page-toc ul li a,
+.intent-page-toc ul li a:active,
+.intent-page-toc ul li a:link
+.intent-page-toc ul li a:focus,
+.intent-page-toc ul li a:hover {
+    color: var(--text-color);
+    font-weight: 300;
+    text-decoration: none;
+    border-bottom: none;
+}
+
+.intent-page-toc ul li a:focus,
+.intent-page-toc ul li a:hover {
+    color: var(--violet-color);
+    text-decoration: none;
+    border-bottom: none;
+}
+
+/*
+ * Article and sections
+ */
+.intent-page-article {
+    flex: 5;
+    display: flex;
+    flex-direction: column;
+    padding-left: 32px;
+    padding-right: 32px;
+    line-height: 1.25;
+}
+
+.intent-page-section {
+    padding-top: 24px;
+}
+
+.intent-page-section-content {
+    width: 63%;
+    display: inline-block;
+}
+@media only screen and (max-width: 1200px) {
+    .intent-page-section-content {
+        display: block;
+        width: 100%;
+    }
+}
+
+/**
+ * Aside - used for tips, tricks, snippets, etc
+ */
+.intent-page-section-aside {
+    display: inline-block;
+    width: 36%;
+    border: 1px solid #d4d4d4;
+    overflow: hidden;
+    background-color: #f8f9f9;
+    border-radius: 5px;
+    vertical-align: top;
+}
+
+@media only screen and (max-width: 1200px) {
+    .intent-page-section-aside {
+        display: block;
+        width: 100%;
+    }
+}
+
+.intent-page-aside-title {
+    padding: 12px;
+}
+
+.intent-page-aside-title h4 {
+    padding: 0;
+    margin: 0;
+}
+
+.intent-page-aside-content {
+    padding-left: 12px;
+}
+
+/* Disable Hugo built in highlight */
+div.highlight > pre {
+    background-color: transparent !important;
+}
+
+.intent-example-test {
+    margin-bottom: 20px;
+    text-align: right;
+}
