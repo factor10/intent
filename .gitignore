@@ -75,3 +75,8 @@ compiler/test/debug/Gen.jar
 
 # Vulpix output files
 *.check.out
+
+
+.bloop/
+.metals/
+project/metals.sbt
