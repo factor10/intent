@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0 (2020-04-17)
+
+* Upgrade to Dotty 0.22.0-RC1
+
 ## 0.5.0 (2020-02-06)
 
 * Add `.toContain` for `Map` objects

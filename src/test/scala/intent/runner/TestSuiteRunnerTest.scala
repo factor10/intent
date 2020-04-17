@@ -8,7 +8,7 @@ import intent.helpers.TestSuiteRunnerTester
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase] with
+class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase]:
   "TestSuiteRunner" using TestSuiteTestCase() to:
 
     "running a stateful suite without context" using (_.noContextTestSuite) to:
@@ -152,7 +152,7 @@ class TestSuiteRunnerTest extends TestSuite with State[TestSuiteTestCase] with
 /**
  * Wraps a runner for a specific test suite
  */
-case class TestSuiteTestCase(suiteClassName: String = null)(using ec: ExecutionContext) extends TestSuiteRunnerTester with
+case class TestSuiteTestCase(suiteClassName: String = null)(using ec: ExecutionContext) extends TestSuiteRunnerTester:
 
   def emptyTestSuite = TestSuiteTestCase("intent.testdata.EmtpyTestSuite")
   def invalidTestSuiteClass = TestSuiteTestCase("foo.Bar")
@@ -163,7 +163,7 @@ case class TestSuiteTestCase(suiteClassName: String = null)(using ec: ExecutionC
   def noContextTestSuite = TestSuiteTestCase("intent.runner.StatefulNoContextTestSuite")
   def noContextAsyncTestSuite = TestSuiteTestCase("intent.runner.StatefulNoContextAsyncTestSuite")
 
-class OneOfEachResultTestSuite extends Stateless with
+class OneOfEachResultTestSuite extends Stateless:
   "successful" in success()
   "failed" in fail("test should fail")
   "ignored" ignore success()
@@ -171,12 +171,12 @@ class OneOfEachResultTestSuite extends Stateless with
   "error" in:
     throw new RuntimeException("test should fail")
 
-class OneOfEachResulStatefulTestSuite extends State[Unit] with
+class OneOfEachResulStatefulTestSuite extends State[Unit]:
   "level" using (()) to:
     "ignored" ignore:
       _ => fail("Unexpected, test should be ignored")
 
-case class StatefulFailingTestState() with
+case class StatefulFailingTestState():
   def fail: StatefulFailingTestState =
     throw new RuntimeException("intentional failure")
   def failAsync: Future[StatefulFailingTestState] =
@@ -184,13 +184,13 @@ case class StatefulFailingTestState() with
   def throwFail: Future[StatefulFailingTestState] =
     throw new RuntimeException("intentional failure")
 
-class StatefulFailingTestSuite extends State[StatefulFailingTestState] with
+class StatefulFailingTestSuite extends State[StatefulFailingTestState]:
   "root" using (StatefulFailingTestState()) to:
     "uh oh" using (_.fail) to:
       "won't get here" in:
         _ => expect(1).toEqual(2)
 
-class StatefulFailingAsyncTestSuite extends AsyncState[StatefulFailingTestState] with
+class StatefulFailingAsyncTestSuite extends AsyncState[StatefulFailingTestState]:
   "root" using (StatefulFailingTestState()) to:
     "uh oh async" usingAsync (_.failAsync) to:
       "won't get here" in:
@@ -202,10 +202,10 @@ class StatefulFailingAsyncTestSuite extends AsyncState[StatefulFailingTestState]
       "won't get here" in:
         _ => expect(1).toEqual(2)
 
-class StatefulNoContextTestSuite extends State[StatefulFailingTestState] with
+class StatefulNoContextTestSuite extends State[StatefulFailingTestState]:
   "won't get here" in:
     _ => expect(1).toEqual(2)
 
-class StatefulNoContextAsyncTestSuite extends AsyncState[StatefulFailingTestState] with
+class StatefulNoContextAsyncTestSuite extends AsyncState[StatefulFailingTestState]:
   "won't get here" in:
     _ => expect(1).toEqual(2)

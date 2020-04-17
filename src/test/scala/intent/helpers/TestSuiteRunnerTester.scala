@@ -7,7 +7,7 @@ import intent.runner.{TestSuiteRunner, TestSuiteError, TestSuiteResult}
 /**
 * Supports running a test suite and checking the result.
 */
-trait TestSuiteRunnerTester(using ec: ExecutionContext) extends Subscriber[TestCaseResult] with
+trait TestSuiteRunnerTester(using ec: ExecutionContext) extends Subscriber[TestCaseResult]:
 
   def suiteClassName: String
 

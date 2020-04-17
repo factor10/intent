@@ -22,7 +22,7 @@ case class TestSuiteError(ex: Throwable) extends Throwable
  * @param errors The number of tests that caused error (exception, not failed assertion)
  * @param ignored The number of tests that are ignored (not run)
  */
-case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0, errors: Int = 0, ignored: Int = 0) with
+case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0, errors: Int = 0, ignored: Int = 0):
   def incSuccess(): TestSuiteResult = this.copy(
       total = total + 1,
       successful = successful + 1)
@@ -47,7 +47,7 @@ case class TestSuiteResult(total: Int = 0, successful: Int = 0, failed: Int = 0,
  *
  * @param classLoader The class loader used to load and instantiate the test suite
  */
-class TestSuiteRunner(classLoader: ClassLoader) with
+class TestSuiteRunner(classLoader: ClassLoader):
   /**
    * Instantiate and run the given test suite.
    *

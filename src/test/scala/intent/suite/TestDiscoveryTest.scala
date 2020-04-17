@@ -3,7 +3,7 @@ package intent.suite
 import intent.{TestSuite, State, Stateless}
 import intent.testdata._
 
-class TestDiscoveryTest extends TestSuite with State[TestDiscoveryTestState] with
+class TestDiscoveryTest extends TestSuite with State[TestDiscoveryTestState]:
   "Test discovery" using TestDiscoveryTestState() to:
     "empty test suite" using (_.withSuite(EmtpyTestSuite())) to:
 
@@ -20,5 +20,5 @@ class TestDiscoveryTest extends TestSuite with State[TestDiscoveryTestState] wit
       "should have 3 tests" in:
         st => expect(st.suite.allTestCases).toHaveLength(3)
 
-case class TestDiscoveryTestState(suite: Stateless = null) with
+case class TestDiscoveryTestState(suite: Stateless = null):
   def withSuite(s: Stateless) = copy(suite = s)

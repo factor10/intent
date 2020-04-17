@@ -14,7 +14,7 @@ the following principles:
 Here is an example on how the tests look:
 
 ```scala
-class StatefulTest extends TestSuite with State[Cart] with
+class StatefulTest extends TestSuite with State[Cart]:
   "an empty cart" using Cart() to :
     "with two items" using (_.add(CartItem("beach-chair", 2))) to :
       "and another three items" using (_.add(CartItem("sunscreen", 3))) to :
@@ -22,7 +22,8 @@ class StatefulTest extends TestSuite with State[Cart] with
           cart => expect(cart.totalQuantity).toEqual(5)
 
 case class CartItem(artNo: String, qty: Int)
-case class Cart(items: Seq[CartItem] = Seq.empty) with
+
+case class Cart(items: Seq[CartItem] = Seq.empty):
   def add(item: CartItem): Cart = copy(items = items :+ item)
   def totalQuantity = items.map(_.qty).sum
 ```
@@ -35,7 +36,7 @@ how to use Intent to write tests, see [User documentation](https://factor10.gith
 Add Intent to your SBT project with the following lines to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.factor10" %% "intent" % "0.5.0",
+libraryDependencies += "com.factor10" %% "intent" % "0.6.0",
 testFrameworks += new TestFramework("intent.sbt.Framework")
 ```
 

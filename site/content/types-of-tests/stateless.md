@@ -14,7 +14,7 @@ Consider the following example:
 ```scala
 import intent.{Stateless, TestSuite}
 
-class CalculatorTest extends TestSuite with Stateless with
+class CalculatorTest extends TestSuite with Stateless:
   "A calculator" :
     "can add" :
       "plain numbers" in expect(Calculator().add(2, 4)).toEqual(6)

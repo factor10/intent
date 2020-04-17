@@ -18,7 +18,7 @@ Intent is designed to give you clear and concise tests by focusing on:
 Let us see how a test suite looks like for Intent:
 
 ```scala
-class StatefulTest extends TestSuite with State[Cart] with
+class StatefulTest extends TestSuite with State[Cart]:
   "an empty cart" using Cart() to :
     "with two items" using (_.add(CartItem("beach-chair", 2))) to :
       "and another three items" using (_.add(CartItem("sunscreen", 3))) to :
@@ -26,7 +26,8 @@ class StatefulTest extends TestSuite with State[Cart] with
           cart => expect(cart.totalQuantity).toEqual(5)
 
 case class CartItem(artNo: String, qty: Int)
-case class Cart(items: Seq[CartItem] = Seq.empty) with
+
+case class Cart(items: Seq[CartItem] = Seq.empty):
   def add(item: CartItem): Cart = copy(items = items :+ item)
   def totalQuantity = items.map(_.qty).sum
 ```
@@ -46,7 +47,7 @@ The first thing you need to do is to add Intent to your SBT project with the fol
 lines to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.factor10" %% "intent" % "0.5.0",
+libraryDependencies += "com.factor10" %% "intent" % "0.6.0",
 testFrameworks += new TestFramework("intent.sbt.Framework")
 ```
 
@@ -57,7 +58,7 @@ Let's have a look at how tests should be written.
 ```scala
 import intent.{Stateless, TestSuite}
 
-class ToEqualTest extends TestSuite with Stateless with
+class ToEqualTest extends TestSuite with Stateless:
   "toEqual" :
     "for Boolean" :
       "true should equal true" in expect(true).toEqual(true)

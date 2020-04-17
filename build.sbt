@@ -1,7 +1,7 @@
-val dottyVersion = "0.22.0-RC1"
+val dottyVersion = "0.23.0-RC1"
 
 ThisBuild / name := "intent"
-ThisBuild / version := "0.5.0"
+ThisBuild / version := "0.6.0"
 ThisBuild / scalaVersion := dottyVersion
 ThisBuild / publishTo := sonatypePublishToBundle.value
 
@@ -31,5 +31,9 @@ lazy val root = project
     mappings in (Compile, packageBin) ++= mappings.in(macros, Compile, packageBin).value,
     // include the macro sources in the main source jar
     mappings in (Compile, packageSrc) ++= mappings.in(macros, Compile, packageSrc).value,
+
+    // These are not the documents you are looking for...
+    sources in (Compile,doc) := Seq.empty,
+    // publishArtifact in (Compile, packageDoc) := false
   )
   .dependsOn(macros % "compile-internal, test-internal")

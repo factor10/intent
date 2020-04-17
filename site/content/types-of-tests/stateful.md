@@ -12,7 +12,7 @@ on a expressive way to assert expectations. For `Intent` state management is fro
 Lets go straight to the code:
 
 ```scala
-class StatefulTest extends TestSuite with State[Cart] with
+class StatefulTest extends TestSuite with State[Cart]:
   "an empty cart" using Cart() to :
     "with two items" using (_.add(CartItem("beach-chair", 2))) to :
       "and another three items" using (_.add(CartItem("sunscreen", 3))) to :
@@ -20,7 +20,8 @@ class StatefulTest extends TestSuite with State[Cart] with
           cart => expect(cart.totalQuantity).toEqual(5)
 
 case class CartItem(artNo: String, qty: Int)
-case class Cart(items: Seq[CartItem] = Seq.empty) with
+
+case class Cart(items: Seq[CartItem] = Seq.empty):
   def add(item: CartItem): Cart = copy(items = items :+ item)
   def totalQuantity = items.map(_.qty).sum
 ```

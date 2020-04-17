@@ -35,7 +35,7 @@ case class Position(filePath: String, lineNumber0: Int, columnNumber0: Int)
  * Companion object for <code>Position</code> that defines an implicit
  * method that uses a macro to grab the enclosing position.
  */
-object Position with
+object Position:
 
   /**
    * Implicit method, implemented with a macro, that returns the enclosing
@@ -49,7 +49,7 @@ object Position with
    * Helper method for Position macro.
    */
   private def genPosition(implicit qctx: QuoteContext): Expr[Position] =
-    import qctx.tasty.{_, given}
+    import qctx.tasty._
 
     val file = rootPosition.sourceFile
     val filePath: String = file.toString

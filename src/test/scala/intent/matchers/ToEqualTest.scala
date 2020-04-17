@@ -4,7 +4,7 @@ import intent.{Stateless, TestSuite}
 import scala.util.{Success, Failure, Try}
 import intent.helpers.Meta
 
-class ToEqualTest extends TestSuite with Stateless with Meta with
+class ToEqualTest extends TestSuite with Stateless with Meta:
   "toEqual":
 
     "for Boolean":
@@ -41,7 +41,7 @@ class ToEqualTest extends TestSuite with Stateless with Meta with
         "should test equal with 12 decimals" in expect(1.123456789123d).toEqual(1.123456789123d)
         "should allow diff in the 13th decimal" in expect(1.1234567891234d).toEqual(1.1234567891235d)
         "should allow customization of precision" in:
-          given customPrecision: intent.core.FloatingPointPrecision[Double]
+          given customPrecision as intent.core.FloatingPointPrecision[Double]:
             def numberOfDecimals: Int = 2
           expect(1.234d).toEqual(1.235d)
 
@@ -53,7 +53,7 @@ class ToEqualTest extends TestSuite with Stateless with Meta with
         "should test equal with 6 decimals" in expect(1.123456f).toEqual(1.123456f)
         "should allow diff in the 7th decimal" in expect(1.1234567f).toEqual(1.1234568f)
         "should allow customization of precision" in:
-          given customPrecision: intent.core.FloatingPointPrecision[Float]
+          given customPrecision as intent.core.FloatingPointPrecision[Float]:
             def numberOfDecimals: Int = 2
           expect(1.234f).toEqual(1.235f)
 
@@ -63,7 +63,7 @@ class ToEqualTest extends TestSuite with Stateless with Meta with
       "Some should not equal None" in expect(Some(42)).not.toEqual(None)
       "None should equal None" in expect[Option[String]](None).toEqual(None)
       "should consider custom equality" in:
-        given customIntEq: intent.core.Eq[Int]
+        given customIntEq as intent.core.Eq[Int]:
           def areEqual(a: Int, b: Int) = Math.abs(a - b) == 1
         expect(Some(42)).toEqual(Some(43))
 
