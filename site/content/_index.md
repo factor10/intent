@@ -8,7 +8,7 @@ Intent is a test framework for [Dotty](https://dotty.epfl.ch) (which is expected
 
 Intent is designed to give you clear and concise tests by focusing on:
 
-* Low cermony test code
+* Low ceremony test code
 * Uniform test declaration
 * Futures and async testing
 * Arranging test state
@@ -37,7 +37,7 @@ Intent is built using Scala 3 (called Dotty) and is an early adopter of both new
 experimental features. So assume that you will need a recent version of Dotty to use
 Intent.
 
-We'll try to state minimum requried Dotty version in `README.md` (you can also find it
+We'll try to state minimum required Dotty version in `README.md` (you can also find it
 in `build.sbt`)
 
 ### Setting up SBT
