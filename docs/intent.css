@@ -96,6 +96,53 @@ code {
     }
 }
 
+#menu-checkbox {
+    display: none;
+}
+
+@media only screen and (max-width: 1200px) {
+    .intent-page-toc-chapter {
+        display: none;
+    }
+
+    #menu-checkbox:checked ~ .intent-page-toc-chapter {
+        display: block;
+    }
+
+    .intent-menu-toggler {
+        margin: 20px;
+        cursor: pointer;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+    }
+
+    /*
+     * Menu inspired from Mel Shields CodePen https://codepen.io/shieldsma91/pen/zLpbLX
+     */
+    .intent-menu-toggler span {
+        display: flex;
+        height: 2px;
+        width: 25px;
+        margin-bottom: 5px;
+        background: var(--text-color);
+        border-radius: 3px;
+        transform-origin: 5px 0px;
+        transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+                    background 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+                    opacity 0.55s ease;
+    }
+
+    .intent-menu-toggler span:first-child {
+        transform-origin: 0% 0%;
+    }
+
+    .intent-menu-toggler span:nth-last-child(2) {
+        transform-origin: 0% 100%;
+    }
+}
+
 /*
  * Table of contents
  */
@@ -107,9 +154,6 @@ code {
 @media only screen and (max-width: 1200px) {
     .intent-page-toc {
         text-align: center;
-    }
-    .intent-page-toc-chapter {
-        display:inline-block;
     }
 
     .intent-page-toc-chapter + .intent-page-toc-chapter {
