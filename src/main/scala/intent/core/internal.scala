@@ -214,7 +214,7 @@ trait IntentStateBase[TState] extends IntentStructure with TestLanguage:
 trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
   private[intent] override def isStateful = true
 
-  extension contextExt on (context: Context):
+  extension (context: Context):
     def to (block: => Unit): Unit =
       val ctxToUse = isParentIgnored() match
         case true => context.withIgnore()
@@ -235,7 +235,7 @@ trait IntentStateSyntax[TState] extends IntentStateBase[TState]:
     def ignored (block: => Unit): Unit =
       withContext(context.withIgnore())(block)
 
-  extension stringExt on (context: String):
+  extension (context: String):
     def using (init: => TState)(using pos: Position) : Context =
       ContextInit(context, () => Future.successful(init), pos)
 
@@ -285,7 +285,7 @@ trait IntentStatelessSyntax extends IntentStateBase[Unit]:
 
   private[intent] override def isStateful = false
 
-  extension stringExt on (context: String):
+  extension (context: String):
     def in (testImpl: => Expectation)(using pos: Position): Unit =
       if inFocusedMode && !isParentFocused() || isParentIgnored() then
         context ignore testImpl
@@ -322,7 +322,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
 
   private[intent] override def isStateful = true
 
-  extension stringExt on (context: String):
+  extension (context: String):
     def using (init: => TState)(using pos: Position): Context = ContextInit(context, () => Future.successful(init), pos)
 
     def usingAsync (init: => Future[TState])(using pos: Position): Context = ContextInit(context, () => init, pos)
@@ -347,7 +347,7 @@ trait IntentAsyncStateSyntax[TState] extends IntentStateBase[TState]:
         enableFocusedMode()
         addTestCase(TestCase(contextsInOrder, context, testImpl, pos))
 
-  extension contextExt on (context: Context):
+  extension (context: Context):
     def focused (block: => Unit): Unit =
       withContext(context.withFocus())(block)
 
